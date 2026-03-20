@@ -1,0 +1,22 @@
+diff -r aocommon-8a464c5/include/aocommon/xt/span.h aocommon-8a464c5.patched/include/aocommon/xt/span.h
+9c9
+< #include <xtensor/xadapt.hpp>
+---
+> #include <xtensor/containers/xadapt.hpp>
+diff -r aocommon-8a464c5/include/aocommon/xt/utensor.h aocommon-8a464c5.patched/include/aocommon/xt/utensor.h
+6c6
+< #include <xtensor/xtensor.hpp>
+---
+> #include <xtensor/containers/xtensor.hpp>
+23c23
+< #endif
+\ No newline at end of file
+---
+> #endif
+diff -r aocommon-8a464c5/tests/tspan.cpp aocommon-8a464c5.patched/tests/tspan.cpp
+9,10c9,10
+< #include <xtensor/xbuilder.hpp>
+< #include <xtensor/xtensor.hpp>
+---
+> #include <xtensor/generators/xbuilder.hpp>
+> #include <xtensor/containers/xtensor.hpp>

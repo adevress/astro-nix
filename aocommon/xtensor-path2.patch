@@ -1,0 +1,75 @@
+Only in aocommon-8a464c5.new: build
+diff -crB aocommon-8a464c5/include/aocommon/xt/span.h aocommon-8a464c5.new/include/aocommon/xt/span.h
+*** aocommon-8a464c5/include/aocommon/xt/span.h	Thu Jan  1 01:00:01 1970
+--- aocommon-8a464c5.new/include/aocommon/xt/span.h	Fri Mar 20 16:10:08 2026
+***************
+*** 6,12 ****
+  #include <utility>
+  #include <vector>
+  
+! #include <xtensor/xadapt.hpp>
+  
+  namespace aocommon {
+  namespace xt {
+--- 6,12 ----
+  #include <utility>
+  #include <vector>
+  
+! #include <xtensor/containers/xadapt.hpp>
+  
+  namespace aocommon {
+  namespace xt {
+diff -crB aocommon-8a464c5/include/aocommon/xt/utensor.h aocommon-8a464c5.new/include/aocommon/xt/utensor.h
+*** aocommon-8a464c5/include/aocommon/xt/utensor.h	Thu Jan  1 01:00:01 1970
+--- aocommon-8a464c5.new/include/aocommon/xt/utensor.h	Fri Mar 20 16:11:15 2026
+***************
+*** 3,9 ****
+  
+  #include <cstddef>
+  
+! #include <xtensor/xtensor.hpp>
+  
+  #include "../uvector.h"
+  
+--- 3,9 ----
+  
+  #include <cstddef>
+  
+! #include <xtensor/containers/xtensor.hpp>
+  
+  #include "../uvector.h"
+  
+***************
+*** 20,23 ****
+  
+  }  // namespace aocommon::xt
+  
+! #endif
+\ No newline at end of file
+--- 20,23 ----
+  
+  }  // namespace aocommon::xt
+  
+! #endif
+diff -crB aocommon-8a464c5/tests/tspan.cpp aocommon-8a464c5.new/tests/tspan.cpp
+*** aocommon-8a464c5/tests/tspan.cpp	Thu Jan  1 01:00:01 1970
+--- aocommon-8a464c5.new/tests/tspan.cpp	Fri Mar 20 16:11:50 2026
+***************
+*** 6,13 ****
+  
+  #include <boost/test/unit_test.hpp>
+  
+! #include <xtensor/xbuilder.hpp>
+! #include <xtensor/xtensor.hpp>
+  
+  using aocommon::xt::CreateSpan;
+  using aocommon::xt::Span;
+--- 6,13 ----
+  
+  #include <boost/test/unit_test.hpp>
+  
+! #include <xtensor/generators/xbuilder.hpp>
+! #include <xtensor/containers/xtensor.hpp>
+  
+  using aocommon::xt::CreateSpan;
+  using aocommon::xt::Span;

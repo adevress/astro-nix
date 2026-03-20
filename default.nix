@@ -9,8 +9,17 @@ let
 in
 { pkgs ? upstream_pkgs }: 
 
-{
+pkgs // rec {
 
   hello = pkgs.callPackage ./hello/default.nix {};
+
+  # Astronomy packages
+  wcstools = pkgs.callPackage ./wcstools/default.nix {};
+  wcslib = pkgs.callPackage ./wcslib/default.nix {};
+  casacore = pkgs.callPackage ./casacore/default.nix { inherit wcslib; };
+  aocommon = pkgs.callPackage ./aocommon/default.nix { inherit casacore; };
+  schaapcommon = pkgs.callPackage ./schaapcommon/default.nix {};
+  radler = pkgs.callPackage ./radler/default.nix { inherit aocommon schaapcommon casacore; };
+  wsclean = pkgs.callPackage ./wsclean/default.nix { inherit aocommon radler schaapcommon casacore wcslib; };
 
 }
