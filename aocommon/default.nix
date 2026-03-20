@@ -11,7 +11,8 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ cmake ];
-  buildInputs = [ cfitsio xtensor boost casacore openblas hdf5 ] ++ (if doxygen != null then [ doxygen ] else []);
+  buildInputs = [ cfitsio boost casacore openblas hdf5 ] ++ (if doxygen != null then [ doxygen ] else []);
+  propagatedBuildInputs = [ xtensor ];
 
   patches = [ ./xtensor-path2.patch ];
 
@@ -23,7 +24,10 @@ stdenv.mkDerivation rec {
 
   installPhase = ''
     pushd $src
+    # header only, copy headers
     find include/aocommon -type f | xargs -I {} install -Dm644 {} $out/{} 
+    # Some project seems to expect the CMake module
+    find CMake/ -type f | xargs -I {} install -Dm644 {} $out/{}
   '';
 
   meta = with lib; {

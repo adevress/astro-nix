@@ -1,0 +1,40 @@
+diff -crB schaapcommon-4bc5d9b/include/schaapcommon/h5parm/h5cache.h schaapcommon-4bc5d9b.new/include/schaapcommon/h5parm/h5cache.h
+*** schaapcommon-4bc5d9b/include/schaapcommon/h5parm/h5cache.h	Thu Jan  1 01:00:01 1970
+--- schaapcommon-4bc5d9b.new/include/schaapcommon/h5parm/h5cache.h	Fri Mar 20 22:51:38 2026
+***************
+*** 6,12 ****
+  
+  #include <limits>
+  
+! #include <xtensor/xtensor.hpp>
+  
+  #include "soltab.h"
+  
+--- 6,12 ----
+  
+  #include <limits>
+  
+! #include <xtensor/containers/xtensor.hpp>
+  
+  #include "soltab.h"
+  
+diff -crB schaapcommon-4bc5d9b/src/h5parm/h5cache.cc schaapcommon-4bc5d9b.new/src/h5parm/h5cache.cc
+*** schaapcommon-4bc5d9b/src/h5parm/h5cache.cc	Thu Jan  1 01:00:01 1970
+--- schaapcommon-4bc5d9b.new/src/h5parm/h5cache.cc	Fri Mar 20 22:54:15 2026
+***************
+*** 13,19 ****
+  
+  #include <hdf5.h>
+  
+! #include <xtensor/xview.hpp>
+  
+  #include "gridinterpolate.h"
+  
+--- 13,19 ----
+  
+  #include <hdf5.h>
+  
+! #include <xtensor/views/xview.hpp>
+  
+  #include "gridinterpolate.h"
+  
