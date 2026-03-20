@@ -21,5 +21,6 @@ pkgs // rec {
   schaapcommon = pkgs.callPackage ./schaapcommon/default.nix {};
   radler = pkgs.callPackage ./radler/default.nix { inherit aocommon schaapcommon casacore; };
   wsclean = pkgs.callPackage ./wsclean/default.nix { inherit aocommon radler schaapcommon casacore wcslib; };
+  ska-sdp-func = pkgs.callPackage ./ska-sdp-func/default.nix {};
 
 }

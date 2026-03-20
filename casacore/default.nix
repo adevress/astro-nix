@@ -14,6 +14,8 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ cmake python3Packages.python gfortran flex bison pkg-config ];
   buildInputs = [ python3Packages.numpy python3Packages.boost boost hdf5 cfitsio fftw fftwFloat wcslib openblas readline gsl zlib ];
 
+  enableParallelBuilding = true;
+
   cmakeFlags = [
     "-DUSE_HDF5=YES"
     "-DBUILD_PYTHON=NO"
