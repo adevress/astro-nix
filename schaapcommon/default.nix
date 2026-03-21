@@ -10,7 +10,7 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-usYXlhcVXFVOl6rN0FDvcUht6sjD2Xm4ccLwDiugA6o="; # TODO: update with correct hash
   };
 
-  patches = [ ./schapcommon-xtensor-path.patch ];
+  patches = [ ./schapcommon-xtensor-path.patch ./schapcommon-dep-reso.patch ];
 
   nativeBuildInputs = [ cmake ];
   buildInputs = [ hdf5 fftw fftwFloat boost gsl python3Packages.python python3Packages.pybind11 casacore aocommon ] ++ (if doxygen != null then [ doxygen ] else []);
@@ -19,6 +19,12 @@ stdenv.mkDerivation rec {
     "-DFETCHCONTENT_FULLY_DISCONNECTED=TRUE"
     "-DAOCOMMON_INCLUDE_DIR=${aocommon}/include/"
   ];
+
+  installPhase = ''
+    cd ../
+    # copy source directory to target
+    find ./ -type f | xargs -I {} install -Dm644 {} $out/{}
+  '';
 
   meta = with lib; {
     description = "SchaapCommon - Common libraries for radio astronomy";

@@ -1,0 +1,26 @@
+diff -crB schaapcommon-4bc5d9b/CMakeLists.txt schaapcommon-4bc5d9b.new/CMakeLists.txt
+*** schaapcommon-4bc5d9b/CMakeLists.txt	Thu Jan  1 01:00:01 1970
+--- schaapcommon-4bc5d9b.new/CMakeLists.txt	Sat Mar 21 21:44:23 2026
+***************
+*** 115,125 ****
+  
+    # Fetch XTensor if it has not been fetched before.
+    if(NOT TARGET xtensor)
+!     include(${CMAKE_SOURCE_DIR}/external/aocommon/CMake/FetchXTensor.cmake)
+    endif()
+  
+-   # Compile in release mode if schaapcommon is included as external dependency.
+-   set(CMAKE_BUILD_TYPE Release)
+  endif()
+  
+  # For backwards compatibility: Build everything if SCHAAPCOMMON_MODULES is unset.
+--- 115,123 ----
+  
+    # Fetch XTensor if it has not been fetched before.
+    if(NOT TARGET xtensor)
+! 	include(${AOCOMMON_INCLUDE_DIR}/../CMake/FetchXTensor.cmake)
+    endif()
+  
+  endif()
+  
+  # For backwards compatibility: Build everything if SCHAAPCOMMON_MODULES is unset.
