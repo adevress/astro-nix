@@ -2,12 +2,12 @@
 
 stdenv.mkDerivation rec {
   name = "radler";
-  version = "0.1.0-dev";
+  version = "1.0.0";
 
   src = fetchgit {
     url = "https://git.astron.nl/RD/radler.git";
-    rev = "44f8ef296c0c747bf434d1596a6e0bddb75a4270";
-    sha256 = "sha256-9txbplLmaCpI3SlKgO8ktXj/DKCmEib00Uy/Kjl6cHw="; # TODO: update with correct hash
+    rev = "v${version}";
+    sha256 = "sha256-CsUoLSQ3GN4JJuqHGnLrkKVy3ReOukDVQ03bOYWK5Ag"; # TODO: update with correct hash
     fetchSubmodules = false;
   };
 

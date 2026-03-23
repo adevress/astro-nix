@@ -6,8 +6,8 @@ stdenv.mkDerivation rec {
 
   src = fetchgit {
     url = "https://gitlab.com/aroffringa/aocommon.git";
-    rev = "8a464c5441c4121bf578adc21349ed990970b587";
-    sha256 = "sha256-vVKeTmBIsFUlNqYqcS0lUeztYK5KBsnr66YyuJoMWEs=";
+    rev = "8d28d5d6e2a915279e8193830c900f30fc2bdda5";
+    sha256 = "sha256-JxCdez6rD9KVytcNEuH0zmG8nQDd492qx6g6wucD34s=";
   };
 
   nativeBuildInputs = [ cmake ];
