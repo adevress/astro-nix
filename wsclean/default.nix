@@ -1,13 +1,14 @@
-{ stdenv, fetchgit, cmake, python3Packages, boost, fftw, gsl, cfitsio, hdf5, openmpi, casacore, lapack, git, aocommon, radler, schaapcommon, wcstools, lib }:
+{ stdenv, fetchgit, cmake, python3Packages, aocommon, boost, fftw, fftwFloat, gsl, cfitsio, hdf5, git, radler, schaapcommon, lib }:
 
 stdenv.mkDerivation rec {
   name = "wsclean";
-  version = "3.2.0"; # TODO: update with correct version
+  version = "3.7"; 
 
   src = fetchgit {
     url = "https://gitlab.com/aroffringa/wsclean.git";
-    rev = "8a464c5441c4121bf578adc21349ed990970b587";
-    sha256 = "0000000000000000000000000000000000000000000000000000"; # TODO: update with correct hash
+    rev = "v${version}";
+    sha256 = "sha256-zRXSoK+cFIBVIcgdvJTD9kmxfnuLoYXZRZQFqUabXpk=";
+    fetchSubmodules = false;
   };
 
   nativeBuildInputs = [ cmake git ];
@@ -16,14 +17,12 @@ stdenv.mkDerivation rec {
     python3Packages.pybind11
     boost
     fftw
+    fftwFloat
     gsl
     cfitsio
     hdf5
-    openmpi
-    casacore
-    lapack
-    aocommon
     radler
+    aocommon
     schaapcommon
   ];
 
