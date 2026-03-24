@@ -1,4 +1,4 @@
-{ stdenv, fetchgit, cfitsio, cmake, aocommon, schaapcommon, casacore, openblas, hdf5, boost, fftw, fftwFloat, gsl, python3Packages, doxygen ? null, lib }:
+{ stdenv, fetchgit, cfitsio, cmake, aocommon, schaapcommon, casacore, hdf5, boost, fftw, fftwFloat, gsl, python3Packages, doxygen ? null, lib }:
 
 stdenv.mkDerivation rec {
   name = "radler";
@@ -12,7 +12,7 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ cmake ];
-  buildInputs = [ aocommon schaapcommon casacore cfitsio boost hdf5 fftw fftwFloat openblas gsl python3Packages.python python3Packages.pybind11 ] ++ (if doxygen != null then [ doxygen ] else []);
+  buildInputs = [ schaapcommon casacore cfitsio boost hdf5 fftw fftwFloat gsl python3Packages.python python3Packages.pybind11 ] ++ (if doxygen != null then [ doxygen ] else []);
 
   cmakeFlags = [
     "-DFETCHCONTENT_FULLY_DISCONNECTED=TRUE"

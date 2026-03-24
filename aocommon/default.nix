@@ -1,4 +1,4 @@
-{ stdenv, fetchgit, cmake, xtensor, boost, casacore, openblas, hdf5, cfitsio, doxygen ? null, lib }:
+{ stdenv, fetchgit, cmake, pkg-config, xtensor, boost, casacore, openblas, hdf5, cfitsio, doxygen ? null, lib }:
 
 stdenv.mkDerivation rec {
   name = "aocommon";
@@ -10,16 +10,16 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-JxCdez6rD9KVytcNEuH0zmG8nQDd492qx6g6wucD34s=";
   };
 
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [ cfitsio boost casacore openblas hdf5 ] ++ (if doxygen != null then [ doxygen ] else []);
-  propagatedBuildInputs = [ xtensor ];
+  nativeBuildInputs = [ cmake pkg-config ];
+  buildInputs = [ cfitsio casacore  boost hdf5 ] ++ (if doxygen != null then [ doxygen ] else []);
+  propagatedBuildInputs = [ xtensor openblas casacore ];
 
   patches = [ ./xtensor-path2.patch ];
 
   cmakeFlags = [
     "-DFETCHCONTENT_FULLY_DISCONNECTED=TRUE"
     "-DPORTABLE=TRUE"
-    "-DBUILD_TESTING=OFF"
+    "-DBUILD_TESTING=ON"
   ];
 
   installPhase = ''

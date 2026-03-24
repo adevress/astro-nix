@@ -1,4 +1,4 @@
-{ stdenv, casacore, aocommon, fetchgit, boost, gsl, cmake, hdf5, fftw, fftwFloat,python3Packages, doxygen ? null, lib }:
+{ stdenv, aocommon, fetchgit, boost, gsl, cmake, hdf5, fftw, fftwFloat, python3Packages, doxygen ? null, lib }:
 
 stdenv.mkDerivation rec {
   name = "schaapcommon";
@@ -13,7 +13,8 @@ stdenv.mkDerivation rec {
   patches = [ ./schapcommon-xtensor-path.patch ./schapcommon-dep-reso.patch ];
 
   nativeBuildInputs = [ cmake ];
-  buildInputs = [ hdf5 fftw fftwFloat boost gsl python3Packages.python python3Packages.pybind11 casacore aocommon ] ++ (if doxygen != null then [ doxygen ] else []);
+  buildInputs = [ hdf5 fftw fftwFloat boost gsl python3Packages.python python3Packages.pybind11 ] ++ (if doxygen != null then [ doxygen ] else []);
+  propagatedBuildInputs = [ aocommon ];
 
   cmakeFlags = [
     "-DFETCHCONTENT_FULLY_DISCONNECTED=TRUE"
