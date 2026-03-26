@@ -2,12 +2,12 @@
 
 stdenv.mkDerivation rec {
   name = "wsclean";
-  version = "3.7"; 
+  version = "3.7-dev"; 
 
   src = fetchgit {
     url = "https://gitlab.com/aroffringa/wsclean.git";
-    rev = "v${version}";
-    sha256 = "sha256-zRXSoK+cFIBVIcgdvJTD9kmxfnuLoYXZRZQFqUabXpk=";
+    rev = "2b1a430ca1666677f9bb6f4e997134a75465e852";
+    sha256 = "sha256-CbSbnCswlZt1YXFd0kfIrZ63jEBuEupYDH0s5rgdgHg";
     fetchSubmodules = false;
   };
 
@@ -26,6 +26,8 @@ stdenv.mkDerivation rec {
     schaapcommon
   ];
 
+  patches = [ ./0001-Add-a-cmake-option-to-allow-build-from-external-dire.patch ];
+
   # Remove submodules from source since we're providing them separately
   postPatch = ''
     rm -rf external/aocommon
@@ -40,7 +42,12 @@ stdenv.mkDerivation rec {
   '';
 
   cmakeFlags = [
-    "-DPORTABLE=OFF"
+    "-DGIT_SUBMODULE=OFF"
+    "-DPORTABLE=ON"
+    "-DFETCHCONTENT_FULLY_DISCONNECTED=ON"
+    "-DWSCLEAN_DEPENDENCIES_VENDORING=OFF"
+    "-DAOCOMMON_INCLUDE_DIR=${aocommon}/include/"
+    "-DSCHAAPCOMMON_SOURCE_DIR=${schaapcommon}"
     "-DBUILD_PACKAGES=OFF"
     "-DENABLE_WTOWERS=OFF"
   ];
