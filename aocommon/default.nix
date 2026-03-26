@@ -6,15 +6,13 @@ stdenv.mkDerivation rec {
 
   src = fetchgit {
     url = "https://gitlab.com/aroffringa/aocommon.git";
-    rev = "8d28d5d6e2a915279e8193830c900f30fc2bdda5";
-    sha256 = "sha256-JxCdez6rD9KVytcNEuH0zmG8nQDd492qx6g6wucD34s=";
+    rev = "fe270d5d7b7224a318017920da3096e81fd278e1";
+    sha256 = "sha256-u+1boSpVSugcFgXQzG+zJNo2KgZSFh5zLSRWUTlEhQs=";
   };
 
   nativeBuildInputs = [ cmake pkg-config ];
   buildInputs = [ cfitsio casacore  boost hdf5 ] ++ (if doxygen != null then [ doxygen ] else []);
   propagatedBuildInputs = [ xtensor openblas casacore ];
-
-  patches = [ ./xtensor-path2.patch ];
 
   cmakeFlags = [
     "-DFETCHCONTENT_FULLY_DISCONNECTED=TRUE"
@@ -23,7 +21,7 @@ stdenv.mkDerivation rec {
   ];
 
   installPhase = ''
-    pushd $src
+    pushd ../
     # header only, copy headers
     find include/aocommon -type f | xargs -I {} install -Dm644 {} $out/{} 
     # Some project seems to expect the CMake module
