@@ -31,6 +31,7 @@ pkgs // rec {
   radler = pkgs.callPackage ./radler/default.nix { inherit aocommon schaapcommon casacore; };
   wsclean = pkgs.callPackage ./wsclean/default.nix { inherit aocommon radler schaapcommon; };
   ska-sdp-func = pkgs.callPackage ./ska-sdp-func/default.nix {};
+  xtensor-fftw = pkgs.callPackage ./xtensor-fftw/default.nix {};
   everybeam = pkgs.callPackage ./everybeam/default.nix { inherit aocommon schaapcommon ska-sdp-func; };
 
 }
