@@ -1,4 +1,4 @@
-{ stdenv, fetchgit, cmake, python3Packages, boost, fftw, fftwFloat, gsl, cfitsio, hdf5, openmpi, casacore, git, aocommon, schaapcommon, lib, wget }:
+{ stdenv, fetchgit, cmake, python3Packages, boost, fftw, fftwFloat, gsl, cfitsio, hdf5, hdf5-cpp, git, aocommon, xtensor-blas, schaapcommon, ska-sdp-func, lib, wget }:
 
 stdenv.mkDerivation rec {
   name = "everybeam";
@@ -7,8 +7,8 @@ stdenv.mkDerivation rec {
   src = fetchgit {
     url = "https://gitlab.com/ska-telescope/sdp/ska-sdp-func-everybeam.git";
     rev = "v${version}";
-    sha256 = "sha256-0000000000000000000000000000000000000000000000000000000000000000"; # TODO: Update with actual sha256
-    fetchSubmodules = true;
+    sha256 = "sha256-1oVfR3X9AaqF74urjZXD8w6l5/GfIwZnTl59WeJZ1wc=";
+    fetchSubmodules = false;
   };
 
   nativeBuildInputs = [ cmake git python3Packages.pybind11 wget ];
@@ -20,10 +20,11 @@ stdenv.mkDerivation rec {
     gsl
     cfitsio
     hdf5
-    openmpi
-    casacore
+    hdf5-cpp
     aocommon
+    xtensor-blas
     schaapcommon
+    ska-sdp-func
   ];
 
   # Remove submodules from source since we're providing them separately
@@ -38,10 +39,15 @@ stdenv.mkDerivation rec {
   '';
 
   cmakeFlags = [
+    "-DEVERYBEAM_DEPENDENCIES_VENDORING=OFF"
+    "-DGIT_SUBMODULE=OFF"
+    "-DCOMPILE_AS_EXTERNAL_PROJECT=ON" # required for schaapcommon    
+    "-DAOCOMMON_INCLUDE_DIR=${aocommon}/include/" # required for schaapcommon    
+    "-DFETCHCONTENT_FULLY_DISCONNECTED=TRUE"
     "-DBUILD_WITH_PYTHON=OFF"
-    "-DBUILD_TESTING=OFF"
+    "-DBUILD_TESTING=ON"
     "-DBUILD_APT_PACKAGES=OFF"
-    "-DPORTABLE=OFF"
+    "-DPORTABLE=ON"
     "-DDOWNLOAD_LOBES=OFF"
     "-DDOWNLOAD_LWA=OFF"
   ];

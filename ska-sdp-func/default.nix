@@ -1,6 +1,6 @@
-{ python3Packages, fetchgit, cmake, boost }:
+{ stdenv, python3Packages, fetchgit, cmake, boost }:
 
-python3Packages.buildPythonPackage rec {
+stdenv.mkDerivation rec {
   pname = "ska-sdp-func";
   version = "1.2.2";
 
@@ -11,7 +11,9 @@ python3Packages.buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ cmake ];
-  dontUseCmakeConfigure = true;
+  
+  # dontUseCmakeConfigure = true;
+  
   propagatedBuildInputs = [
     python3Packages.numpy 
     python3Packages.pybind11 
