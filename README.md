@@ -29,7 +29,7 @@ Collection of Nix recipe for Astronomy & Radio-Astronomy usage
 Install and run casacore 
 
 ```bash
-# download, install (or compile_ casacore and get a shell
+# download, (compile), install  casacore and get a shell
 nix shell -f ./  casacore --command bash
 # execute it
 readms
@@ -40,9 +40,24 @@ readms
 Install and run wsclean 
 
 ```bash
-# download, install (or compile_ casacore and get a shell
+# download, (compile), install wsclean and get a shell
 nix shell -f ./  wsclean --command bash
 # execute it
 wsclean
 
 ```
+
+
+## Tests and support
+
+Tested on:
+
+- Linux Desktop/Laptop (Ubuntu; Intel CPU; x86_64; root)
+- EPFL Kuma (Red hat; AMD + GPU Nvidia; x86_64; rootless)
+- CSCS Daint (Red hat; Grace + Hopper GPU; Aarch64; rootless)
+- EPFL Manticore (ubuntu; Grace + Hopper GPU; Aarch64; rootless) 
+
+
+## Binary support
+
+It is technically doable to support binary shipping for this repository. But not done yet

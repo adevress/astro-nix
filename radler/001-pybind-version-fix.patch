@@ -1,0 +1,20 @@
+diff -crB radler/pyproject.toml radler.new/pyproject.toml
+*** radler/pyproject.toml	Wed Jan  2 00:00:00 1980
+--- radler.new/pyproject.toml	Fri Mar 27 19:43:38 2026
+***************
+*** 40,46 ****
+  [build-system]
+  requires = [
+      "numpy",
+!     "pybind11<3",
+      "scikit-build-core>=0.10",
+  ]
+  build-backend = "scikit_build_core.build"
+--- 40,46 ----
+  [build-system]
+  requires = [
+      "numpy",
+!     "pybind11",
+      "scikit-build-core>=0.10",
+  ]
+  build-backend = "scikit_build_core.build"
