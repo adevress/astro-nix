@@ -1,4 +1,4 @@
-{ stdenv, fetchgit, cmake, python3Packages, aocommon, boost, fftw, fftwFloat, gsl, cfitsio, hdf5, git, radler, schaapcommon, ska-sdp-func ? null, lib }:
+{ stdenv, fetchgit, cmake, python3Packages, aocommon, boost, fftw, fftwFloat, gsl, cfitsio, hdf5, git, radler, schaapcommon, idg ? null, ska-sdp-func ? null, lib }:
 
 stdenv.mkDerivation rec {
   name = "wsclean";
@@ -25,6 +25,7 @@ stdenv.mkDerivation rec {
     aocommon
     schaapcommon
     ska-sdp-func
+    idg
   ];
 
   patches = [ ./0001-Add-a-cmake-option-to-allow-build-from-external-dire.patch ];

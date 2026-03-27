@@ -24,11 +24,11 @@ let
     };
     schaapcommon = pkgs.callPackage ./schaapcommon/default.nix {inherit aocommon; };
     radler = pkgs.callPackage ./radler/default.nix { inherit aocommon schaapcommon casacore; };
-    wsclean = pkgs.callPackage ./wsclean/default.nix { inherit aocommon radler schaapcommon; ska-sdp-func = null; };
+    wsclean = pkgs.callPackage ./wsclean/default.nix { inherit aocommon radler schaapcommon idg; ska-sdp-func = null; };
     ska-sdp-func = pkgs.callPackage ./ska-sdp-func/default.nix {};
     xtensor-fftw = pkgs.callPackage ./xtensor-fftw/default.nix {};
     everybeam = pkgs.callPackage ./everybeam/default.nix { inherit aocommon schaapcommon ska-sdp-func; };
-#    idg = pkgs.callPackage ./idg/default.nix { inherit aocommon schaapcommon xtensor; };
+    idg = pkgs.callPackage ./idg/default.nix { inherit aocommon schaapcommon; };
   };
 
   py_astro_pkgs = rec {  
@@ -48,4 +48,4 @@ let
  
 
 in 
-{ upstream_pkgs ? pkgs }: astro_pkgs // py_astro_pkgs
+{ upstream_pkgs ? pkgs }:  pkgs // astro_pkgs // py_astro_pkgs
