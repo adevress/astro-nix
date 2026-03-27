@@ -1,0 +1,4 @@
+
+
+setfacl -nb ${NIX_USER_ROOT_STORE}
+chmod 755 ${NIX_USER_ROOT_STORE}
