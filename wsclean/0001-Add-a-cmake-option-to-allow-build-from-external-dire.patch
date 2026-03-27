@@ -1,0 +1,299 @@
+From 6ce70b572894872f5d7ffd3d221936fdc76c36ef Mon Sep 17 00:00:00 2001
+From: Adrien Devresse <adrien.devresse@epfl.ch>
+Date: Thu, 26 Mar 2026 13:37:18 +0100
+Subject: [PATCH] Add a cmake option to allow build from external directory
+
+---
+ CMakeLists.txt | 215 ++++++++++++++++++++++++++++---------------------
+ 1 file changed, 125 insertions(+), 90 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index bbc4e2a..f3311d4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -4,6 +4,8 @@ project(wsclean LANGUAGES CXX)
+ 
+ include(ExternalProject)
+ include(CMakeVersionInfo.txt)
++include(CheckCXXSourceCompiles)
++include(GNUInstallDirs)
+ 
+ add_compile_options(
+   -O3
+@@ -29,67 +31,140 @@ set(CMAKE_CXX_STANDARD 20)
+ set(CMAKE_CXX_STANDARD_REQUIRED YES)
+ set(CMAKE_CXX_EXTENSIONS OFF)
+ 
++option(WSCLEAN_DEPENDENCIES_VENDORING "Enable dependency vendoring. 
++  WSClean will try to compile and embed some of its dependencies" ON)
+ option(PORTABLE "Build portable binaries (with slightly decreased performance)"
+        OFF)
+ option(BUILD_PACKAGES "Build Debian packages" OFF)
+ option(ENABLE_WTOWERS
+        "Enable compiling w-towers gridder (requires ska-sdp-func library)" OFF)
+ 
+-set(RADLER_CXX_FLAGS
+-    " "
+-    CACHE STRING "Extra C++ flags used for compiling Radler")
+-
+-set(ExternalSubmoduleDirectories aocommon radler schaapcommon)
++# Casacore has a separate CMake file in this directory
++set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
+ 
++# find necessary packages
++set(CASACORE_MAKE_REQUIRED_EXTERNALS_OPTIONAL TRUE)
++find_package(Casacore 3.6 REQUIRED COMPONENTS casa ms tables measures fits)
+ find_package(pybind11 CONFIG REQUIRED)
+ 
+-foreach(ExternalSubmodule ${ExternalSubmoduleDirectories})
+-  if(NOT EXISTS ${CMAKE_SOURCE_DIR}/external/${ExternalSubmodule})
+-    message(
+-      FATAL_ERROR
+-        "The external submodule '${ExternalSubmodule}' is missing in the external/ subdirectory. "
+-        "This is likely the result of downloading a git tarball without submodules. "
+-        "This is not supported: git tarballs do not provide the required versioning "
+-        "information for the submodules. Please perform a git clone of this repository."
+-    )
+-  endif()
+-endforeach()
+-
+-# Find and include git submodules
+-find_package(Git QUIET)
+-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+-  # Update submodules as needed
+-  option(GIT_SUBMODULE "Check submodules during build" ON)
+-  if(GIT_SUBMODULE)
+-    message(STATUS "Submodule update")
+-    execute_process(
+-      COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive --checkout
+-              --depth 1
+-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+-      RESULT_VARIABLE GIT_SUBMOD_RESULT)
+-    if(NOT GIT_SUBMOD_RESULT EQUAL "0")
++# Fetch and build dependencies if asked
++if(WSCLEAN_DEPENDENCIES_VENDORING)
++  set(RADLER_CXX_FLAGS
++      " "
++      CACHE STRING "Extra C++ flags used for compiling Radler")
++
++  set(ExternalSubmoduleDirectories aocommon radler schaapcommon)
++
++  foreach(ExternalSubmodule ${ExternalSubmoduleDirectories})
++    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/external/${ExternalSubmodule})
+       message(
+         FATAL_ERROR
+-          "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules"
++          "The external submodule '${ExternalSubmodule}' is missing in the external/ subdirectory. "
++          "This is likely the result of downloading a git tarball without submodules. "
++          "This is not supported: git tarballs do not provide the required versioning "
++          "information for the submodules. Please perform a git clone of this repository."
+       )
+     endif()
++  endforeach()
++
++  # Find and include git submodules
++  find_package(Git QUIET)
++  if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
++    # Update submodules as needed
++    option(GIT_SUBMODULE "Check submodules during build" ON)
++    if(GIT_SUBMODULE)
++      message(STATUS "Submodule update")
++      execute_process(
++        COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive --checkout
++                --depth 1
++        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
++        RESULT_VARIABLE GIT_SUBMOD_RESULT)
++      if(NOT GIT_SUBMOD_RESULT EQUAL "0")
++        message(
++          FATAL_ERROR
++            "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules"
++        )
++      endif()
++    endif()
+   endif()
+-endif()
+ 
+-# User may optionally set `TARGET_CPU` if `PORTABLE=OFF`
+-include(external/aocommon/CMake/SetTargetCPU.cmake)
++  # User may optionally set `TARGET_CPU` if `PORTABLE=OFF`
++  include(external/aocommon/CMake/SetTargetCPU.cmake)
++
++  # Include aocommon.
++  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/external/aocommon/include/")
++
++  # Schaapcommon
++  set(SCHAAPCOMMON_MODULES ducc0 facets fitters h5parm math reordering)
++  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/external/schaapcommon")
++  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/external/schaapcommon/include")
++  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/external/schaapcommon/external")
++
++
++  # Radler
++  set(RADLER_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/external/radler)
++  set(RADLER_LIB
++      ${RADLER_INSTALL_PREFIX}/lib/libradler${CMAKE_STATIC_LIBRARY_SUFFIX})
++
++  # By default, CMake incorrectly forwards a prefix path with multiple items.
++  # Using an alternate LIST_SEPARATOR works around this behavior. See
++  # https://stackoverflow.com/questions/45414507/pass-a-list-of-prefix-paths-to-externalproject-add-in-cmake-args
++  # Use ':', since the CMAKE_PREFIX_PATH environment variable already uses it.
++  string(REPLACE ";" ":" ALT_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
++  ExternalProject_Add(
++    radler-module
++    SOURCE_DIR ${CMAKE_SOURCE_DIR}/external/radler
++    BINARY_DIR ${CMAKE_BINARY_DIR}/external/radler/build
++    BUILD_ALWAYS TRUE
++    BUILD_BYPRODUCTS ${RADLER_LIB}
++    LIST_SEPARATOR :
++    CMAKE_ARGS
++      -DCOMPILE_AS_EXTERNAL_PROJECT=On
++      -DPORTABLE=${PORTABLE}
++      -DTARGET_CPU=${TARGET_CPU}
++      -DCMAKE_INCLUDE_PATH=${CMAKE_INCLUDE_PATH}
++      -DCMAKE_LIBRARY_PATH=${CMAKE_LIBRARY_PATH}
++      # The casacore root is set to the location where casacore was found.
++      # Note that CASACORE_ROOT_DIR isn't set/updated by the find script, so we
++      # shouldn't set Radler's CASACORE_ROOT_DIR to WSClean's one.
++      -DCASACORE_ROOT_DIR=${CASACORE_INCLUDE_DIR}/..
++      -DAOCOMMON_INCLUDE_DIR=${CMAKE_SOURCE_DIR}/external/aocommon/include/
++      -DSCHAAPCOMMON_SOURCE_DIR=${CMAKE_SOURCE_DIR}/external/schaapcommon/
++      -DBUILD_TESTING=OFF
++      -DCMAKE_PREFIX_PATH=${ALT_CMAKE_PREFIX_PATH}:$ENV{CMAKE_PREFIX_PATH}
++      -DCMAKE_INSTALL_PREFIX=${RADLER_INSTALL_PREFIX}
++      -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
++      -DCMAKE_CXX_FLAGS=${RADLER_CXX_FLAGS})
++
++  set(RADLER_INCLUDE_DIRS "${RADLER_INSTALL_PREFIX}/include")
++
++  # Perform the BLAS check from aocommon
++  include("${CMAKE_CURRENT_LIST_DIR}/external/aocommon/CMake/CheckBLAS.cmake")
++  check_blas(LIBRARIES ${EXTERNAL_LIBRARIES})  
+ 
+-# Include aocommon.
+-include_directories("${CMAKE_SOURCE_DIR}/external/aocommon/include/")
++else()
++  # find aocommon
++  find_path(AOCOMMON_INCLUDE_DIRS NAMES "aocommon/uvector.h" REQUIRED)
++  set(AOCOMMON_PREFIX_PATH "${AOCOMMON_INCLUDE_DIRS}/../")
+ 
+-# Schaapcommon
+-set(SCHAAPCOMMON_MODULES ducc0 facets fitters h5parm math reordering)
+-add_subdirectory("${CMAKE_SOURCE_DIR}/external/schaapcommon")
+-include_directories("${CMAKE_SOURCE_DIR}/external/schaapcommon/include")
+-include_directories("${CMAKE_SOURCE_DIR}/external/schaapcommon/external")
+ 
+-# Casacore has a separate CMake file in this directory
+-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
++  # find radler
++  find_library(RADLER_LIB NAMES radler DOC "The radler library" REQUIRED)
++  find_path(RADLER_INCLUDE_DIRS NAMES "radler/radler.h" REQUIRED)
++
++  # checkblas   
++  include("${AOCOMMON_PREFIX_PATH}/CMake/CheckBLAS.cmake")
++  check_blas(LIBRARIES ${EXTERNAL_LIBRARIES})  
++
++  # schaapcommon
++  if(NOT DEFINED SCHAAPCOMMON_SOURCE_DIR)
++       message(
++          FATAL_ERROR
++            "SCHAAPCOMMON_SOURCE_DIR is not defined"
++        )
++  endif()
++  add_subdirectory("${SCHAAPCOMMON_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/schaapcommon_binary")
++endif()
+ 
+ # W-towers requires ska-sdp-func
+ if(ENABLE_WTOWERS)
+@@ -125,8 +200,6 @@ find_package(
+   REQUIRED)
+ add_definitions(${HDF5_DEFINITIONS})
+ 
+-set(CASACORE_MAKE_REQUIRED_EXTERNALS_OPTIONAL TRUE)
+-find_package(Casacore 3.6 REQUIRED COMPONENTS casa ms tables measures fits)
+ 
+ find_package(CFITSIO REQUIRED)
+ # Chgcentre uses a lapack function. EveryBeam provides lapack, but because
+@@ -250,53 +323,15 @@ include_directories(SYSTEM ${GSL_INCLUDE_DIR})
+ include_directories(SYSTEM ${HDF5_INCLUDE_DIRS})
+ include_directories(SYSTEM ${Python3_INCLUDE_DIRS})
+ 
+-include(CheckCXXSourceCompiles)
++include_directories(${RADLER_INCLUDE_DIRS}/include)  
+ 
+ # GSL is required for WSClean, so always available
+ add_definitions(-DHAVE_GSL)
+ 
+-# Radler
+-set(RADLER_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/external/radler)
+-set(RADLER_LIB
+-    ${RADLER_INSTALL_PREFIX}/lib/libradler${CMAKE_STATIC_LIBRARY_SUFFIX})
+-
+-# By default, CMake incorrectly forwards a prefix path with multiple items.
+-# Using an alternate LIST_SEPARATOR works around this behavior. See
+-# https://stackoverflow.com/questions/45414507/pass-a-list-of-prefix-paths-to-externalproject-add-in-cmake-args
+-# Use ':', since the CMAKE_PREFIX_PATH environment variable already uses it.
+-string(REPLACE ";" ":" ALT_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
+-ExternalProject_Add(
+-  radler-module
+-  SOURCE_DIR ${CMAKE_SOURCE_DIR}/external/radler
+-  BINARY_DIR ${CMAKE_BINARY_DIR}/external/radler/build
+-  BUILD_ALWAYS TRUE
+-  BUILD_BYPRODUCTS ${RADLER_LIB}
+-  LIST_SEPARATOR :
+-  CMAKE_ARGS
+-    -DCOMPILE_AS_EXTERNAL_PROJECT=On
+-    -DPORTABLE=${PORTABLE}
+-    -DTARGET_CPU=${TARGET_CPU}
+-    -DCMAKE_INCLUDE_PATH=${CMAKE_INCLUDE_PATH}
+-    -DCMAKE_LIBRARY_PATH=${CMAKE_LIBRARY_PATH}
+-    # The casacore root is set to the location where casacore was found.
+-    # Note that CASACORE_ROOT_DIR isn't set/updated by the find script, so we
+-    # shouldn't set Radler's CASACORE_ROOT_DIR to WSClean's one.
+-    -DCASACORE_ROOT_DIR=${CASACORE_INCLUDE_DIR}/..
+-    -DAOCOMMON_INCLUDE_DIR=${CMAKE_SOURCE_DIR}/external/aocommon/include/
+-    -DSCHAAPCOMMON_SOURCE_DIR=${CMAKE_SOURCE_DIR}/external/schaapcommon/
+-    -DBUILD_TESTING=OFF
+-    -DCMAKE_PREFIX_PATH=${ALT_CMAKE_PREFIX_PATH}:$ENV{CMAKE_PREFIX_PATH}
+-    -DCMAKE_INSTALL_PREFIX=${RADLER_INSTALL_PREFIX}
+-    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+-    -DCMAKE_CXX_FLAGS=${RADLER_CXX_FLAGS})
+-
+-include_directories(${RADLER_INSTALL_PREFIX}/include)
+ 
+ # The following section will set the "rpath" correctly, so that
+ # LD_LIBRARY_PATH doesn't have to be set.
+ 
+-# Include GNUInstallDirs for CMAKE_INSTALL_FULL_LIBDIR
+-include(GNUInstallDirs)
+ # Use, i.e. don't skip the full RPATH for the build tree.
+ set(CMAKE_SKIP_BUILD_RPATH FALSE)
+ # When building, don't use the install RPATH already
+@@ -418,9 +453,11 @@ set_source_files_properties(
+   wgridder/wgridder_float.cpp wgridder/wgridder_double.cpp
+   gridding/msgriddermanager.cpp PROPERTIES COMPILE_FLAGS "-ffast-math")
+ 
+-# Add radler-module dependency to wsclean-object to ensure all
+-# wsclean targets can link against ${RADLER_LIB}
+-add_dependencies(wsclean-object radler-module)
++if(WSCLEAN_DEPENDENCIES_VENDORING)
++  # Add radler-module dependency to wsclean-object to ensure all
++  # wsclean targets can link against ${RADLER_LIB}
++  add_dependencies(wsclean-object radler-module)
++endif()
+ 
+ set_property(TARGET wsclean-object PROPERTY POSITION_INDEPENDENT_CODE 1)
+ 
+@@ -447,9 +484,7 @@ set(EXTERNAL_LIBRARIES
+     schaapcommon
+     pybind11::embed)
+ 
+-# Perform the BLAS check from aocommon
+-include("${CMAKE_CURRENT_LIST_DIR}/external/aocommon/CMake/CheckBLAS.cmake")
+-check_blas(LIBRARIES ${EXTERNAL_LIBRARIES})
++
+ # Radler lib cannot be checked on BLAS consistenty as it doesn't exist
+ # at cmake time. It needs to be first in the link order because Radler
+ # itself also depends on some of the libraries in the EXTERNAL_LIBRARIES list.
+-- 
+2.34.1
+
