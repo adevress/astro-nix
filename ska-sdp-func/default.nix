@@ -7,7 +7,7 @@ stdenv.mkDerivation rec {
   src = fetchgit {
     url = "https://gitlab.com/ska-telescope/sdp/ska-sdp-func.git";
     rev = "df10e082e7802c83a087de28abe94b21538be607";
-    sha256 = "sha256-26Mx5bHMeO5+dWM1CAOqgwhgRH44jxsIFW3vZ0nyCdI=";
+    sha256 = "sha256-ViJIA+m+kjswgijsg0rK+DASOshwcWCYYaX52FuZlZo=";
   };
 
   nativeBuildInputs = [ cmake ];
