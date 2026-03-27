@@ -5,39 +5,41 @@ Collection of Nix recipe for Astronomy & Radio-Astronomy usage
 
 ## Usage
 
-1- Install Nix 
+1- Clone this repository
 
-    - **Case 1**: You do have root access on your machine
-        Follow [these instructions](https://nixos.org/download/#download-nix)
+2- Install Nix 
+
+ - **Case 1**: You do have root access on your machine
+   2.1 - Follow [these instructions](https://nixos.org/download/#download-nix)
+   2.2 - enable flake and nix-command. You can do it with `sudo ./scripts/nix-command-edit.sh`
     
     
-    - **Case 2**: You do not have root access (e.g HPC cluster)
-        Follow [these instructions](./doc/rootless-nix.md)
+ - **Case 2**: You do not have root access (e.g HPC cluster)
+   2.1 Follow [these instructions](./doc/rootless-nix.md)
 
-
- 
-2- Clone this repository
 
 3- Use it !
 
+
 ### Usage example I: casacore
 
-Install casacore into a environment named `venv1`
+Install and run casacore 
 
 ```bash
-# install casacore 
-nix-env -p venv1 -f ./ -iA casacore
+# download, install (or compile_ casacore and get a shell
+nix shell -f ./  casacore --command bash
 # execute it
-./venv1/bin/readms
+readms
 ```
 
 ### Usage example II: wsclean
 
-Install wsclean into a environment named `venv2`
+Install and run wsclean 
 
 ```bash
-# install wsclean 
-nix-env -p venv2 -f ./ -iA wsclean
+# download, install (or compile_ casacore and get a shell
+nix shell -f ./  wsclean --command bash
 # execute it
-./venv2/bin/wsclean
+wsclean
+
 ```

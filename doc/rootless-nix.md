@@ -10,18 +10,41 @@ curl -L https://hydra.nixos.org/job/nix/maintenance-2.34/buildStatic.nix-cli.$(u
 
 ln -s ~/bin/nix ~/bin/nix-build
 ln -s ~/bin/nix ~/bin/nix-shell
+ln -s ~/bin/nix ~/bin/nix-env
 
 chmod 775 ~/bin/nix
 ```
 
+2- Create your software store directory
 
-2- Setup the appropriate config file for a namespaced installation
+Tip: If you are in an HPC system, put the software directory in your project directory.
+     Try to avoid to put it on slow filesystem like NFS.
+
+```bash
+MY_SOFTWARE_STORE=/path/to/your/software/dir
+
+
+mkdir -p ${MY_SOFTWARE_STORE}
+
+export NIX_USER_ROOT_STORE="$(cd ${MY_SOFTWARE_STORE} && pwd -P)"
+
+# Remove tuned ACL, might cause build failure
+setfacl -nb ${NIX_USER_ROOT_STORE}
+# correct directory rights
+chmod 755 ${NIX_USER_ROOT_STORE}
+# Remove -s, for reproducibility reasons
+chmod g-s ${NIX_USER_ROOT_STORE}
+
+```
+
+
+3- Setup the appropriate config file for a namespaced installation
 
 ```bash
 mkdir -p ~/.config/nix
 
 cat > ~/.config/nix/nix.conf << EOF
-store = ~/.mynixroot
+store = ${NIX_USER_ROOT_STORE}
 extra-experimental-features = flakes nix-command
 ssl-cert-file = /etc/ssl/ca-bundle.pem
 EOF  
@@ -31,9 +54,9 @@ EOF
 3- bootstrap basic packages and test it
 
 ```
-# will take some time
+# will take some time on first run
 nix search nixpkgs hello
 # 
-nix run 
+nix run nixpkgs#hello
 
 ```
