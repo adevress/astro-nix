@@ -1,4 +1,4 @@
-{ stdenv, fetchgit, cmake, python3Packages, aocommon, boost, fftw, fftwFloat, gsl, cfitsio, hdf5, git, radler, schaapcommon, lib }:
+{ stdenv, fetchgit, cmake, python3Packages, aocommon, boost, fftw, fftwFloat, gsl, cfitsio, hdf5, git, radler, schaapcommon, ska-sdp-func ? null, lib }:
 
 stdenv.mkDerivation rec {
   name = "wsclean";
@@ -24,6 +24,7 @@ stdenv.mkDerivation rec {
     radler
     aocommon
     schaapcommon
+    ska-sdp-func
   ];
 
   patches = [ ./0001-Add-a-cmake-option-to-allow-build-from-external-dire.patch ];
@@ -49,8 +50,7 @@ stdenv.mkDerivation rec {
     "-DAOCOMMON_INCLUDE_DIR=${aocommon}/include/"
     "-DSCHAAPCOMMON_SOURCE_DIR=${schaapcommon}"
     "-DBUILD_PACKAGES=OFF"
-    "-DENABLE_WTOWERS=OFF"
-  ];
+  ] ++ lib.optionals (ska-sdp-func != null) [ "-DENABLE_WTOWERS=ON" "-DSKA_SDP_FUNC_INCLUDE_DIR=${ska-sdp-func}/include" ];
 
   enableParallelBuilding = true;
 
