@@ -1,0 +1,308 @@
+diff -crB idg-216e744/CMakeLists.txt idg-216e744.new/CMakeLists.txt
+*** idg-216e744/CMakeLists.txt	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/CMakeLists.txt	Sat Mar 28 00:14:02 2026
+***************
+*** 28,34 ****
+  
+  include(CTest)
+  
+! set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED YES)
+  set(CMAKE_CXX_EXTENSIONS NO)
+  
+--- 28,34 ----
+  
+  include(CTest)
+  
+! set(CMAKE_CXX_STANDARD 20)
+  set(CMAKE_CXX_STANDARD_REQUIRED YES)
+  set(CMAKE_CXX_EXTENSIONS NO)
+  
+Only in idg-216e744.new/external/aocommon: CMake
+Only in idg-216e744.new/external/aocommon: include
+Only in idg-216e744.new/external/aocommon: nix-support
+Only in idg-216e744/external: pybind11
+Only in idg-216e744.new/external/schaap-packaging: .clang-format
+Only in idg-216e744.new/external/schaap-packaging: .clang-tidy
+Only in idg-216e744.new/external/schaap-packaging: .cmake-format.py
+Only in idg-216e744.new/external/schaap-packaging: .gitignore
+Only in idg-216e744.new/external/schaap-packaging: .gitlab-ci.yml
+Only in idg-216e744.new/external/schaap-packaging: CMakeLists.txt
+Only in idg-216e744.new/external/schaap-packaging: LICENSE
+Only in idg-216e744.new/external/schaap-packaging: README.md
+Only in idg-216e744.new/external/schaap-packaging: build
+Only in idg-216e744.new/external/schaap-packaging: cmake
+Only in idg-216e744.new/external/schaap-packaging: docker
+Only in idg-216e744.new/external/schaap-packaging: external
+Only in idg-216e744.new/external/schaap-packaging: include
+Only in idg-216e744.new/external/schaap-packaging: nix-support
+Only in idg-216e744.new/external/schaap-packaging: scripts
+Only in idg-216e744.new/external/schaap-packaging: src
+diff -crB idg-216e744/idg-api/BufferSet.cpp idg-216e744.new/idg-api/BufferSet.cpp
+*** idg-216e744/idg-api/BufferSet.cpp	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/idg-api/BufferSet.cpp	Sat Mar 28 00:25:35 2026
+***************
+*** 15,21 ****
+  #include <csignal>
+  
+  #include <omp.h>
+! #include <xtensor/xcomplex.hpp>
+  
+  // #if defined(HAVE_MKL)
+  //     #include <mkl_lapacke.h>
+--- 15,21 ----
+  #include <csignal>
+  
+  #include <omp.h>
+! #include <xtensor/misc/xcomplex.hpp>
+  
+  // #if defined(HAVE_MKL)
+  //     #include <mkl_lapacke.h>
+diff -crB idg-216e744/idg-bin/examples/cxx/distributed/common/common.h idg-216e744.new/idg-bin/examples/cxx/distributed/common/common.h
+*** idg-216e744/idg-bin/examples/cxx/distributed/common/common.h	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/idg-bin/examples/cxx/distributed/common/common.h	Sat Mar 28 00:25:32 2026
+***************
+*** 14,20 ****
+  #include <thread>
+  
+  #include <mpi.h>
+! #include <xtensor/xview.hpp>
+  
+  #include "idg-util.h"  // Data init routines
+  
+--- 14,20 ----
+  #include <thread>
+  
+  #include <mpi.h>
+! #include <xtensor/views/xview.hpp>
+  
+  #include "idg-util.h"  // Data init routines
+  
+diff -crB idg-216e744/idg-bin/tests/cxx/CPU/Reference/main.cpp idg-216e744.new/idg-bin/tests/cxx/CPU/Reference/main.cpp
+*** idg-216e744/idg-bin/tests/cxx/CPU/Reference/main.cpp	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/idg-bin/tests/cxx/CPU/Reference/main.cpp	Sat Mar 28 00:25:28 2026
+***************
+*** 1,7 ****
+  // Copyright (C) 2020 ASTRON (Netherlands Institute for Radio Astronomy)
+  // SPDX-License-Identifier: GPL-3.0-or-later
+  
+! #include <xtensor/xcomplex.hpp>
+  
+  #include "idg-cpu.h"   // Reference proxy
+  #include "idg-util.h"  // Data init routines
+--- 1,7 ----
+  // Copyright (C) 2020 ASTRON (Netherlands Institute for Radio Astronomy)
+  // SPDX-License-Identifier: GPL-3.0-or-later
+  
+! #include <xtensor/misc/xcomplex.hpp>
+  
+  #include "idg-cpu.h"   // Reference proxy
+  #include "idg-util.h"  // Data init routines
+diff -crB idg-216e744/idg-bin/tests/cxx/CUDA/Kernels/degridder.cpp idg-216e744.new/idg-bin/tests/cxx/CUDA/Kernels/degridder.cpp
+*** idg-216e744/idg-bin/tests/cxx/CUDA/Kernels/degridder.cpp	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/idg-bin/tests/cxx/CUDA/Kernels/degridder.cpp	Sat Mar 28 00:25:24 2026
+***************
+*** 2,9 ****
+  
+  #include <boost/test/unit_test.hpp>
+  #include <cudawrappers/cu.hpp>
+! #include <xtensor/xcomplex.hpp>
+! #include <xtensor/xrandom.hpp>
+  
+  #include "CPU/Optimized/OptimizedKernels.h"
+  #include "CUDA/common/InstanceCUDA.h"
+--- 2,9 ----
+  
+  #include <boost/test/unit_test.hpp>
+  #include <cudawrappers/cu.hpp>
+! #include <xtensor/misc/xcomplex.hpp>
+! #include <xtensor/generators/xrandom.hpp>
+  
+  #include "CPU/Optimized/OptimizedKernels.h"
+  #include "CUDA/common/InstanceCUDA.h"
+diff -crB idg-216e744/idg-bin/tests/cxx/CUDA/Kernels/fft.cpp idg-216e744.new/idg-bin/tests/cxx/CUDA/Kernels/fft.cpp
+*** idg-216e744/idg-bin/tests/cxx/CUDA/Kernels/fft.cpp	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/idg-bin/tests/cxx/CUDA/Kernels/fft.cpp	Sat Mar 28 00:25:21 2026
+***************
+*** 2,9 ****
+  
+  #include <boost/test/unit_test.hpp>
+  #include <cudawrappers/cu.hpp>
+! #include <xtensor/xcomplex.hpp>
+! #include <xtensor/xrandom.hpp>
+  
+  #include "CPU/Optimized/OptimizedKernels.h"
+  #include "CUDA/common/InstanceCUDA.h"
+--- 2,9 ----
+  
+  #include <boost/test/unit_test.hpp>
+  #include <cudawrappers/cu.hpp>
+! #include <xtensor/misc/xcomplex.hpp>
+! #include <xtensor/generators/xrandom.hpp>
+  
+  #include "CPU/Optimized/OptimizedKernels.h"
+  #include "CUDA/common/InstanceCUDA.h"
+diff -crB idg-216e744/idg-bin/tests/cxx/CUDA/Kernels/gridder.cpp idg-216e744.new/idg-bin/tests/cxx/CUDA/Kernels/gridder.cpp
+*** idg-216e744/idg-bin/tests/cxx/CUDA/Kernels/gridder.cpp	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/idg-bin/tests/cxx/CUDA/Kernels/gridder.cpp	Sat Mar 28 00:25:16 2026
+***************
+*** 2,8 ****
+  
+  #include <boost/test/unit_test.hpp>
+  #include <cudawrappers/cu.hpp>
+! #include <xtensor/xcomplex.hpp>
+  
+  #include "CPU/Optimized/OptimizedKernels.h"
+  #include "CUDA/common/InstanceCUDA.h"
+--- 2,8 ----
+  
+  #include <boost/test/unit_test.hpp>
+  #include <cudawrappers/cu.hpp>
+! #include <xtensor/misc/xcomplex.hpp>
+  
+  #include "CPU/Optimized/OptimizedKernels.h"
+  #include "CUDA/common/InstanceCUDA.h"
+diff -crB idg-216e744/idg-cal/calibration.cpp idg-216e744.new/idg-cal/calibration.cpp
+*** idg-216e744/idg-cal/calibration.cpp	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/idg-cal/calibration.cpp	Sat Mar 28 00:25:08 2026
+***************
+*** 6,13 ****
+  #include <xtensor-blas/xlinalg.hpp>
+  #include <xtensor-python/pyarray.hpp>
+  #include <xtensor-python/pytensor.hpp>
+! #include <xtensor/xview.hpp>
+! #include <xtensor/xio.hpp>
+  
+  #include <Dirac.h>
+  #undef complex
+--- 6,13 ----
+  #include <xtensor-blas/xlinalg.hpp>
+  #include <xtensor-python/pyarray.hpp>
+  #include <xtensor-python/pytensor.hpp>
+! #include <xtensor/views/xview.hpp>
+! #include <xtensor/io/xio.hpp>
+  
+  #include <Dirac.h>
+  #undef complex
+diff -crB idg-216e744/idg-lib/src/CPU/Optimized/kernels/KernelCalibrate.cpp idg-216e744.new/idg-lib/src/CPU/Optimized/kernels/KernelCalibrate.cpp
+*** idg-216e744/idg-lib/src/CPU/Optimized/kernels/KernelCalibrate.cpp	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/idg-lib/src/CPU/Optimized/kernels/KernelCalibrate.cpp	Sat Mar 28 00:26:58 2026
+***************
+*** 1,7 ****
+  // Copyright (C) 2020 ASTRON (Netherlands Institute for Radio Astronomy)
+  // SPDX-License-Identifier: GPL-3.0-or-later
+  
+! #include <xtensor/xtensor.hpp>
+  
+  #include "common/memory.h"
+  #include "common/Types.h"
+--- 1,7 ----
+  // Copyright (C) 2020 ASTRON (Netherlands Institute for Radio Astronomy)
+  // SPDX-License-Identifier: GPL-3.0-or-later
+  
+! #include <xtensor/containers/xtensor.hpp>
+  
+  #include "common/memory.h"
+  #include "common/Types.h"
+diff -crB idg-216e744/idg-lib/src/CPU/Optimized/kernels/KernelWtiling.cpp idg-216e744.new/idg-lib/src/CPU/Optimized/kernels/KernelWtiling.cpp
+*** idg-216e744/idg-lib/src/CPU/Optimized/kernels/KernelWtiling.cpp	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/idg-lib/src/CPU/Optimized/kernels/KernelWtiling.cpp	Sat Mar 28 00:28:37 2026
+***************
+*** 11,17 ****
+  #include <omp.h>
+  #include <fftw3.h>
+  
+! #include <xtensor/xtensor.hpp>
+  
+  #include "common/memory.h"
+  #include "common/Types.h"
+--- 11,17 ----
+  #include <omp.h>
+  #include <fftw3.h>
+  
+! #include <xtensor/containers/xtensor.hpp>
+  
+  #include "common/memory.h"
+  #include "common/Types.h"
+diff -crB idg-216e744/idg-lib/src/CPU/common/CPU.cpp idg-216e744.new/idg-lib/src/CPU/common/CPU.cpp
+*** idg-216e744/idg-lib/src/CPU/common/CPU.cpp	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/idg-lib/src/CPU/common/CPU.cpp	Sat Mar 28 00:24:09 2026
+***************
+*** 6,12 ****
+  #include <climits>
+  
+  #include <boost/math/special_functions/sinc.hpp>
+! #include <xtensor/xview.hpp>
+  
+  #include "common/Math.h"
+  
+--- 6,12 ----
+  #include <climits>
+  
+  #include <boost/math/special_functions/sinc.hpp>
+! #include <xtensor/views/xview.hpp>
+  
+  #include "common/Math.h"
+  
+diff -crB idg-216e744/idg-lib/src/common/KernelsInstance.cpp idg-216e744.new/idg-lib/src/common/KernelsInstance.cpp
+*** idg-216e744/idg-lib/src/common/KernelsInstance.cpp	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/idg-lib/src/common/KernelsInstance.cpp	Sat Mar 28 00:24:05 2026
+***************
+*** 6,12 ****
+  #include <cassert>
+  #include <csignal>
+  
+! #include <xtensor/xview.hpp>
+  
+  namespace idg::kernel {
+  
+--- 6,12 ----
+  #include <cassert>
+  #include <csignal>
+  
+! #include <xtensor/views/xview.hpp>
+  
+  namespace idg::kernel {
+  
+diff -crB idg-216e744/idg-lib/src/common/Plan.cpp idg-216e744.new/idg-lib/src/common/Plan.cpp
+*** idg-216e744/idg-lib/src/common/Plan.cpp	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/idg-lib/src/common/Plan.cpp	Sat Mar 28 00:24:01 2026
+***************
+*** 6,13 ****
+  #include <algorithm>  // max_element
+  #include <memory.h>   // memcpy
+  
+! #include <xtensor/xview.hpp>
+! #include <xtensor/xsort.hpp>
+  
+  #include "Plan.h"
+  #include "auxiliary.h"
+--- 6,13 ----
+  #include <algorithm>  // max_element
+  #include <memory.h>   // memcpy
+  
+! #include <xtensor/views/xview.hpp>
+! #include <xtensor/misc/xsort.hpp>
+  
+  #include "Plan.h"
+  #include "auxiliary.h"
+diff -crB idg-216e744/idg-util/src/initialize/init.cpp idg-216e744.new/idg-util/src/initialize/init.cpp
+*** idg-216e744/idg-util/src/initialize/init.cpp	Thu Jan  1 01:00:01 1970
+--- idg-216e744.new/idg-util/src/initialize/init.cpp	Sat Mar 28 00:23:56 2026
+***************
+*** 3,9 ****
+  
+  #include "init.h"
+  
+! #include <xtensor/xview.hpp>
+  namespace {
+  // Function to compute spheroidal.
+  // Based on libreSpheroidal function in CASA
+--- 3,9 ----
+  
+  #include "init.h"
+  
+! #include <xtensor/views/xview.hpp>
+  namespace {
+  // Function to compute spheroidal.
+  // Based on libreSpheroidal function in CASA
