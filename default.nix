@@ -29,6 +29,7 @@ let
     xtensor-fftw = pkgs.callPackage ./xtensor-fftw/default.nix {};
     everybeam = pkgs.callPackage ./everybeam/default.nix { inherit aocommon schaapcommon ska-sdp-func; };
     idg = pkgs.callPackage ./idg/default.nix { inherit aocommon schaapcommon; };
+    dysco = pkgs.callPackage ./dysco/default.nix { inherit casacore; };
   };
 
   py_astro_pkgs = rec {  
