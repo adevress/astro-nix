@@ -24,4 +24,4 @@ jobs:
         
         # Add nix to PATH
         echo "/nix/var/nix/profiles/default/bin" >> $GITHUB_PATH
-    - run: nix build -f ./ wsclean
+    - run: nix build --print-build-logs -f ./ wsclean
