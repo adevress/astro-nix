@@ -1,4 +1,8 @@
-{ stdenv, fetchurl, cfitsio }:
+{
+  stdenv,
+  fetchurl,
+  cfitsio,
+}:
 
 stdenv.mkDerivation rec {
   name = "wcstools";
@@ -14,7 +18,7 @@ stdenv.mkDerivation rec {
   installPhase = ''
     mkdir -p $out/bin
     install -m755 bin/* $out/bin/
-    
+
     mkdir -p $out/share/man/man1
     install -m644 man/man1/* $out/share/man/man1/
   '';

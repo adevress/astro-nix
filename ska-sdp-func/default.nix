@@ -1,4 +1,10 @@
-{ stdenv, python3Packages, fetchgit, cmake, boost }:
+{
+  stdenv,
+  python3Packages,
+  fetchgit,
+  cmake,
+  boost,
+}:
 
 stdenv.mkDerivation rec {
   pname = "ska-sdp-func";
@@ -11,12 +17,12 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ cmake ];
-  
+
   # dontUseCmakeConfigure = true;
-  
+
   propagatedBuildInputs = [
-    python3Packages.numpy 
-    python3Packages.pybind11 
+    python3Packages.numpy
+    python3Packages.pybind11
   ];
 
   # Configure for modern Python build system

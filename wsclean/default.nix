@@ -1,8 +1,26 @@
-{ stdenv, fetchgit, cmake, python3Packages, aocommon, boost, fftw, fftwFloat, gsl, cfitsio, hdf5, git, radler, schaapcommon, idg ? null, ska-sdp-func ? null, lib }:
+{
+  stdenv,
+  fetchgit,
+  cmake,
+  python3Packages,
+  aocommon,
+  boost,
+  fftw,
+  fftwFloat,
+  gsl,
+  cfitsio,
+  hdf5,
+  git,
+  radler,
+  schaapcommon,
+  idg ? null,
+  ska-sdp-func ? null,
+  lib,
+}:
 
 stdenv.mkDerivation rec {
   name = "wsclean";
-  version = "3.7-dev"; 
+  version = "3.7-dev";
 
   src = fetchgit {
     url = "https://gitlab.com/aroffringa/wsclean.git";
@@ -11,7 +29,10 @@ stdenv.mkDerivation rec {
     fetchSubmodules = false;
   };
 
-  nativeBuildInputs = [ cmake git ];
+  nativeBuildInputs = [
+    cmake
+    git
+  ];
   buildInputs = [
     python3Packages.python
     python3Packages.pybind11
@@ -35,7 +56,7 @@ stdenv.mkDerivation rec {
     rm -rf external/aocommon
     rm -rf external/radler
     rm -rf external/schaapcommon
-    
+
     # Create symlinks to our packaged versions
     mkdir -p external
     ln -s ${aocommon} external/aocommon
@@ -51,7 +72,11 @@ stdenv.mkDerivation rec {
     "-DAOCOMMON_INCLUDE_DIR=${aocommon}/include/"
     "-DSCHAAPCOMMON_SOURCE_DIR=${schaapcommon}"
     "-DBUILD_PACKAGES=OFF"
-  ] ++ lib.optionals (ska-sdp-func != null) [ "-DENABLE_WTOWERS=ON" "-DSKA_SDP_FUNC_INCLUDE_DIR=${ska-sdp-func}/include" ];
+  ]
+  ++ lib.optionals (ska-sdp-func != null) [
+    "-DENABLE_WTOWERS=ON"
+    "-DSKA_SDP_FUNC_INCLUDE_DIR=${ska-sdp-func}/include"
+  ];
 
   enableParallelBuilding = true;
 

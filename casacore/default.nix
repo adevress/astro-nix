@@ -1,4 +1,24 @@
-{ stdenv, fetchFromGitHub, cmake, gfortran, python3Packages, boost, hdf5, cfitsio, fftw, fftwFloat, openblas, readline, flex, bison, wcslib, zlib, gsl, pkg-config, lib }:
+{
+  stdenv,
+  fetchFromGitHub,
+  cmake,
+  gfortran,
+  python3Packages,
+  boost,
+  hdf5,
+  cfitsio,
+  fftw,
+  fftwFloat,
+  openblas,
+  readline,
+  flex,
+  bison,
+  wcslib,
+  zlib,
+  gsl,
+  pkg-config,
+  lib,
+}:
 
 stdenv.mkDerivation rec {
   name = "casacore";
@@ -11,8 +31,28 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-NOxuHMCuHGk9XuWXMwQTN6kOFDI0QuHMgfNRDdlPw44=";
   };
 
-  nativeBuildInputs = [ cmake python3Packages.python gfortran flex bison pkg-config ];
-  buildInputs = [ python3Packages.numpy python3Packages.boost boost hdf5 cfitsio fftw fftwFloat wcslib openblas readline gsl zlib ];
+  nativeBuildInputs = [
+    cmake
+    python3Packages.python
+    gfortran
+    flex
+    bison
+    pkg-config
+  ];
+  buildInputs = [
+    python3Packages.numpy
+    python3Packages.boost
+    boost
+    hdf5
+    cfitsio
+    fftw
+    fftwFloat
+    wcslib
+    openblas
+    readline
+    gsl
+    zlib
+  ];
 
   enableParallelBuilding = true;
 

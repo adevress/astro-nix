@@ -1,4 +1,17 @@
-{ stdenv, aocommon, fetchgit, boost, gsl, cmake, hdf5, fftw, fftwFloat, python3Packages, doxygen ? null, lib }:
+{
+  stdenv,
+  aocommon,
+  fetchgit,
+  boost,
+  gsl,
+  cmake,
+  hdf5,
+  fftw,
+  fftwFloat,
+  python3Packages,
+  doxygen ? null,
+  lib,
+}:
 
 stdenv.mkDerivation rec {
   name = "schaapcommon";
@@ -10,10 +23,22 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-usYXlhcVXFVOl6rN0FDvcUht6sjD2Xm4ccLwDiugA6o="; # TODO: update with correct hash
   };
 
-  patches = [ ./schapcommon-xtensor-path.patch ./schapcommon-dep-reso.patch ];
+  patches = [
+    ./schapcommon-xtensor-path.patch
+    ./schapcommon-dep-reso.patch
+  ];
 
   nativeBuildInputs = [ cmake ];
-  buildInputs = [ hdf5 fftw fftwFloat boost gsl python3Packages.python python3Packages.pybind11 ] ++ (if doxygen != null then [ doxygen ] else []);
+  buildInputs = [
+    hdf5
+    fftw
+    fftwFloat
+    boost
+    gsl
+    python3Packages.python
+    python3Packages.pybind11
+  ]
+  ++ (if doxygen != null then [ doxygen ] else [ ]);
   propagatedBuildInputs = [ aocommon ];
 
   cmakeFlags = [

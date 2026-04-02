@@ -1,4 +1,23 @@
-{ stdenv, fetchgit, cmake, python3Packages, boost, fftw, fftwFloat, gsl, cfitsio, hdf5, hdf5-cpp, git, aocommon, xtensor-blas, schaapcommon, ska-sdp-func, lib, wget }:
+{
+  stdenv,
+  fetchgit,
+  cmake,
+  python3Packages,
+  boost,
+  fftw,
+  fftwFloat,
+  gsl,
+  cfitsio,
+  hdf5,
+  hdf5-cpp,
+  git,
+  aocommon,
+  xtensor-blas,
+  schaapcommon,
+  ska-sdp-func,
+  lib,
+  wget,
+}:
 
 stdenv.mkDerivation rec {
   name = "everybeam";
@@ -11,7 +30,12 @@ stdenv.mkDerivation rec {
     fetchSubmodules = false;
   };
 
-  nativeBuildInputs = [ cmake git python3Packages.pybind11 wget ];
+  nativeBuildInputs = [
+    cmake
+    git
+    python3Packages.pybind11
+    wget
+  ];
   buildInputs = [
     python3Packages.python
     boost
@@ -31,7 +55,7 @@ stdenv.mkDerivation rec {
   postPatch = ''
     rm -rf external/aocommon
     rm -rf external/schaapcommon
-    
+
     # Create symlinks to our packaged versions
     mkdir -p external
     ln -s ${aocommon} external/aocommon
@@ -41,8 +65,8 @@ stdenv.mkDerivation rec {
   cmakeFlags = [
     "-DEVERYBEAM_DEPENDENCIES_VENDORING=OFF"
     "-DGIT_SUBMODULE=OFF"
-    "-DCOMPILE_AS_EXTERNAL_PROJECT=ON" # required for schaapcommon    
-    "-DAOCOMMON_INCLUDE_DIR=${aocommon}/include/" # required for schaapcommon    
+    "-DCOMPILE_AS_EXTERNAL_PROJECT=ON" # required for schaapcommon
+    "-DAOCOMMON_INCLUDE_DIR=${aocommon}/include/" # required for schaapcommon
     "-DFETCHCONTENT_FULLY_DISCONNECTED=TRUE"
     "-DBUILD_WITH_PYTHON=OFF"
     "-DBUILD_TESTING=ON"

@@ -1,4 +1,9 @@
-{ stdenv, fetchurl, cfitsio, lib }:
+{
+  stdenv,
+  fetchurl,
+  cfitsio,
+  lib,
+}:
 
 stdenv.mkDerivation rec {
   name = "wcslib-8.5";

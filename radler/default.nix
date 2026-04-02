@@ -1,7 +1,25 @@
-{ stdenv, fetchgit, cfitsio, cmake, ninja, aocommon, schaapcommon, casacore, hdf5, boost, fftw, fftwFloat, gsl, python3Packages, doxygen ? null, pythonBuild ? false, lib }:
+{
+  stdenv,
+  fetchgit,
+  cfitsio,
+  cmake,
+  ninja,
+  aocommon,
+  schaapcommon,
+  casacore,
+  hdf5,
+  boost,
+  fftw,
+  fftwFloat,
+  gsl,
+  python3Packages,
+  doxygen ? null,
+  pythonBuild ? false,
+  lib,
+}:
 
-let 
-   builder = if pythonBuild then python3Packages.buildPythonPackage else stdenv.mkDerivation;
+let
+  builder = if pythonBuild then python3Packages.buildPythonPackage else stdenv.mkDerivation;
 
 in
 builder rec {
@@ -15,15 +33,35 @@ builder rec {
     fetchSubmodules = false;
   };
 
-  patches = [ ./001-pybind-version-fix.patch  ./radler-set-cpu-flag.patch ];
+  patches = [
+    ./001-pybind-version-fix.patch
+    ./radler-set-cpu-flag.patch
+  ];
 
-  nativeBuildInputs = [ cmake ninja ];
-  buildInputs = [ schaapcommon casacore cfitsio boost hdf5 fftw fftwFloat gsl python3Packages.python python3Packages.pybind11 ] 
-  ++ (if doxygen != null then [ doxygen ] else []); 
+  nativeBuildInputs = [
+    cmake
+    ninja
+  ];
+  buildInputs = [
+    schaapcommon
+    casacore
+    cfitsio
+    boost
+    hdf5
+    fftw
+    fftwFloat
+    gsl
+    python3Packages.python
+    python3Packages.pybind11
+  ]
+  ++ (if doxygen != null then [ doxygen ] else [ ]);
 
-  dependencies = (lib.optionals) (pythonBuild) [ python3Packages.numpy python3Packages.astropy ];
+  dependencies = (lib.optionals) (pythonBuild) [
+    python3Packages.numpy
+    python3Packages.astropy
+  ];
 
-  build-system = lib.optionals (pythonBuild) [ python3Packages.scikit-build-core ];  
+  build-system = lib.optionals (pythonBuild) [ python3Packages.scikit-build-core ];
 
   dontUseCmakeConfigure = pythonBuild;
 

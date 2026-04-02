@@ -1,8 +1,16 @@
-{ stdenv, fetchFromGitHub, cmake, casacore, gsl, boost, lib }:
+{
+  stdenv,
+  fetchFromGitHub,
+  cmake,
+  casacore,
+  gsl,
+  boost,
+  lib,
+}:
 
 stdenv.mkDerivation rec {
   name = "dysco";
-  version = "2024-03-29";  # Using date as version since no tagged releases
+  version = "2024-03-29"; # Using date as version since no tagged releases
 
   src = fetchFromGitHub {
     owner = "aroffringa";
@@ -12,7 +20,11 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ cmake ];
-  buildInputs = [ casacore gsl boost ];
+  buildInputs = [
+    casacore
+    gsl
+    boost
+  ];
 
   cmakeFlags = [
     "-DPORTABLE=ON"
@@ -24,7 +36,7 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     description = "Dysco - A compressing storage manager for Casacore measurement sets";
     homepage = "https://github.com/aroffringa/dysco";
-    license = licenses.gpl3;  # Based on the LICENSE file in the repo
+    license = licenses.gpl3; # Based on the LICENSE file in the repo
     maintainers = with maintainers; [ ];
   };
 }

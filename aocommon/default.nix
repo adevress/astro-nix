@@ -1,8 +1,21 @@
-{ stdenv, fetchgit, cmake, pkg-config, xtensor, boost, casacore, openblas, hdf5, cfitsio, doxygen ? null, lib }:
+{
+  stdenv,
+  fetchgit,
+  cmake,
+  pkg-config,
+  xtensor,
+  boost,
+  casacore,
+  openblas,
+  hdf5,
+  cfitsio,
+  doxygen ? null,
+  lib,
+}:
 
 stdenv.mkDerivation rec {
   name = "aocommon";
-  version = "dev"; 
+  version = "dev";
 
   src = fetchgit {
     url = "https://gitlab.com/aroffringa/aocommon.git";
@@ -10,9 +23,22 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-u+1boSpVSugcFgXQzG+zJNo2KgZSFh5zLSRWUTlEhQs=";
   };
 
-  nativeBuildInputs = [ cmake pkg-config ];
-  buildInputs = [ cfitsio casacore  boost hdf5 ] ++ (if doxygen != null then [ doxygen ] else []);
-  propagatedBuildInputs = [ xtensor openblas casacore ];
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+  buildInputs = [
+    cfitsio
+    casacore
+    boost
+    hdf5
+  ]
+  ++ (if doxygen != null then [ doxygen ] else [ ]);
+  propagatedBuildInputs = [
+    xtensor
+    openblas
+    casacore
+  ];
 
   cmakeFlags = [
     "-DFETCHCONTENT_FULLY_DISCONNECTED=TRUE"

@@ -1,4 +1,15 @@
-{ stdenv, fetchgit, pkg-config, cmake, fftw, fftwFloat, fftwLongDouble, gtest, xtensor, lib }:
+{
+  stdenv,
+  fetchgit,
+  pkg-config,
+  cmake,
+  fftw,
+  fftwFloat,
+  fftwLongDouble,
+  gtest,
+  xtensor,
+  lib,
+}:
 
 stdenv.mkDerivation rec {
   name = "xtensor-fftw";
@@ -10,8 +21,16 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-OWzJBqtoT3DykrkKfv8MS79fma+PNnLnBV1fXARrKho=";
   };
 
-  nativeBuildInputs = [ cmake pkg-config ];
-  buildInputs = [ gtest fftw fftwFloat fftwLongDouble ];
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+  buildInputs = [
+    gtest
+    fftw
+    fftwFloat
+    fftwLongDouble
+  ];
   propagatedBuildInputs = [ xtensor ];
 
   patchPhase = ''

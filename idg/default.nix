@@ -1,4 +1,22 @@
-{ stdenv, fetchgit, cmake, ninja, pkg-config, aocommon, schaapcommon, xtensor, boost, fftw, fftwFloat, gsl, cfitsio, hdf5, hdf5-cpp, python3Packages, lib }:
+{
+  stdenv,
+  fetchgit,
+  cmake,
+  ninja,
+  pkg-config,
+  aocommon,
+  schaapcommon,
+  xtensor,
+  boost,
+  fftw,
+  fftwFloat,
+  gsl,
+  cfitsio,
+  hdf5,
+  hdf5-cpp,
+  python3Packages,
+  lib,
+}:
 
 stdenv.mkDerivation rec {
   name = "idg";
@@ -11,7 +29,11 @@ stdenv.mkDerivation rec {
     fetchSubmodules = false;
   };
 
-  nativeBuildInputs = [ cmake ninja pkg-config ];
+  nativeBuildInputs = [
+    cmake
+    ninja
+    pkg-config
+  ];
   buildInputs = [
     aocommon
     schaapcommon
@@ -34,7 +56,7 @@ stdenv.mkDerivation rec {
     rm -rf external/aocommon
     rm -rf external/pybind11
     rm -rf external/schaap-packaging
-    
+
     # Create symlinks to our packaged versions
     mkdir -p external
     ln -s ${aocommon} external/aocommon
