@@ -47,6 +47,24 @@ wsclean
 
 ```
 
+### Usage example III: Python environment for radio astronomy
+
+Get a python environment with:
+- astropy
+- radler
+- numpy
+- scipy
+- matplotlib 
+
+```bash
+# download, (compile), install wsclean and get a shell
+nix shell -f ./  astroPyEnv --command python
+# execute your command
+import astropy
+
+```
+
+
 
 ## Tests and support
 
