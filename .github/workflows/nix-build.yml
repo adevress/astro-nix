@@ -1,0 +1,27 @@
+name: Nix Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Nix with root procedure
+      run: |
+        # Get installer
+        curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install -o /tmp/nix_installer.sh
+        chmod 755 /tmp/nix_installer.sh
+        # Install Nix using the root procedure
+        sudo sh /tmp/nix_installer.sh --daemon
+        
+        # Enable flakes and nix-command
+        sudo ./scripts/nix-command-edit.sh
+        
+        # Add nix to PATH
+        echo "/nix/var/nix/profiles/default/bin" >> $GITHUB_PATH
+    - run: nix build -f ./ wsclean
