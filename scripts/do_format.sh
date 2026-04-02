@@ -1,5 +1,7 @@
 #!/bin/bash
 
 
-nix shell -f ./ nixfmt --command find . -type f | grep "\.nix$" | xargs -P 16 -I {}  nixfmt {}
+COMMAND="find . -type f | grep '\.nix$' | xargs -P 16 -I {}  nixfmt {}"
+
+nix shell -f ./ nixfmt --command bash -c "${COMMAND}"
  
