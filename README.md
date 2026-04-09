@@ -20,7 +20,12 @@ Collection of Nix recipe for Astronomy & Radio-Astronomy usage
           ```bash
           sudo ./scripts/nix-command-edit.sh
           ```
-    
+
+   2.3 - Restart the nix daemon
+        ```bash
+          systemctl restart nix-daemon
+        ```
+
  - **Case 2**: You do not have root access (e.g HPC cluster)
 
    2.1 Follow [these instructions](./doc/rootless-nix.md)
