@@ -12,17 +12,17 @@ Collection of Nix recipe for Astronomy & Radio-Astronomy usage
  - **Case 1**: You do have root access on your machine (preferred method)
 
    2.1 - Install Nix in daemon mode with this command
-          ```bash
+          ```
           sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
           ```
 
    2.2 - Apply the project configuration with 
-          ```bash
+          ```
           sudo ./scripts/nix-command-edit.sh
           ```
 
    2.3 - Restart the nix daemon
-        ```bash
+        ```
           systemctl restart nix-daemon
         ```
 
