@@ -1,0 +1,7 @@
+
+
+export ASTRO_NIX_CACHE="https://cache.astro-nix.space/"
+
+export ASTRO_NIX_PUB_KEY="astro-nix-secret:QASg0gb6rH/PxxthSsoGvw739dyKwEIVnhhhD7wA02A="
+
+

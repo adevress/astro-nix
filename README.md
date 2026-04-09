@@ -11,10 +11,12 @@ Collection of Nix recipe for Astronomy & Radio-Astronomy usage
 
  - **Case 1**: You do have root access on your machine
 
-   2.1 - Follow [these instructions](https://nixos.org/download/#download-nix)
+   2.1 - Install Nix in daemon mode with this command: 
+          `sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon`
 
-   2.2 - enable flake and nix-command. You can do it with `sudo ./scripts/nix-command-edit.sh`
-    
+   2.2 - Apply the project configuration with `sudo ./scripts/nix-command-edit.sh`
+
+   2.3 - Restart your shell  
     
  - **Case 2**: You do not have root access (e.g HPC cluster)
 
@@ -61,7 +63,7 @@ Get a python environment with:
 nix shell -f ./  astroPyEnv --command python
 # execute your command
 import astropy
-
+...
 ```
 
 

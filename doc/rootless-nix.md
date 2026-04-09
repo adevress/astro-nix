@@ -21,8 +21,8 @@ Tip: If you are in an HPC system, put the software directory in your project dir
      Try to avoid to put it on slow filesystem like NFS.
 
 ```bash
+# This directory prefix will be where all nix software will be installed
 MY_SOFTWARE_STORE=/path/to/your/software/dir
-
 
 mkdir -p ${MY_SOFTWARE_STORE}
 
@@ -47,6 +47,8 @@ cat > ~/.config/nix/nix.conf << EOF
 store = ${NIX_USER_ROOT_STORE}
 extra-experimental-features = flakes nix-command
 ssl-cert-file = /etc/ssl/ca-bundle.pem
+extra-substituters = https://cache.astro-nix.space/
+extra-trusted-public-keys = astro-nix-secret:QASg0gb6rH/PxxthSsoGvw739dyKwEIVnhhhD7wA02A= 
 EOF  
 
 ```
