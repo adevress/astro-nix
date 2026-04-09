@@ -4,13 +4,15 @@
 
 Collection of Nix recipes for Astronomy & Radio-Astronomy usage
 
-## Usage
+
+## Nix installation
 
 1. Clone this repository
 
 2. Install Nix
 
-### Case 1: You have root access on your machine (preferred method)
+
+2.a. Case 1: You have root access on your machine (preferred method)
 
 2.1. Install Nix in daemon mode with this command:
 
@@ -30,13 +32,17 @@ sudo ./scripts/nix-command-edit.sh
 sudo systemctl restart nix-daemon
 ```
 
-### Case 2: You do not have root access (e.g., HPC cluster)
 
-2.1. Follow [these instructions](./doc/rootless-nix.md)
+2.b. Case 2: You do not have root access (e.g., HPC cluster)
+
+2.1. Follow [these instructions](./doc/rootless-nix.md) 
+
 
 3. Open a new terminal or refresh your shell
 
 4. Use it!
+
+## Usage
 
 ### Usage example I: casacore
 
