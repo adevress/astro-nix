@@ -1,0 +1,10 @@
+{
+	"default" : [
+			"openblasSingleThreaded", 
+			"wsclean", 
+			"python3Packages.radler",
+			"casacore",
+			"dysco",
+			"astroPyEnv"
+			] 
+}

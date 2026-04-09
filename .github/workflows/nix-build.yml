@@ -19,9 +19,25 @@ jobs:
         # Install Nix using the root procedure
         sudo sh /tmp/nix_installer.sh --daemon
         
-        # Enable flakes and nix-command
+        # Enable flakes and nix-command and caches
         sudo ./scripts/nix-command-edit.sh
         
         # Add nix to PATH
         echo "/nix/var/nix/profiles/default/bin" >> $GITHUB_PATH
-    - run: nix build --print-build-logs -f ./ wsclean
+
+        # reboot the daemon
+        sudo systemctl restart nix-daemon
+    - name: Build registered derivations
+      shell: bash
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        NIX_SIGN_KEY: ${{ secrets.NIX_SIGN_KEY }}
+      run: |
+        # build everything
+        source ./ci/ci_build.sh
+        echo " test ${{ secrets.NIX_SIGN_KEY }}" 
+        build_all_derivation
+
+
+
