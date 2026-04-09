@@ -88,11 +88,12 @@ Tested on:
 
 - Linux Desktop/Laptop (Ubuntu; Intel CPU; x86_64; root)
 - EPFL Kuma (Red Hat; AMD + GPU Nvidia; x86_64; rootless)
-- CSCS Daint (Red Hat; Grace + Hopper GPU; AArch64; rootless)
-- EPFL Manticore (Ubuntu; Grace + Hopper GPU; AArch64; rootless)
+- CSCS Daint (Red Hat; Grace + Hopper GPU; aarch64; rootless)
+- EPFL Manticore (Ubuntu; Grace + Hopper GPU; aarch64; rootless)
 
 ## Binary support
 
 Astro-Nix allows installation from precompiled binary if you are on the following platforms:
 
 - Linux, x86_64
+- Linux, aarch64
