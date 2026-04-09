@@ -9,21 +9,25 @@ Collection of Nix recipe for Astronomy & Radio-Astronomy usage
 
 2- Install Nix 
 
- - **Case 1**: You do have root access on your machine
+ - **Case 1**: You do have root access on your machine (preferred method)
 
-   2.1 - Install Nix in daemon mode with this command: 
-          `sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon`
+   2.1 - Install Nix in daemon mode with this command
+          ```bash
+          sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
+          ```
 
-   2.2 - Apply the project configuration with `sudo ./scripts/nix-command-edit.sh`
-
-   2.3 - Restart your shell  
+   2.2 - Apply the project configuration with 
+          ```bash
+          sudo ./scripts/nix-command-edit.sh
+          ```
     
  - **Case 2**: You do not have root access (e.g HPC cluster)
 
    2.1 Follow [these instructions](./doc/rootless-nix.md)
 
+3- Open a new terminal or refresh your shell
 
-3- Use it !
+4- Use it !
 
 
 ### Usage example I: casacore
