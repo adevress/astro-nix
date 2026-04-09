@@ -27,7 +27,7 @@ push_to_s3_cache() {
     local derivation_name="$1"
     local s3_cache_url="$2"
     echo "Pushing derivation to S3 cache: ${derivation_name}"
-    nix copy -f "${ASTRO_NIX_SRC_DIR}" --to "${s3_cache_url}"  "${derivation_name}" -v
+    nix copy -f "${ASTRO_NIX_SRC_DIR}" --to "${s3_cache_url}"  "${derivation_name}"
     if [ $? -eq 0 ]; then
         echo "Push successful for ${derivation_name}"
     else
@@ -78,8 +78,6 @@ EOF
     
     # Set appropriate permissions (600 = owner read/write only)
     chmod 600 "${HOME}/.nix/keys/astro-nix.key"
-    
-    echo "test $(cat ${HOME}/.nix/keys/astro-nix.key)"
     echo "NIX_SIGN_KEY has been set up successfully."
 }
 
