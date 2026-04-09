@@ -12,16 +12,19 @@ Collection of Nix recipe for Astronomy & Radio-Astronomy usage
  - **Case 1**: You do have root access on your machine (preferred method)
 
    2.1 - Install Nix in daemon mode with this command
+
           ```
           sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
           ```
 
    2.2 - Apply the project configuration with 
+
           ```
           sudo ./scripts/nix-command-edit.sh
           ```
 
    2.3 - Restart the nix daemon
+   
         ```
           sudo systemctl restart nix-daemon
         ```
@@ -91,3 +94,4 @@ Tested on:
 Astro nix allows installation from precompiled binary if you are on the following platforms:
 
 - Linux, x86_64
+
