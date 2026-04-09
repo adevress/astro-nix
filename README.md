@@ -23,7 +23,7 @@ Collection of Nix recipe for Astronomy & Radio-Astronomy usage
 
    2.3 - Restart the nix daemon
         ```
-          systemctl restart nix-daemon
+          sudo systemctl restart nix-daemon
         ```
 
  - **Case 2**: You do not have root access (e.g HPC cluster)
@@ -55,7 +55,6 @@ Install and run wsclean
 nix shell -f ./  wsclean --command bash
 # execute it
 wsclean
-
 ```
 
 ### Usage example III: Python environment for radio astronomy
@@ -84,9 +83,11 @@ Tested on:
 - Linux Desktop/Laptop (Ubuntu; Intel CPU; x86_64; root)
 - EPFL Kuma (Red hat; AMD + GPU Nvidia; x86_64; rootless)
 - CSCS Daint (Red hat; Grace + Hopper GPU; Aarch64; rootless)
-- EPFL Manticore (ubuntu; Grace + Hopper GPU; Aarch64; rootless) 
+- EPFL Manticore (Ubuntu; Grace + Hopper GPU; Aarch64; rootless) 
 
 
 ## Binary support
 
-It is technically doable to support binary shipping for this repository. But not done yet
+Astro nix allows installation from precompiled binary if you are on the following platforms:
+
+- Linux, x86_64
