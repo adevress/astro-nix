@@ -1,6 +1,6 @@
 {
 	"default" : [
-			"openblasSingleThreaded", 
+			"openblasSingleThreaded.all", 
 			"wsclean", 
 			"python3Packages.radler",
 			"casacore",
