@@ -5,6 +5,7 @@
 			"python3Packages.radler",
 			"casacore",
 			"dysco",
+			"oskar",
 			"astroPyEnv"
 			] 
 }
