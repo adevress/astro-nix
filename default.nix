@@ -40,7 +40,11 @@ let
     };
     idg = pkgs.callPackage ./idg/default.nix { inherit aocommon schaapcommon; };
     dysco = pkgs.callPackage ./dysco/default.nix { inherit casacore; };
-    oskar = pkgs.callPackage ./oskar/default.nix { inherit ska-sdp-func; };
+    oskar = pkgs.callPackage ./oskar/default.nix { inherit ska-sdp-func casacore; };
+    oskarWithGUI = pkgs.libsForQt5.callPackage ./oskar/default.nix {
+      withGUI = true;
+      inherit casacore ska-sdp-func;
+    };
   };
 
   py_astro_pkgs = rec {

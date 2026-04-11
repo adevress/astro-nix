@@ -3,12 +3,18 @@
   fetchFromGitHub,
   cmake,
   hdf5,
+  casacore,
   ska-sdp-func,
-  lib,
   python3Packages,
   boost,
   fftw,
   zlib,
+  ocl-icd,
+  wrapQtAppsHook ? null,
+  qtbase ? null,
+  withOpenCL ? false,
+  withGUI ? false,
+  lib,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,30 +30,33 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     cmake
-    python3Packages.python
+    wrapQtAppsHook
   ];
+
   buildInputs = [
+    casacore
     hdf5
     ska-sdp-func
     boost
     fftw
     zlib
-    python3Packages.numpy
-    python3Packages.scipy
-  ];
+  ]
+  ++ (lib.optionals) (withOpenCL) [ ocl-icd ]
+  ++ (lib.optionals) (withGUI) [ qtbase ];
 
   enableParallelBuilding = true;
 
   cmakeFlags = [
     "-DOSKAR_BUILD_APPS=ON"
-    "-DOSKAR_BUILD_PYTHON=ON"
-    "-DOSKAR_BUILD_GUI=OFF" # Disable GUI to avoid X11 dependencies
     "-DOSKAR_BUILD_DOCS=OFF"
-    "-DOSKAR_BUILD_TESTS=OFF"
-    "-DCMAKE_BUILD_TYPE=Release"
-    "-DFIND_CUDA=OFF" # Disable CUDA support
-    "-DFIND_OPENCL=OFF" # Disable OpenCL support
+    "-DOSKAR_BUILD_TESTS=ON"
+    "-DBUILD_TESTING=TRUE"
+    "-DFIND_CUDA=OFF" # Disable CUDA support for now
+    "-DFIND_OPENCL=${if (withOpenCL) then "ON" else "OFF"}"
+    "-DOSKAR_BUILD_GUI=${if (withGUI) then "ON" else "OFF"}" # Disable GUI to avoid X11 dependencies
   ];
+
+  doCheck = (withOpenCL == false); # Can not expect a GPU in the CI environment
 
   # OSKAR needs some environment variables for runtime
   propagateBuildInputs = [
