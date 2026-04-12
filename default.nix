@@ -45,6 +45,7 @@ let
       withGUI = true;
       inherit casacore ska-sdp-func;
     };
+    ds9 = pkgs.callPackage ./ds9/default.nix { };
   };
 
   py_astro_pkgs = rec {
