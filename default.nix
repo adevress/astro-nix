@@ -57,6 +57,8 @@ let
       python3Packages.radler
       ps.scipy
       ps.numpy
+      ps.dask
+      ps.xarray
       ps.matplotlib
       ps.astropy
     ]);
