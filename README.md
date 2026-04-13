@@ -44,7 +44,7 @@ sudo systemctl restart nix-daemon
 
 ## Usage
 
-### Usage example I: casacore
+### Example I: casacore
 
 Install and run casacore:
 
@@ -55,7 +55,7 @@ nix shell -f ./ casacore --command bash
 readms
 ```
 
-### Usage example II: wsclean
+### Example II: wsclean
 
 Install and run wsclean:
 
@@ -66,7 +66,7 @@ nix shell -f ./ wsclean --command bash
 wsclean
 ```
 
-### Usage example III: Python environment for radio astronomy
+### Example III: Python environment for radio astronomy
 
 Get a Python environment with:
 - astropy
@@ -78,6 +78,15 @@ Get a Python environment with:
 ```bash
 # download, (compile), install astroPyEnv and get a shell
 nix shell -f ./ astroPyEnv --command bash
+# execute your command
+python -c "import astropy; print('Success!')"
+```
+
+### Example IV: Use ds9 for image vizualization
+
+```bash
+# download, (compile), install astroPyEnv and get a shell
+nix run -f ./ ds9
 # execute your command
 python -c "import astropy; print('Success!')"
 ```
