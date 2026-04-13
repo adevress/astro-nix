@@ -6,6 +6,7 @@
 			"casacore",
 			"dysco",
 			"oskar",
+			"ds9",
 			"astroPyEnv"
 			] 
 }
