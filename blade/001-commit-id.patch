@@ -1,0 +1,32 @@
+diff -crB source/meson.build source.new/meson.build
+*** source/meson.build	1970-01-01 01:00:01.000000000 +0100
+--- source.new/meson.build	2026-04-14 18:44:09.042529115 +0200
+***************
+*** 15,21 ****
+  
+  cfg_lst = configuration_data(
+      {
+!         'commit': run_command('git', 'describe', '--always', '--dirty', '--abbrev=9', check: true).stdout().strip()
+      }
+  )
+  src_lst = []
+--- 15,21 ----
+  
+  cfg_lst = configuration_data(
+      {
+!         'commit': 'dev' # run_command('git', 'describe', '--always', '--dirty', '--abbrev=9', check: true).stdout().strip()
+      }
+  )
+  src_lst = []
+***************
+*** 69,72 ****
+      'buildtype': get_option('buildtype'),
+      'static library': is_static,
+      'python bindings': py.found(),
+! }, section: 'General', bool_yn: true)
+\ No newline at end of file
+--- 69,72 ----
+      'buildtype': get_option('buildtype'),
+      'static library': is_static,
+      'python bindings': py.found(),
+! }, section: 'General', bool_yn: true)
