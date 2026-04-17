@@ -49,6 +49,7 @@ extra-experimental-features = flakes nix-command
 ssl-cert-file = /etc/ssl/ca-bundle.pem
 extra-substituters = https://cache.astro-nix.space/
 extra-trusted-public-keys = astro-nix-secret:QASg0gb6rH/PxxthSsoGvw739dyKwEIVnhhhD7wA02A= 
+ignored-acls =  lustre.lov
 EOF  
 
 ```
