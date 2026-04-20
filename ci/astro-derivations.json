@@ -1,7 +1,8 @@
 {
 	"default" : [
 			"openblasSingleThreaded.all", 
-			"wsclean", 
+			"wsclean",
+		        "aoflagger",	
 			"python3Packages.radler",
 			"casacore",
 			"dysco",
