@@ -45,7 +45,7 @@ let
       withGUI = true;
       inherit casacore ska-sdp-func;
     };
-    aoflagger = pkgs.callPackage ./aoflagger/default.nix { inherit aocommon casacore; };
+    aoflagger = pkgs.callPackage ./aoflagger/default.nix { inherit aocommon; };
     ds9 = pkgs.callPackage ./ds9/default.nix { };
   };
 
