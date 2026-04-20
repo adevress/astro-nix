@@ -5,13 +5,11 @@
   cmake,
   pkg-config,
   boost,
-  casacore,
   cfitsio,
   fftw,
   gsl,
   hdf5,
   lua54Packages,
-  openblas,
   libpng,
   python3Packages,
   libsigcxx,
@@ -24,24 +22,23 @@ stdenv.mkDerivation rec {
 
   src = fetchgit {
     url = "https://gitlab.com/aroffringa/aoflagger.git";
-    rev = "c868186168392666a097bdf67a97757a947d7c54"; # Using specific commit
+    rev = "c868186168392666a097bdf67a97757a947d7c54"; # main the 20/04/2026
     sha256 = "sha256-TXAvr9YXfDa56LYnk2n3zYwzFdAYw1IPWWLZ/etK8c0=";
-    fetchSubmodules = false; # We'll handle aocommon separately
+    fetchSubmodules = false; # disable submodules
   };
 
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     boost
-    casacore
     cfitsio
     fftw
     gsl
     hdf5
     lua54Packages.lua
-    openblas
     libpng
     python3Packages.python
     python3Packages.pybind11
