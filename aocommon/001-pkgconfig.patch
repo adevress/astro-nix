@@ -1,0 +1,126 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 969392c..b2593d3 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2,12 +2,23 @@
+ # 'add_compile_definitions' in FetchXTensor.cmake requires CMake 3.12.
+ cmake_minimum_required(VERSION 3.12)
+ 
++
++set(AOCOMMON_VERSION "dev"
++    CACHE STRING
++    "aocommon version string"
++)
+ project(aocommon LANGUAGES CXX)
+ 
+ set(CMAKE_CXX_STANDARD 20)
+ set(CMAKE_CXX_STANDARD_REQUIRED YES)
+ set(CMAKE_CXX_EXTENSIONS OFF)
+ 
++# Define aocommon version string
++
++# Option to enable installation of aocommon headers
++option(AOCOMMON_INSTALL "Enable installation of aocommon headers and pkgconfig file" OFF)
++
++
+ add_compile_options(
+   -O3
+   -Wall
+@@ -117,3 +128,43 @@ add_custom_target(
+ # CMAKE_CXX_FLAGS does not contain all flags.
+ # For example, CMake derives C++ version flags from CMAKE_CXX_STANDARD etc.
+ message(STATUS "Flags passed to C++ compiler (incomplete): " ${CMAKE_CXX_FLAGS})
++
++# Installation phase for aocommon headers
++if(AOCOMMON_INSTALL)
++  include(GNUInstallDirs)
++  message(STATUS "Installation of aocommon headers enabled")
++  
++  # Install all header files
++  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
++          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++          FILES_MATCHING
++          PATTERN "*.h")
++  
++  # Generate and install pkgconfig files
++  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dist/pkgconfig/aocommon.pc.in
++                ${CMAKE_CURRENT_BINARY_DIR}/aocommon.pc @ONLY)
++
++  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dist/pkgconfig/aocommon-xt.pc.in
++                ${CMAKE_CURRENT_BINARY_DIR}/aocommon-xt.pc @ONLY)
++  
++  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dist/pkgconfig/aocommon-fits.pc.in
++                ${CMAKE_CURRENT_BINARY_DIR}/aocommon-fits.pc @ONLY)
++  
++ 
++  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/aocommon.pc
++	  ${CMAKE_CURRENT_BINARY_DIR}/aocommon-xt.pc
++	  ${CMAKE_CURRENT_BINARY_DIR}/aocommon-fits.pc
++          DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
++  
++  # Install CMake helper files and associated CPP file
++  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/CMake/CheckBLAS.cmake
++                ${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetTargetCPU.cmake
++                ${CMAKE_CURRENT_SOURCE_DIR}/CMake/checkblas.cpp
++          DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/aocommon)
++  
++  message(STATUS "aocommon headers will be installed to: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
++  message(STATUS "aocommon pkgconfig file will be installed to: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pkgconfig")
++  message(STATUS "aocommon CMake helper files will be installed to: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/cmake/aocommon")
++else()
++  message(STATUS "Installation of aocommon headers disabled (set AOCOMMON_INSTALL=ON to enable)")
++endif()
+diff --git a/dist/pkgconfig/aocommon-fits.pc.in b/dist/pkgconfig/aocommon-fits.pc.in
+new file mode 100644
+index 0000000..e1d8891
+--- /dev/null
++++ b/dist/pkgconfig/aocommon-fits.pc.in
+@@ -0,0 +1,12 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++exec_prefix=@CMAKE_INSTALL_PREFIX@
++libdir=@CMAKE_INSTALL_FULL_LIBDIR@
++includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
++datadir=@CMAKE_INSTALL_FULL_DATADIR@
++
++
++Name: aocommon-fits
++Version:  @AOCOMMON_VERSION@
++Description: AOCommon library - Variant with FITS IO support
++Requires: aocommon casacore
++
+diff --git a/dist/pkgconfig/aocommon-xt.pc.in b/dist/pkgconfig/aocommon-xt.pc.in
+new file mode 100644
+index 0000000..7b82027
+--- /dev/null
++++ b/dist/pkgconfig/aocommon-xt.pc.in
+@@ -0,0 +1,12 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++exec_prefix=@CMAKE_INSTALL_PREFIX@
++libdir=@CMAKE_INSTALL_FULL_LIBDIR@
++includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
++datadir=@CMAKE_INSTALL_FULL_DATADIR@
++
++
++Name: aocommon-xt
++Version: @AOCOMMON_VERSION@ 
++Description: AOCommon library - Variant with xtensor support
++Requires: aocommon xtensor xsimd
++
+diff --git a/dist/pkgconfig/aocommon.pc.in b/dist/pkgconfig/aocommon.pc.in
+new file mode 100644
+index 0000000..2239918
+--- /dev/null
++++ b/dist/pkgconfig/aocommon.pc.in
+@@ -0,0 +1,12 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++exec_prefix=@CMAKE_INSTALL_PREFIX@
++libdir=@CMAKE_INSTALL_FULL_LIBDIR@
++includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
++datadir=@CMAKE_INSTALL_FULL_DATADIR@
++
++
++Name: aocommon
++Version: @AOCOMMON_VERSION@ 
++Description: AOCommon library - common utilities for astronomical data processing
++Cflags: -I${includedir}
++

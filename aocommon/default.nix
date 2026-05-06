@@ -23,6 +23,8 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-u+1boSpVSugcFgXQzG+zJNo2KgZSFh5zLSRWUTlEhQs=";
   };
 
+  patches = [ ./001-pkgconfig.patch ];
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -44,15 +46,8 @@ stdenv.mkDerivation rec {
     "-DFETCHCONTENT_FULLY_DISCONNECTED=TRUE"
     "-DPORTABLE=TRUE"
     "-DBUILD_TESTING=ON"
+    "-DAOCOMMON_INSTALL=ON"
   ];
-
-  installPhase = ''
-    pushd ../
-    # header only, copy headers
-    find include/aocommon -type f | xargs -I {} install -Dm644 {} $out/{} 
-    # Some project seems to expect the CMake module
-    find CMake/ -type f | xargs -I {} install -Dm644 {} $out/{}
-  '';
 
   meta = with lib; {
     description = "Astronomical Common Library";
