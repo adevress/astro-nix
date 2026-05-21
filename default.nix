@@ -53,6 +53,7 @@ let
 
     python3Packages = pkgs.python3Packages // rec {
       radler = astro_pkgs.radler.override { pythonBuild = true; };
+      xtensor-python = pkgs.callPackage ./xtensor-python/default.nix { };
     };
 
     astroPyEnv = pkgs.python3Packages.python.withPackages (ps: [
