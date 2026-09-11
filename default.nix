@@ -1,4 +1,7 @@
-{ system ? builtins.currentSystem, upstream_pkgs ? null }:
+{
+  system ? builtins.currentSystem,
+  upstream_pkgs ? null,
+}:
 let
   pkgs = import (fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/25.11.tar.gz";
