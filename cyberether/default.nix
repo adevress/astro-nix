@@ -8,14 +8,14 @@
 #
 # Meson subprojects are resolved fully offline: every source/patch the wrap
 # files pin is provided as a Nix derivation (flat namespace siblings of this
-# package: fmt glfw glm rapidyaml cpp-httplib nlohmann_json qrencode
-# nanobench nanobind robin-map libmodes stb) or bundled inline (catch2,
-# nanobench nanobind robin-map libmodes stb) or bundled inline (catch2,
-# tree-sitter-*, velopack [optional, disabled via -Dvelopack=disabled], SoapySDR
-# stack). zlib, openssl and libusb are exceptions: the loaders use the system
-# zlib/openssl via pkg-config, and the SDR subprojects are pointed at the
-# system libusb (nixpkgs 1.0.29) through a small meson subproject shim instead
-# of building the bundled 1.0.26 copy. All remaining sources are merged into
+# package: glfw glm rapidyaml cpp-httplib nlohmann_json nanobench nanobind
+# robin-map libmodes stb) or bundled inline (catch2, tree-sitter-*, velopack
+# [optional, disabled via -Dvelopack=disabled], SoapySDR stack). zlib, openssl,
+# libqrencode, libusb, libhackrf and fmt are exceptions: the loaders use the
+# system zlib/openssl/libqrencode/fmt via pkg-config, the SDR subprojects are
+# pointed at the system libusb (nixpkgs 1.0.29) and system libhackrf (nixpkgs
+# hackrf 2026.01.3) through small meson subproject shims instead of building
+# the bundled libusb/hackrf copies. All remaining sources are merged into
 # MESON_PACKAGE_CACHE_DIR before `meson setup --wrap-mode=nodownload`.
 {
   lib,
@@ -38,13 +38,13 @@
   libglvnd,
   libdrm,
   xorg,
+  # System fmt (libfmt), discovered by the patched fmt loader via pkg-config.
   fmt,
   glfw,
   glm,
   rapidyaml,
   cpp-httplib,
   nlohmann_json,
-  qrencode,
   nanobench,
   nanobind,
   robin-map,
@@ -54,9 +54,16 @@
   zlib,
   # System OpenSSL (discovered via pkg-config by the patched loader); no bundle.
   openssl,
+  # System libqrencode (4.1.1, discovered via pkg-config by the patched
+  # loader); no bundle.
+  qrencode,
   # Upstream nixpkgs libusb (1.0.29); consumed by the SDR meson subprojects via
   # the `subprojects/libusb` shim instead of the bundled 1.0.26 subproject.
   libusb1,
+  # Upstream nixpkgs hackrf package (libhackrf, 2026.01.3); consumed by the
+  # soapyhackrf SDR meson subproject via the `subprojects/libhackrf` shim
+  # instead of the bundled hackrf subproject.
+  hackrf,
   geodata,
 }:
 
@@ -120,11 +127,6 @@ let
     name = "airspyone_host-1.0.10.tar.gz";
     url = "https://github.com/airspy/airspyone_host/archive/refs/tags/v1.0.10.tar.gz";
     sha256 = "fcca23911c9a9da71cebeffeba708c59d1d6401eec6eb2dd73cae35b8ea3c613";
-  };
-  libhackrf = fetchurl {
-    name = "hackrf-2026.01.3.tar.gz";
-    url = "https://github.com/greatscottgadgets/hackrf/archive/refs/tags/v2026.01.3.tar.gz";
-    sha256 = "48238f3a21189fa8cbe67838584cc045b9e5433767db8c9c30c1da02a1489f2c";
   };
   librtlsdr = fetchurl {
     name = "librtlsdr-1261fbb285297da08f4620b18871b6d6d9ec2a7b.zip";
@@ -234,15 +236,6 @@ let
       ];
     })
     (mkBundle {
-      name = "libhackrf-subproject-bundle";
-      files = [
-        {
-          src = libhackrf;
-          cacheName = "hackrf-2026.01.3.tar.gz";
-        }
-      ];
-    })
-    (mkBundle {
       name = "librtlsdr-subproject-bundle";
       files = [
         {
@@ -255,13 +248,11 @@ let
 
   # All bundles merged into the meson wrap cache (files and extracted dirs).
   allBundles = [
-    fmt
     glfw
     glm
     rapidyaml
     cpp-httplib
     nlohmann_json
-    qrencode
     nanobench
     nanobind
     robin-map
@@ -292,6 +283,8 @@ stdenv.mkDerivation {
     ./patches/002-use-system-zlib.patch
     ./patches/003-disable-velopack.patch
     ./patches/004-use-system-openssl.patch
+    ./patches/005-use-system-qrencode.patch
+    ./patches/006-use-system-fmt.patch
   ];
 
   nativeBuildInputs = [
@@ -325,8 +318,15 @@ stdenv.mkDerivation {
     zlib
     # System OpenSSL for the patched openssl/cpp-httplib loaders (pkg-config).
     openssl
+    # System libqrencode for the patched qrencode loader (pkg-config).
+    qrencode
+    # System fmt (libfmt) for the patched fmt loader (pkg-config).
+    fmt
     # Upstream libusb for the SDR meson subprojects (see the shim below).
     libusb1
+    # Upstream hackrf for the soapyhackrf SDR meson subproject (see the shim
+    # below); provides libhackrf via pkg-config.
+    hackrf
   ];
 
   enableParallelBuilding = true;
@@ -356,12 +356,14 @@ stdenv.mkDerivation {
     cp -rL ${geodata}/resources/. resources/
 
     # --- offline meson wrap cache -----------------------------------------
-    # The zlib and openssl subproject wraps are dropped: their loaders now use
-    # the system libraries via pkg-config (see patches/002-use-system-zlib.patch
-    # and patches/004-use-system-openssl.patch).
-    rm -f subprojects/zlib.wrap subprojects/openssl.wrap
+    # The zlib, openssl, qrencode and fmt subproject wraps are dropped: their
+    # loaders now use the system libraries via pkg-config (see patches
+    # 002-use-system-zlib.patch, 004-use-system-openssl.patch,
+    # 005-use-system-qrencode.patch and 006-use-system-fmt.patch).
+    rm -f subprojects/zlib.wrap subprojects/openssl.wrap \
+      subprojects/qrencode.wrap subprojects/fmt.wrap
 
-    # --- system libusb ----------------------------------------------------
+    # --- system libusb ---------------------------------------------------
     # libhackrf/librtlsdr/libairspy/limesuite all call
     # `subproject('libusb').get_variable('libusb_dep')`. Drop the bundled
     # 1.0.26 wrap and install the local shim subproject (libusb-shim/) that
@@ -372,8 +374,18 @@ stdenv.mkDerivation {
     install -m 644 ${./libusb-shim}/meson.build \
       ${./libusb-shim}/meson_options.txt subprojects/libusb/
 
+    # --- system libhackrf -------------------------------------------------
+    # soapyhackrf does `subproject('libhackrf').get_variable('libhackrf_dep')`.
+    # Drop the bundled hackrf wrap and install the local shim subproject
+    # (libhackrf-shim/) that forwards that variable to the upstream nixpkgs
+    # hackrf package (libhackrf) through pkg-config.
+    rm -f subprojects/libhackrf.wrap
+    mkdir -p subprojects/libhackrf
+    install -m 644 ${./libhackrf-shim}/meson.build subprojects/libhackrf/
+
     export MESON_PACKAGE_CACHE_DIR="$(pwd)/meson-cache"
     mkdir -p "$MESON_PACKAGE_CACHE_DIR"
+
     for b in ${toString allBundles}; do
       for f in "$b"/*; do
         ln -sfn "$f" "$MESON_PACKAGE_CACHE_DIR/$(basename "$f")"

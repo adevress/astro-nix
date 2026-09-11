@@ -1,0 +1,38 @@
+--- a/include/jetstream/logger.hh
++++ b/include/jetstream/logger.hh
+@@ -8,13 +8,17 @@
+ #ifndef JST_FMT_INCLUDED
+ #define JST_FMT_INCLUDED
+ 
+-#ifndef JST_FMT_HEADER_ONLY
+-#define JST_FMT_HEADER_ONLY
+-#endif
+-#include <jetstream/fmt/format.h>
+-#include <jetstream/fmt/color.h>
+-#include <jetstream/fmt/ostream.h>
+-#include <jetstream/fmt/ranges.h>
++#include <fmt/color.h>
++#include <fmt/format.h>
++#include <fmt/ostream.h>
++#include <fmt/ranges.h>
++
++// The bundled fmt subproject used to be namespaced into `jst::fmt`. Use the
++// system fmt (libfmt) discovered through pkg-config and alias it back into
++// that namespace so the rest of the tree is unchanged.
++namespace jst {
++namespace fmt = ::fmt;
++}  // namespace jst
+ 
+ #endif  // JST_FMT_INCLUDED
+ 
+--- a/meson/loaders/fmt/meson.build
++++ b/meson/loaders/fmt/meson.build
+@@ -1,5 +1,7 @@
++# Use the system fmt (libfmt) discovered through pkg-config instead of the
++# bundled meson subproject.
+ deps = [
+-    subproject('fmt', required: true).get_variable('fmt_dep'),
++    dependency('fmt', required: true),
+ ]
+ 
+ all_deps_found = true

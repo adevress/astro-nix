@@ -16,14 +16,14 @@ let
     meson = pkgs.callPackage ./meson/default.nix { };
 
     # CyberEther meson subproject bundles (flat namespace; sources pinned to
-    # the exact revisions CyberEther's .wrap files commit)
-    fmt = pkgs.callPackage ./fmt/default.nix { };
+    # the exact revisions CyberEther's .wrap files commit). fmt is not bundled
+    # here: CyberEther's fmt loader is patched to use the system libfmt via
+    # pkg-config (see cyberether/patches/006-use-system-fmt.patch).
     glfw = pkgs.callPackage ./glfw/default.nix { };
     glm = pkgs.callPackage ./glm/default.nix { };
     rapidyaml = pkgs.callPackage ./rapidyaml/default.nix { };
     cpp-httplib = pkgs.callPackage ./cpp-httplib/default.nix { };
     nlohmann_json = pkgs.callPackage ./nlohmann_json/default.nix { };
-    qrencode = pkgs.callPackage ./qrencode/default.nix { };
     nanobench = pkgs.callPackage ./nanobench/default.nix { };
     nanobind = pkgs.callPackage ./nanobind/default.nix { };
     robin-map = pkgs.callPackage ./robin-map/default.nix { };
@@ -72,19 +72,19 @@ let
     cyberether = pkgs.callPackage ./cyberether/default.nix {
       inherit
         meson
-        fmt
         glfw
         glm
         rapidyaml
         cpp-httplib
         nlohmann_json
-        qrencode
         nanobench
         nanobind
         robin-map
         libmodes
         stb
         ;
+      qrencode = pkgs.qrencode;
+      fmt = pkgs.fmt;
       geodata = pkgs.callPackage ./cyberether/geodata/default.nix { };
     };
   };
