@@ -1,0 +1,26 @@
+diff --git a/mesonbuild/scripts/depfixer.py b/mesonbuild/scripts/depfixer.py
+--- a/mesonbuild/scripts/depfixer.py
++++ b/mesonbuild/scripts/depfixer.py
+@@ -641,10 +641,19 @@
+             # added by get_link_dep_subdirs() or
+             # specified by user with build_rpath.
+             for rpath_dir in old_rpath.split(b':'):
+-                if not (rpath_dir in rpath_dirs_to_remove or
++                if not rpath_dir:
++                    continue
++                # Never drop RPATH/RUNPATH entries pointing into the Nix
++                # store, even when Meson classifies them as build-only. The
++                # ld-wrapper inserts them so installed binaries and libraries
++                # can locate their store dependencies, including libraries
++                # that are only reached through dlopen() and therefore are
++                # absent from DT_NEEDED.
++                if rpath_dir.startswith(b'@storeDir@'):
++                    new_rpaths.add(rpath_dir)
++                elif not (rpath_dir in rpath_dirs_to_remove or
+                         rpath_dir == (b'X' * len(rpath_dir))):
+-                    if rpath_dir:
+-                        new_rpaths.add(rpath_dir)
++                    new_rpaths.add(rpath_dir)
+ 
+         # Prepend user-specified new entries while preserving the ones that came from pkgconfig etc.
+         new_rpath = b':'.join(new_rpaths)

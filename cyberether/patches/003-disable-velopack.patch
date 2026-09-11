@@ -1,0 +1,27 @@
+diff --git a/meson/loaders/velopack/meson.build b/meson/loaders/velopack/meson.build
+index ebc05bc..0e4f3d4 100644
+--- a/meson/loaders/velopack/meson.build
++++ b/meson/loaders/velopack/meson.build
+@@ -1,7 +1,8 @@
+-velopack_available = (target_machine.system() == 'linux' or jst_is_macos or jst_is_windows) and not jst_is_wheel
++velopack_opt = get_option('velopack')
++velopack_available = velopack_opt.allowed() and (target_machine.system() == 'linux' or jst_is_macos or jst_is_windows) and not jst_is_wheel
+ 
+ if velopack_available
+-    velopack_project = subproject('velopack', required: true)
++    velopack_project = subproject('velopack', required: velopack_opt.enabled())
+     velopack_include = velopack_project.get_variable('velopack_include')
+     velopack_link_path = velopack_project.get_variable('velopack_link_path')
+ 
+diff --git a/meson_options.txt b/meson_options.txt
+index cda369f..8672fff 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -1,6 +1,7 @@
+ option('native', type : 'boolean', value : false, description: 'Enable native build.')
+ option('python', type : 'boolean', value : false, description: 'Enable Superluminal Python bindings.')
+ option('wheel', type : 'boolean', value : false, description: 'Enable Python wheel packaging mode.')
++option('velopack', type : 'feature', value : 'auto', description: 'Enable Velopack auto-updater support.')
+ option('tests', type : 'boolean', value : true, description: 'Enable tests.')
+ option('examples', type : 'boolean', value : true, description: 'Enable examples.')
+ option('remote', type : 'feature', value : 'auto', description: 'Enable remote streaming with bundled static GStreamer.')

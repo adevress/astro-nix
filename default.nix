@@ -1,12 +1,34 @@
+{
+  system ? builtins.currentSystem,
+  upstream_pkgs ? null,
+}:
 let
   pkgs = import (fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/25.11.tar.gz";
     sha256 = "1zn1lsafn62sz6azx6j735fh4vwwghj8cc9x91g5sx2nrg23ap9k";
-  }) { };
+  }) { inherit system; };
 
   astro_pkgs = rec {
 
     hello = pkgs.callPackage ./hello/default.nix { };
+
+    # Meson >= 1.11 override (upstream nixpkgs recipe, version bumped; CyberEther needs it)
+    meson = pkgs.callPackage ./meson/default.nix { };
+
+    # CyberEther meson subproject bundles (flat namespace; sources pinned to
+    # the exact revisions CyberEther's .wrap files commit). fmt is not bundled
+    # here: CyberEther's fmt loader is patched to use the system libfmt via
+    # pkg-config (see cyberether/patches/006-use-system-fmt.patch).
+    glfw = pkgs.callPackage ./glfw/default.nix { };
+    glm = pkgs.callPackage ./glm/default.nix { };
+    rapidyaml = pkgs.callPackage ./rapidyaml/default.nix { };
+    cpp-httplib = pkgs.callPackage ./cpp-httplib/default.nix { };
+    nlohmann_json = pkgs.callPackage ./nlohmann_json/default.nix { };
+    nanobench = pkgs.callPackage ./nanobench/default.nix { };
+    nanobind = pkgs.callPackage ./nanobind/default.nix { };
+    robin-map = pkgs.callPackage ./robin-map/default.nix { };
+    libmodes = pkgs.callPackage ./libmodes/default.nix { };
+    stb = pkgs.callPackage ./stb/default.nix { };
 
     # specialization of packaged
     openblasSingleThreaded = pkgs.openblas.override { singleThreaded = true; };
@@ -47,6 +69,24 @@ let
     };
     aoflagger = pkgs.callPackage ./aoflagger/default.nix { inherit aocommon; };
     ds9 = pkgs.callPackage ./ds9/default.nix { };
+    cyberether = pkgs.callPackage ./cyberether/default.nix {
+      inherit
+        meson
+        glfw
+        glm
+        rapidyaml
+        cpp-httplib
+        nlohmann_json
+        nanobench
+        nanobind
+        robin-map
+        libmodes
+        stb
+        ;
+      qrencode = pkgs.qrencode;
+      fmt = pkgs.fmt;
+      geodata = pkgs.callPackage ./cyberether/geodata/default.nix { };
+    };
   };
 
   py_astro_pkgs = rec {
@@ -54,10 +94,22 @@ let
     python3Packages = pkgs.python3Packages // rec {
       radler = astro_pkgs.radler.override { pythonBuild = true; };
       xtensor-python = pkgs.callPackage ./xtensor-python/default.nix { };
+      mapbox-earcut = pkgs.callPackage ./mapbox-earcut/default.nix {
+        inherit (pkgs.python3Packages)
+          buildPythonPackage
+          scikit-build-core
+          nanobind
+          numpy
+          pathspec
+          ;
+        cmake = pkgs.cmake;
+        ninja = pkgs.ninja;
+      };
     };
 
     astroPyEnv = pkgs.python3Packages.python.withPackages (ps: [
       python3Packages.radler
+      python3Packages.mapbox-earcut
       ps.scipy
       ps.numpy
       ps.dask
@@ -68,7 +120,17 @@ let
   };
 
 in
-{
-  upstream_pkgs ? pkgs,
-}:
-pkgs // astro_pkgs // py_astro_pkgs
+let
+  pkgSet = pkgs // astro_pkgs // py_astro_pkgs;
+
+  # CyberEther's geodata step (resources/geodata) requires a python with
+  # numpy + mapbox_earcut; give the build the full interpreted env.
+  cyberetherPython = pkgSet.python3Packages.python.withPackages (ps: [
+    pkgSet.python3Packages.numpy
+    pkgSet.python3Packages.mapbox-earcut
+  ]);
+in
+pkgSet
+// {
+  cyberether = pkgSet.cyberether.override { python3 = cyberetherPython; };
+}

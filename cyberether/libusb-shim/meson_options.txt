@@ -1,0 +1,4 @@
+# The SDR consumers pass these options when looking the libusb subproject up;
+# declare them so the subproject configures without "Unknown option" errors.
+option('examples', type: 'boolean', value: false)
+option('tests', type: 'boolean', value: false)
