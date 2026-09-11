@@ -1,0 +1,16 @@
+--- a/meson/loaders/qrencode/meson.build
++++ b/meson/loaders/qrencode/meson.build
+@@ -1,9 +1,6 @@
+ deps = [
+-    subproject(
+-        'qrencode',
+-        required: true,
+-        default_options: [
+-            'default_library=static',
+-        ],
+-    ).get_variable('libqrencode_dep')
++    # Use the system libqrencode (discovered via pkg-config) instead of
++    # building the bundled meson subproject. The loader only needs the
++    # stable QR code encoding API.
++    dependency('libqrencode', required: true),
+ ]
