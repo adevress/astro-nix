@@ -1,10 +1,14 @@
 {
   description = "astro-nix — Nix recipes for astronomy & radio astronomy";
 
-  outputs = { self }:
+  outputs =
+    { self }:
     let
       # Platforms covered by the CI cache (x86_64 + aarch64 Linux).
-      systems = [ "x86_64-linux" "aarch64-linux" ];
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
 
       # Import the repo's full package set. default.nix pins its own nixpkgs
       # (25.11) and merges it with the repo's astro/python packages, so the
@@ -21,7 +25,10 @@
       # nixpkgs set contains attributes that deliberately fail to evaluate;
       # nix search tolerates those per-attribute failures here.
       legacyPackages = builtins.listToAttrs (
-        map (system: { name = system; value = mkPkgs system; }) systems
+        map (system: {
+          name = system;
+          value = mkPkgs system;
+        }) systems
       );
     };
 }
