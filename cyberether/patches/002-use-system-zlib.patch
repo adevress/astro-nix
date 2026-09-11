@@ -1,0 +1,22 @@
+diff --git a/meson/loaders/zlib/meson.build b/meson/loaders/zlib/meson.build
+index 235399b2..f293a0c6 100644
+--- a/meson/loaders/zlib/meson.build
++++ b/meson/loaders/zlib/meson.build
+@@ -4,13 +4,12 @@ if jst_is_browser
+         link_args: ['-sUSE_ZLIB=1'],
+     )
+ else
+-    zlib_dep = subproject(
++    # Use the system zlib (discovered via pkg-config) instead of bundling a
++    # static meson subproject. The loader only needs the stable zlib API.
++    zlib_dep = dependency(
+         'zlib',
+         required: true,
+-        default_options: [
+-            'default_library=static',
+-        ]
+-    ).get_variable('zlib_dep')
++    )
+ endif
+ 
+ deps = [zlib_dep]

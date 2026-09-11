@@ -1,0 +1,23 @@
+--- a/meson/loaders/openssl/meson.build	2026-09-11 14:59:43.862814543 +0200
++++ b/meson/loaders/openssl/meson.build	2026-09-11 14:59:47.217134992 +0200
+@@ -2,13 +2,13 @@
+ all_deps_found = not jst_is_browser
+ 
+ if all_deps_found
+-    openssl_project = subproject('openssl', required: true, default_options: [
+-        'default_library=static',
+-    ])
+-
+-    openssl_dep = openssl_project.get_variable('openssl_dep')
+-    libssl_dep = openssl_project.get_variable('libssl_dep')
+-    libcrypto_dep = openssl_project.get_variable('libcrypto_dep')
++    # Use the system OpenSSL (discovered via pkg-config) instead of building
++    # the bundled openssl meson subproject. cpp-httplib only needs the stable
++    # OpenSSL 3.x TLS API, and the system copy avoids shipping the static
++    # libssl.a/libcrypto.a archives into the output.
++    openssl_dep = dependency('openssl', version: '>=3.0.0', required: true)
++    libssl_dep = dependency('libssl', version: '>=3.0.0', required: true)
++    libcrypto_dep = dependency('libcrypto', version: '>=3.0.0', required: true)
+ 
+     deps = [
+         openssl_dep,
