@@ -91,6 +91,23 @@ nix run -f ./ ds9
 python -c "import astropy; print('Success!')"
 ```
 
+### Example V: Search for a package
+
+`nix search` works against this repo via the flake (`.`). It searches the
+entire package set provided by astro-nix, which includes both the repo's own
+packages and the full pinned upstream nixpkgs source:
+
+```bash
+nix search . wsclean    # find wsclean
+nix search . casacore   # find casacore (and dysco, whose description mentions it)
+nix search . oskar      # find oskar (and oskarWithGUI)
+```
+
+> Note: `nix search . <pkg>` matches on name and description and walks the
+> whole upstream nixpkgs set, so it can take a moment and may surface
+> unrelated packages. Use it to discover package attributes before running
+> or building them.
+
 ## Tests and support
 
 Tested on:

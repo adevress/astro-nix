@@ -90,8 +90,34 @@ CI (`.github/workflows/nix-build.yml`, `ci/astro-derivations.json`,
 for Linux `x86_64`/`aarch64` only. Do not run `build_all_derivation` locally
 unless pushing to cache.
 
+## 6. Search packages
+
+`nix search` works against this repo via the **flake** (`.`), not the legacy
+`-f ./` file mode. It searches the entire `legacyPackages` set exposed by
+`flake.nix` (the repo's astro/python packages **plus** the full pinned
+upstream nixpkgs 25.11 source), on both `x86_64-linux` and `aarch64-linux`.
+
+```bash
+nix search . wsclean      # -> legacyPackages.x86_64-linux.wsclean
+nix search . casacore     # -> casacore AND dysco (desc mentions Casacore)
+nix search . oskar       # -> oskar AND oskarWithGUI
+nix search . nonexistent  # no results, exit code 1
+```
+
+Behavior / gotchas:
+
+- **Scope is the whole nixpkgs set**, not just the radio-astronomy packages.
+  Unrelated upstream packages (`AusweisApp2`, `CuboCore`, …) are in scope,
+  so expect a long evaluation walk before results print.
+- **Matching is fuzzy/substring** on name + description, hence `casacore`
+  also surfaces `dysco`. This is standard `nix search` behavior.
+- **Falls back to `x86_64-linux`** automatically when run on that platform.
+- Uses `.` (flake). The legacy `nix search -f ./ <pkg>` form does **not**
+  apply here — `-f ./` exposes top-level `callPackage` attrs, not the
+  `legacyPackages` set that `nix search` requires.
+
 ## References
 
-- [nix-cheatsheet](references/nix-cheatsheet.md) — run/shell/develop/build/log/eval
+- [nix-cheatsheet](references/nix-cheatsheet.md) — run/shell/develop/build/log/eval/search
 - [packages](references/packages.md) — inventory, dependency graph, edit rules
 - [python](references/python.md) — astroPyEnv, withPackages, buildPythonPackage

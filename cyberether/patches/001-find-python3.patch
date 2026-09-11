@@ -1,0 +1,13 @@
+diff --git a/meson.build b/meson.build
+index d351c70..b49a468 100644
+--- a/meson.build
++++ b/meson.build
+@@ -82,7 +82,7 @@ endif
+ #
+ 
+ pymod = import('python')
+-py = pymod.find_installation(required: false)
++py = pymod.find_installation('python3', required: false)
+ 
+ #
+ # Handle Options

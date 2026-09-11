@@ -1,0 +1,53 @@
+diff -crB aocommon-8d28d5d/include/aocommon/checkblas.h aocommon-8d28d5d.new/include/aocommon/checkblas.h
+*** aocommon-8d28d5d/include/aocommon/checkblas.h	Thu Jan  1 01:00:01 1970
+--- aocommon-8d28d5d.new/include/aocommon/checkblas.h	Tue Mar 24 16:19:04 2026
+***************
+*** 6,11 ****
+--- 6,12 ----
+  #include <dlfcn.h>
+  #include <stdexcept>
+  #include <string>
++ #include <string_view>
+  
+  /**
+   * Detect if OpenBLAS is linked to the application and determine the version
+***************
+*** 66,79 ****
+              "multi-threaded environments.\n" +
+              please);
+        } else {
+!         // OpenBLAS may support locking, but typically does not.
+!         // Unfortunately there is no means of checking if OpenBLAS supports
+!         // locking, so assume that the library is bad.
+!         throw std::runtime_error(
+!             "This software was linked to a single-threaded version of "
+!             "OpenBLAS, which typically does not support multi-threaded "
+!             "environments.\n" +
+!             please);
+        }
+  
+        break;
+--- 67,89 ----
+              "multi-threaded environments.\n" +
+              please);
+        } else {
+!         // Ask the dynamic linker to lookup the openblas_get_config() function.
+!         char* (*openblas_get_config)(void) =
+!             reinterpret_cast<char* (*)(void)>(dlsym(RTLD_DEFAULT, "openblas_get_config"));
+!         if (!openblas_get_config){ throw std::logic_error("openblas_get_config not found"); };
+! 
+!         // If locking is enabled, this is visible in the config
+!         char* config = openblas_get_config();
+!         if (config == nullptr){ throw std::logic_error("openblas_get_config: nullptr returned"); };
+!         
+!         std::string_view config_view(config);
+!         if( config_view.find("USE_LOCKING") == std::string_view::npos){
+!           throw std::runtime_error(
+!             "This software was linked to a single-threaded version of OpenBLAS "
+!             "which has been configured without locking and is consequently not thread safe. "
+!             "Please use an OpenBLAS version with locking enabled or with multi-threading enabled"
+!           );
+!         }         
+        }
+  
+        break;

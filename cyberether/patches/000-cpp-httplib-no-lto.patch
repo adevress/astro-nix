@@ -1,0 +1,16 @@
+diff --git a/meson/loaders/cpphttplib/meson.build b/meson/loaders/cpphttplib/meson.build
+index 25f87ef9..356c4e78 100644
+--- a/meson/loaders/cpphttplib/meson.build
++++ b/meson/loaders/cpphttplib/meson.build
+@@ -13,6 +13,11 @@ if all_deps_found
+                 'compile=true',
+                 'default_library=static',
+                 'zstd=disabled',
++                # Upstream enables LTO, but slim LTO objects in a static archive are
++                # unresolvable when the consumer links without the LTO plugin (e.g.
++                # Nix's binutils, which does not auto-load it). Disable it to keep
++                # native (non-Docker) builds working.
++                'b_lto=false',
+             ]
+         ).get_variable('cpp_httplib_dep')
+     ]
