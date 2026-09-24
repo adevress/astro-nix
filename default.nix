@@ -129,8 +129,16 @@ let
     pkgSet.python3Packages.numpy
     pkgSet.python3Packages.mapbox-earcut
   ]);
+
+  # Fixed CyberEther (see below); BLADE links against its jetstream library.
+  cyberetherFixed = pkgSet.cyberether.override { python3 = cyberetherPython; };
 in
 pkgSet
 // {
-  cyberether = pkgSet.cyberether.override { python3 = cyberetherPython; };
+  cyberether = cyberetherFixed;
+  blade = pkgs.callPackage ./blade/default.nix {
+    inherit (pkgSet) meson;
+    cyberether = cyberetherFixed;
+    libxcb = pkgSet.xorg.libxcb;
+  };
 }
