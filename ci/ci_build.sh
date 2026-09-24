@@ -82,8 +82,19 @@ EOF
 }
 
 
+# Check that ci/astro-derivations.json is valid JSON and contains a "default" array
+check_derivations_json() {
+    local json_file="${SCRIPT_DIR}/astro-derivations.json"
+    jq -e . "${json_file}" >/dev/null 2>&1 || { echo "Error: ${json_file} is not valid JSON"; return 1; }
+    jq -e '.default | type == "array"' "${json_file}" >/dev/null 2>&1 || { echo "Error: ${json_file} must contain a \"default\" array"; return 1; }
+    echo "${json_file} is valid."
+}
+
+
 # build all derivation and push them to the cache, in order
 build_all_derivation(){
+    check_derivations_json || exit 1
+
     for drv in $(nix run -f ${ASTRO_NIX_SRC_DIR} jq -- -r ".default[]" ${SCRIPT_DIR}/astro-derivations.json); do
         build_derivation "$drv"
         if [ $? -ne 0 ]; then
