@@ -1,3 +1,16 @@
+<p align="center">
+  <img src="misc/logo.webp" alt="Astro-Nix logo" width="300" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/adevress/astro-nix/actions/workflows/nix-build.yml">
+    <img src="https://github.com/adevress/astro-nix/actions/workflows/nix-build.yml/badge.svg?branch=main" alt="Build Status (x86_64)" />
+  </a>
+  <a href="https://github.com/adevress/astro-nix/actions/workflows/nix-build.yml">
+    <img src="https://github.com/adevress/astro-nix/actions/workflows/nix-build.yml/badge.svg?branch=main" alt="Build Status (aarch64)" />
+  </a>
+</p>
+
 # Astro-Nix
 
 ## Summary
