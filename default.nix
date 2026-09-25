@@ -16,11 +16,11 @@ let
     meson = pkgs.callPackage ./meson/default.nix { };
 
     # CyberEther meson subproject bundles (flat namespace; sources pinned to
-    # the exact revisions CyberEther's .wrap files commit). fmt is not bundled
-    # here: CyberEther's fmt loader is patched to use the system libfmt via
-    # pkg-config (see cyberether/patches/006-use-system-fmt.patch).
-    glfw = pkgs.callPackage ./glfw/default.nix { };
-    glm = pkgs.callPackage ./glm/default.nix { };
+    # the exact revisions CyberEther's .wrap files commit). fmt, glfw and glm
+    # are not bundled here: the CyberEther loaders are patched to use the
+    # system libfmt/glfw/glm via pkg-config (see
+    # cyberether/patches/006-use-system-fmt.patch and
+    # cyberether/patches/007-use-system-glfw-glm.patch).
     rapidyaml = pkgs.callPackage ./rapidyaml/default.nix { };
     cpp-httplib = pkgs.callPackage ./cpp-httplib/default.nix { };
     nlohmann_json = pkgs.callPackage ./nlohmann_json/default.nix { };
@@ -72,8 +72,6 @@ let
     cyberether = pkgs.callPackage ./cyberether/default.nix {
       inherit
         meson
-        glfw
-        glm
         rapidyaml
         cpp-httplib
         nlohmann_json

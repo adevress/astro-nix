@@ -1,0 +1,44 @@
+diff --git a/meson/loaders/glfw/meson.build b/meson/loaders/glfw/meson.build
+--- a/meson/loaders/glfw/meson.build
++++ b/meson/loaders/glfw/meson.build
+@@ -1,21 +1,11 @@
+ deps = []
+
+ if not jst_is_browser
+-    glfw_default_options = [
+-        'default_library=static',
+-        'install=false',
+-    ]
+-
+-    if jst_is_linux
+-        glfw_default_options += ['display-api=x11,wayland']
+-    endif
+-
+-    deps += [
+-        subproject(
+-            'glfw',
+-            required: true,
+-            default_options: glfw_default_options
+-        ).get_variable('glfw_dep'),
+-    ]
++    # Use the system GLFW (discovered via pkg-config) instead of the bundled
++    # static meson subproject. Version 3.4 (same as the pinned wrap) with the
++    # X11 + Wayland backends and the Vulkan loader available at runtime.
++    deps += [
++        dependency('glfw3', required: true),
++    ]
+ endif
+
+diff --git a/meson/loaders/glm/meson.build b/meson/loaders/glm/meson.build
+--- a/meson/loaders/glm/meson.build
++++ b/meson/loaders/glm/meson.build
+@@ -1,5 +1,8 @@
+ deps = [
+-    subproject('glm', required: true).get_variable('glm_dep'),
++    # Use the system glm (header-only, discovered via pkg-config) instead of
++    # the bundled meson subproject. Upstream 1.0.2 is a patch release of the
++    # pinned 1.0.0; the public headers are API/ABI compatible.
++    dependency('glm', required: true),
+ ]
+
+ all_deps_found = true

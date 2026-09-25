@@ -8,15 +8,16 @@
 #
 # Meson subprojects are resolved fully offline: every source/patch the wrap
 # files pin is provided as a Nix derivation (flat namespace siblings of this
-# package: glfw glm rapidyaml cpp-httplib nlohmann_json nanobench nanobind
-# robin-map libmodes stb) or bundled inline (catch2, tree-sitter-*, velopack
-# [optional, disabled via -Dvelopack=disabled], SoapySDR stack). zlib, openssl,
-# libqrencode, libusb, libhackrf and fmt are exceptions: the loaders use the
-# system zlib/openssl/libqrencode/fmt via pkg-config, the SDR subprojects are
-# pointed at the system libusb (nixpkgs 1.0.29) and system libhackrf (nixpkgs
-# hackrf 2026.01.3) through small meson subproject shims instead of building
-# the bundled libusb/hackrf copies. All remaining sources are merged into
-# MESON_PACKAGE_CACHE_DIR before `meson setup --wrap-mode=nodownload`.
+# package: rapidyaml cpp-httplib nlohmann_json nanobench nanobind robin-map
+# libmodes stb) or bundled inline (catch2, tree-sitter-*, velopack [optional,
+# disabled via -Dvelopack=disabled], SoapySDR stack). zlib, openssl,
+# libqrencode, libusb, libhackrf, fmt, glfw and glm are exceptions: the loaders
+# use the system zlib/openssl/libqrencode/fmt/glfw3/glm via pkg-config, the SDR
+# subprojects are pointed at the system libusb (nixpkgs 1.0.29) and system
+# libhackrf (nixpkgs hackrf 2026.01.3) through small meson subproject shims
+# instead of building the bundled libusb/hackrf copies. All remaining sources
+# are merged into MESON_PACKAGE_CACHE_DIR before `meson setup
+# --wrap-mode=nodownload`.
 {
   lib,
   stdenv,
@@ -40,7 +41,11 @@
   xorg,
   # System fmt (libfmt), discovered by the patched fmt loader via pkg-config.
   fmt,
+  # System GLFW 3.4 (nixpkgs), discovered by the patched glfw loader via
+  # pkg-config (see 007-use-system-glfw-glm.patch).
   glfw,
+  # System glm 1.0.2 (nixpkgs), discovered by the patched glm loader via
+  # pkg-config (see 007-use-system-glfw-glm.patch).
   glm,
   rapidyaml,
   cpp-httplib,
@@ -248,8 +253,6 @@ let
 
   # All bundles merged into the meson wrap cache (files and extracted dirs).
   allBundles = [
-    glfw
-    glm
     rapidyaml
     cpp-httplib
     nlohmann_json
@@ -285,6 +288,7 @@ stdenv.mkDerivation {
     ./patches/004-use-system-openssl.patch
     ./patches/005-use-system-qrencode.patch
     ./patches/006-use-system-fmt.patch
+    ./patches/007-use-system-glfw-glm.patch
   ];
 
   nativeBuildInputs = [
@@ -322,6 +326,12 @@ stdenv.mkDerivation {
     qrencode
     # System fmt (libfmt) for the patched fmt loader (pkg-config).
     fmt
+    # System GLFW 3.4 for the patched glfw loader (pkg-config, see
+    # 007-use-system-glfw-glm.patch); X11 + Wayland + Vulkan.
+    glfw
+    # System glm 1.0.2 for the patched glm loader (pkg-config, see
+    # 007-use-system-glfw-glm.patch); header-only.
+    glm
     # Upstream libusb for the SDR meson subprojects (see the shim below).
     libusb1
     # Upstream hackrf for the soapyhackrf SDR meson subproject (see the shim
@@ -356,12 +366,14 @@ stdenv.mkDerivation {
     cp -rL ${geodata}/resources/. resources/
 
     # --- offline meson wrap cache -----------------------------------------
-    # The zlib, openssl, qrencode and fmt subproject wraps are dropped: their
-    # loaders now use the system libraries via pkg-config (see patches
-    # 002-use-system-zlib.patch, 004-use-system-openssl.patch,
-    # 005-use-system-qrencode.patch and 006-use-system-fmt.patch).
+    # The zlib, openssl, qrencode, fmt, glfw and glm subproject wraps are
+    # dropped: their loaders now use the system libraries via pkg-config (see
+    # patches 002-use-system-zlib.patch, 004-use-system-openssl.patch,
+    # 005-use-system-qrencode.patch, 006-use-system-fmt.patch and
+    # 007-use-system-glfw-glm.patch).
     rm -f subprojects/zlib.wrap subprojects/openssl.wrap \
-      subprojects/qrencode.wrap subprojects/fmt.wrap
+      subprojects/qrencode.wrap subprojects/fmt.wrap subprojects/glfw.wrap \
+      subprojects/glm.wrap
 
     # --- system libusb ---------------------------------------------------
     # libhackrf/librtlsdr/libairspy/limesuite all call
