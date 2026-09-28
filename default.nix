@@ -85,6 +85,7 @@ let
         ;
       qrencode = pkgs.qrencode;
       fmt = pkgs.fmt;
+      tomlplusplus = pkgs.tomlplusplus;
       geodata = pkgs.callPackage ./cyberether/geodata/default.nix { };
     };
   };

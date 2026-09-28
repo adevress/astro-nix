@@ -1,7 +1,7 @@
-# CyberEther 1.9.2 — GPU-accelerated signal processing framework.
+# CyberEther 1.11.0 — GPU-accelerated signal processing framework.
 #
 # Features enabled: Vulkan GUI, Superluminal Python bindings (-Dpython=true),
-# SDR stack (SoapySDR/Airspy/HackRF/RTLSDR/LimeSuite), examples, tests.
+# SDR stack (SoapySDR/Airspy/HackRF/RTLSDR/LimeSuite/bladeRF), examples, tests.
 # `remote` (static GStreamer) and `inference` (ONNX Runtime) are disabled:
 # they are heavy upstream subprojects, same scope as the project's own
 # native (non-Docker) build notes.
@@ -11,12 +11,14 @@
 # package: glfw glm rapidyaml cpp-httplib nlohmann_json nanobench nanobind
 # robin-map libmodes stb) or bundled inline (catch2, tree-sitter-*, velopack
 # [optional, disabled via -Dvelopack=disabled], SoapySDR stack). zlib, openssl,
-# libqrencode, libusb, libhackrf and fmt are exceptions: the loaders use the
-# system zlib/openssl/libqrencode/fmt via pkg-config, the SDR subprojects are
-# pointed at the system libusb (nixpkgs 1.0.29) and system libhackrf (nixpkgs
-# hackrf 2026.01.3) through small meson subproject shims instead of building
-# the bundled libusb/hackrf copies. All remaining sources are merged into
-# MESON_PACKAGE_CACHE_DIR before `meson setup --wrap-mode=nodownload`.
+# libqrencode, libusb, libhackrf, libbladeRF, fmt and toml++ are exceptions:
+# the loaders use the system libraries instead of the bundled copies -- system
+# zlib/openssl/libqrencode/fmt/toml++ through pkg-config, system libusb (nixpkgs
+# 1.0.29) and libhackrf through the `subprojects/libusb`/`subprojects/libhackrf`
+# shims, and nixpkgs' libbladeRF (2025.10, the release the wrap pins) through the
+# patched soapybladerf overlay (008-use-system-libbladerf.patch). All remaining
+# sources are merged into MESON_PACKAGE_CACHE_DIR before
+# `meson setup --wrap-mode=nodownload`.
 {
   lib,
   stdenv,
@@ -60,10 +62,18 @@
   # Upstream nixpkgs libusb (1.0.29); consumed by the SDR meson subprojects via
   # the `subprojects/libusb` shim instead of the bundled 1.0.26 subproject.
   libusb1,
-  # Upstream nixpkgs hackrf package (libhackrf, 2026.01.3); consumed by the
-  # soapyhackrf SDR meson subproject via the `subprojects/libhackrf` shim
-  # instead of the bundled hackrf subproject.
+  # Upstream nixpkgs hackrf package (libhackrf); consumed by the soapyhackrf
+  # SDR meson subproject via the `subprojects/libhackrf` shim instead of the
+  # bundled hackrf subproject.
   hackrf,
+  # System toml++ (3.4.0, discovered by the patched loader via pkg-config);
+  # no bundle (wrapdb no longer serves the patch that turns the upstream
+  # tarball into a meson subproject).
+  tomlplusplus,
+  # Upstream nixpkgs libbladeRF (2025.10, the release soapybladerf.wrap pins);
+  # consumed through pkg-config by the patched soapybladerf overlay instead of
+  # the bundled bladeRF + no-OS subprojects.
+  libbladeRF,
   geodata,
 }:
 
@@ -129,9 +139,16 @@ let
     sha256 = "fcca23911c9a9da71cebeffeba708c59d1d6401eec6eb2dd73cae35b8ea3c613";
   };
   librtlsdr = fetchurl {
-    name = "librtlsdr-1261fbb285297da08f4620b18871b6d6d9ec2a7b.zip";
-    url = "https://github.com/steve-m/librtlsdr/archive/1261fbb285297da08f4620b18871b6d6d9ec2a7b.zip";
-    sha256 = "79925da4e274b87a98e5364459e0e3faf346bd56dfcb7d38fa089e5cc6785797";
+    name = "librtlsdr-797f8143266d983c56d8f35d2d442527529dd8a5.zip";
+    url = "https://github.com/steve-m/librtlsdr/archive/797f8143266d983c56d8f35d2d442527529dd8a5.zip";
+    sha256 = "8f903af53b81e33427e35d6bb7adbd9e4415d0f2cea9369e44b062a43b6fcdee";
+  };
+  # bladeRF is taken from nixpkgs (libbladeRF) through the patched soapybladerf
+  # overlay; only its source tarball is still bundled here.
+  soapybladerf = fetchurl {
+    name = "SoapyBladeRF-soapy-bladerf-0.4.2.tar.gz";
+    url = "https://github.com/pothosware/SoapyBladeRF/archive/refs/tags/soapy-bladerf-0.4.2.tar.gz";
+    sha256 = "ca348b30d3a5b84fc5632c97b55db21008af867cad4290641a177576402311b0";
   };
   mkBundle =
     { name, files }:
@@ -240,7 +257,16 @@ let
       files = [
         {
           src = librtlsdr;
-          cacheName = "librtlsdr-1261fbb285297da08f4620b18871b6d6d9ec2a7b.zip";
+          cacheName = "librtlsdr-797f8143266d983c56d8f35d2d442527529dd8a5.zip";
+        }
+      ];
+    })
+    (mkBundle {
+      name = "soapybladerf-subproject-bundle";
+      files = [
+        {
+          src = soapybladerf;
+          cacheName = "SoapyBladeRF-soapy-bladerf-0.4.2.tar.gz";
         }
       ];
     })
@@ -264,12 +290,12 @@ let
 in
 stdenv.mkDerivation {
   pname = "cyberether";
-  version = "1.9.2";
+  version = "1.11.0";
 
   src = fetchgit {
     url = "https://github.com/luigifcruz/cyberether.git";
-    rev = "a8e4bee00be1977f44eee453f3f8b55b999b4b03"; # v1.9.2
-    sha256 = "sha256-YyPrFueGifaV9eAzwEHGwMd9uM0UAamWVx30SxXYMBk=";
+    rev = "3f2d659ac47fd911d14f048787660ba39b9282c2"; # v1.11.0
+    sha256 = "sha256-t/tlszI5ENlnD2Ly3oyi0K3ywgyaJ91iA+bnjGcNz6w=";
   };
 
   # Upstream compiles cpp-httplib as an LTO static archive, which cannot be
@@ -285,6 +311,8 @@ stdenv.mkDerivation {
     ./patches/004-use-system-openssl.patch
     ./patches/005-use-system-qrencode.patch
     ./patches/006-use-system-fmt.patch
+    ./patches/007-use-system-tomlplusplus.patch
+    ./patches/008-use-system-libbladerf.patch
   ];
 
   nativeBuildInputs = [
@@ -324,9 +352,14 @@ stdenv.mkDerivation {
     fmt
     # Upstream libusb for the SDR meson subprojects (see the shim below).
     libusb1
-    # Upstream hackrf for the soapyhackrf SDR meson subproject (see the shim
+    # Upstream libhackrf for the soapyhackrf SDR meson subproject (see the shim
     # below); provides libhackrf via pkg-config.
     hackrf
+    # Upstream libbladeRF for the soapybladerf SDR meson subproject (see the
+    # patched overlay); provides libbladeRF via pkg-config.
+    libbladeRF
+    # System toml++ for the patched tomlplusplus loader (pkg-config).
+    tomlplusplus
   ];
 
   enableParallelBuilding = true;
@@ -356,12 +389,20 @@ stdenv.mkDerivation {
     cp -rL ${geodata}/resources/. resources/
 
     # --- offline meson wrap cache -----------------------------------------
-    # The zlib, openssl, qrencode and fmt subproject wraps are dropped: their
-    # loaders now use the system libraries via pkg-config (see patches
-    # 002-use-system-zlib.patch, 004-use-system-openssl.patch,
-    # 005-use-system-qrencode.patch and 006-use-system-fmt.patch).
+    # The zlib, openssl, qrencode, fmt and tomlplusplus subproject wraps are
+    # dropped: their loaders use the system libraries via pkg-config (see
+    # patches 002-use-system-zlib.patch, 004-use-system-openssl.patch,
+    # 005-use-system-qrencode.patch, 006-use-system-fmt.patch and
+    # 007-use-system-tomlplusplus.patch).
     rm -f subprojects/zlib.wrap subprojects/openssl.wrap \
-      subprojects/qrencode.wrap subprojects/fmt.wrap
+      subprojects/qrencode.wrap subprojects/fmt.wrap \
+      subprojects/tomlplusplus.wrap
+
+    # --- system libbladeRF -------------------------------------------------
+    # soapybladerf's overlay now uses `dependency('libbladeRF')` (see patch
+    # 008-use-system-libbladerf.patch), so the bladeRF and no-OS subprojects are
+    # never resolved; drop their wraps (and the AD936x `git apply` path).
+    rm -f subprojects/libbladerf.wrap subprojects/bladerf-no-os.wrap
 
     # --- system libusb ---------------------------------------------------
     # libhackrf/librtlsdr/libairspy/limesuite all call

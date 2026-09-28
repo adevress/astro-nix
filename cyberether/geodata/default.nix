@@ -1,14 +1,22 @@
 # CyberEther geodata bundle
 #
 # resources/geodata/*.geojson are NOT tracked in the CyberEther git repo
-# (gitignored); parser.py downloads them at build time from
-# https://cdn.cyberether.org/geodata/ (not available inside the Nix build
-# sandbox). This package pins all 20 files (served from the same CDN,
-# hashes verified against the project's native build cache) so the
-# world-map/geodata feature builds fully offline.
+# (gitignored); parser.py downloads them at build time (not available inside the
+# Nix build sandbox). This package pins every file the pinned CyberEther release
+# needs, so the world-map/geodata feature builds fully offline:
+#
+# - `files` are served from the project's own CDN
+#   (https://cdn.cyberether.org/geodata/, hashes verified against the project's
+#   native build cache).
+# - `naturalEarthFiles` were added in CyberEther 1.10 and are not on that CDN:
+#   parser.py falls back to the Natural Earth v5.1.2 GeoJSON export, so they are
+#   pinned from there.
 { runCommand, fetchurl }:
 
 let
+  cdnBaseUrl = "https://cdn.cyberether.org/geodata/";
+  naturalEarthBaseUrl = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/";
+
   files = [
     {
       name = "ne_10m_admin_0_boundary_lines_land.geojson";
@@ -92,21 +100,69 @@ let
     }
   ];
 
+  # Added by CyberEther 1.10's geodata parser (not on the CDN).
+  naturalEarthFiles = [
+    {
+      name = "ne_10m_admin_0_boundary_lines_disputed_areas.geojson";
+      sha256 = "69f19da764e6982b43aebae4b1a356ffe74c33f2a3cdb462637c0ba8e969c30b";
+    }
+    {
+      name = "ne_10m_admin_0_countries.geojson";
+      sha256 = "239eec57ac17f100a11e2536cffc56752c318b50ae765b0918ff7aab4ce8f255";
+    }
+    {
+      name = "ne_10m_admin_1_states_provinces.geojson";
+      sha256 = "22d0e3ad85eb3e27f17cabf8ba2d50e554fbc27a87796ff891d958185da62fb5";
+    }
+    {
+      name = "ne_10m_airports.geojson";
+      sha256 = "28892a892f670f1cf654c62253c6169fdc2504b92c956addb4ac8224f50cebe0";
+    }
+    {
+      name = "ne_10m_geographic_lines.geojson";
+      sha256 = "e0d96b65c4f08856096550db5e4507d2822f05fe1cc07aadb16ad5ccb3a948e7";
+    }
+    {
+      name = "ne_10m_geography_marine_polys.geojson";
+      sha256 = "53f865e8ffa966cdd402145c82c5cd14ee7ce974cd0eb9a3f59f03a4cfd2d66c";
+    }
+    {
+      name = "ne_10m_geography_regions_elevation_points.geojson";
+      sha256 = "f98a16867867146ec4146d6d4b18c823eeedb2825947de666116cf9a4e3f43cb";
+    }
+    {
+      name = "ne_10m_geography_regions_polys.geojson";
+      sha256 = "b7b26e50ea917d3696aec87f932def2bf5f890f5770e441d59c162c6f4c92a77";
+    }
+  ];
+
   fetched = map (
     x:
     x
     // {
       src = fetchurl {
         name = x.name;
-        url = "https://cdn.cyberether.org/geodata/${x.name}";
+        url = cdnBaseUrl + x.name;
         sha256 = x.sha256;
       };
     }
   ) files;
+
+  fetchedNaturalEarth = map (
+    x:
+    x
+    // {
+      src = fetchurl {
+        name = x.name;
+        url = naturalEarthBaseUrl + x.name;
+        sha256 = x.sha256;
+      };
+    }
+  ) naturalEarthFiles;
 in
 runCommand "cyberether-geodata" { } ''
   mkdir -p $out/resources/geodata
   ${builtins.concatStringsSep "\n" (
-    map (x: "ln -s ${x.src} \"$out/resources/geodata/${x.name}\"") fetched
+    map (x: "ln -s ${x.src} \"$out/resources/geodata/${x.name}\"") (fetched ++ fetchedNaturalEarth)
   )}
 ''

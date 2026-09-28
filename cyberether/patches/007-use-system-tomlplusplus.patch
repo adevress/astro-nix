@@ -1,0 +1,15 @@
+diff --git a/meson/loaders/tomlplusplus/meson.build b/meson/loaders/tomlplusplus/meson.build
+index ec205e1e..66668003 100644
+--- a/meson/loaders/tomlplusplus/meson.build
++++ b/meson/loaders/tomlplusplus/meson.build
+@@ -1,7 +1,7 @@
++# Use the system toml++ (discovered through pkg-config) instead of the
++# bundled meson wrapdb subproject.
+ deps = [
+-    subproject('tomlplusplus', required: true, default_options: [
+-        'default_library=static',
+-    ]).get_variable('tomlplusplus_dep'),
++    dependency('tomlplusplus', required: true),
+ ]
+ 
+ all_deps_found = true

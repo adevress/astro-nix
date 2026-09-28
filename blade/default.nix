@@ -1,4 +1,4 @@
-# BLADE 2.0.0-dev — Breakthrough Listen Accelerated DSP Engine.
+# BLADE 2.0.0 — Breakthrough Listen Accelerated DSP Engine.
 #
 # Jetstream (CyberEther) DSP plugin for radio telescopes (Allen Telescope
 # Array). Builds the CPU device implementation (`-Ddevices=cpu`); CUDA support
@@ -51,14 +51,15 @@ let
 in
 stdenv.mkDerivation {
   pname = "blade";
-  # One commit past v2.0.0-beta7 (7c07e3b "fix(dsp): correct CUDA validation
-  # and channelizer diagnostics", 2026-08-21).
-  version = "2.0.0-dev";
+  # v2.0.0 (28e2968 "chore(version): update CyberEther to v1.10.1"), the
+  # release matching the CyberEther/Jetstream 1.10+ API used by this repo's
+  # CyberEther (see subprojects/cyberether.wrap upstream).
+  version = "2.0.0";
 
   src = fetchgit {
     url = "https://github.com/luigifcruz/blade.git";
-    rev = "7c07e3b238587ddc9c6e076195a6a70858f07e5c";
-    sha256 = "sha256-gD/GxjStzS8/UOJghmjMlg4V3XUvIIijNv08aWvNy0E=";
+    rev = "28e29684ca9367a6143c4baff92475277b1f7226"; # v2.0.0
+    sha256 = "sha256-A2r+qiqNl68Q17yyy/RYqfl8xRSoiBUQMtkNT/JA0+0=";
     fetchSubmodules = false;
   };
 
