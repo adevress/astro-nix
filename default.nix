@@ -85,7 +85,7 @@ let
     };
     aoflagger = pkgs.callPackage ./aoflagger/default.nix { inherit aocommon; };
     ds9 = pkgs.callPackage ./ds9/default.nix { };
-
+    
     # Host GPU driver wrapper (nixGL-like) with CUDA support.
     # `nix run -f ./ nixgpu -- <program>` runs <program> with the host drivers.
     nixgpu = pkgs.callPackage ./nixgpu/default.nix {
@@ -98,6 +98,20 @@ let
       cudaPackages = pkgs.cudaPackages_13_0;
       inherit (astroConfig) cudaArch;
     };
+    
+    # SoapySDR with the SDR driver plugins CyberEther supports, joined into the
+    # SoapySDR output with Nixpkgs' own `extraPackages` mechanism so that
+    # SoapySDR discovers them at runtime (`SoapySDR::listModules()`).
+    soapysdrWithPlugins = pkgs.soapysdr.override {
+      extraPackages = [
+        pkgs.soapyairspy
+        pkgs.soapybladerf
+        pkgs.soapyhackrf
+        pkgs.soapyrtlsdr
+        pkgs.limesuite
+      ];
+    };
+    
     cyberether = pkgs.callPackage ./cyberether/default.nix {
       inherit
         meson
@@ -114,6 +128,8 @@ let
         ;
       qrencode = pkgs.qrencode;
       fmt = pkgs.fmt;
+      tomlplusplus = pkgs.tomlplusplus;
+      soapysdr = soapysdrWithPlugins;
       geodata = pkgs.callPackage ./cyberether/geodata/default.nix { };
     };
   };

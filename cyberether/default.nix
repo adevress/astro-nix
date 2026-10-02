@@ -1,7 +1,7 @@
-# CyberEther 1.9.2 — GPU-accelerated signal processing framework.
+# CyberEther 1.11.0 — GPU-accelerated signal processing framework.
 #
 # Features enabled: Vulkan GUI, Superluminal Python bindings (-Dpython=true),
-# SDR stack (SoapySDR/Airspy/HackRF/RTLSDR/LimeSuite), examples, tests.
+# SDR stack (SoapySDR/Airspy/HackRF/RTLSDR/LimeSuite/bladeRF), examples, tests.
 # `remote` (static GStreamer) and `inference` (ONNX Runtime) are disabled:
 # they are heavy upstream subprojects, same scope as the project's own
 # native (non-Docker) build notes.
@@ -9,14 +9,14 @@
 # Meson subprojects are resolved fully offline: every source/patch the wrap
 # files pin is provided as a Nix derivation (flat namespace siblings of this
 # package: glfw glm rapidyaml cpp-httplib nlohmann_json nanobench nanobind
-# robin-map libmodes stb) or bundled inline (catch2, tree-sitter-*, velopack
-# [optional, disabled via -Dvelopack=disabled], SoapySDR stack). zlib, openssl,
-# libqrencode, libusb, libhackrf and fmt are exceptions: the loaders use the
-# system zlib/openssl/libqrencode/fmt via pkg-config, the SDR subprojects are
-# pointed at the system libusb (nixpkgs 1.0.29) and system libhackrf (nixpkgs
-# hackrf 2026.01.3) through small meson subproject shims instead of building
-# the bundled libusb/hackrf copies. All remaining sources are merged into
-# MESON_PACKAGE_CACHE_DIR before `meson setup --wrap-mode=nodownload`.
+# robin-map libmodes stb) or bundled inline (catch2, tree-sitter-*,
+# velopack [optional, disabled via -Dvelopack=disabled]). zlib, openssl,
+# libqrencode, fmt, toml++ and the whole SDR stack are exceptions: the loaders
+# use Nixpkgs' zlib/openssl/libqrencode/fmt/toml++ through pkg-config, and
+# SoapySDR (with its driver plugins) is taken from Nixpkgs and loaded at runtime
+# by the patched soapy loader (008-use-system-soapysdr.patch). All remaining
+# sources are merged into MESON_PACKAGE_CACHE_DIR before
+# `meson setup --wrap-mode=nodownload`.
 {
   lib,
   stdenv,
@@ -57,21 +57,23 @@
   # System libqrencode (4.1.1, discovered via pkg-config by the patched
   # loader); no bundle.
   qrencode,
-  # Upstream nixpkgs libusb (1.0.29); consumed by the SDR meson subprojects via
-  # the `subprojects/libusb` shim instead of the bundled 1.0.26 subproject.
-  libusb1,
-  # Upstream nixpkgs hackrf package (libhackrf, 2026.01.3); consumed by the
-  # soapyhackrf SDR meson subproject via the `subprojects/libhackrf` shim
-  # instead of the bundled hackrf subproject.
-  hackrf,
+  # System toml++ (3.4.0, discovered by the patched loader via pkg-config);
+  # no bundle (wrapdb no longer serves the patch that turns the upstream
+  # tarball into a meson subproject).
+  tomlplusplus,
+  # Nixpkgs' SoapySDR, joined with the SDR driver plugins (airspy, bladeRF,
+  # HackRF, Lime, rtlsdr) through `soapysdr.override { extraPackages = ...; }`
+  # so that SoapySDR discovers them at runtime (see the patched soapy loader).
+  soapysdr,
   geodata,
 }:
 
 let
   #
-  # Inline subproject bundles (exceptions kept out of the flat namespace:
-  # catch2 = tests only, tree-sitter-* and velopack [optional, disabled via
-  # -Dvelopack=disabled] = exempted, SDR stack = keep as subproject per request).
+  # Inline subproject bundles (kept out of the flat namespace: catch2 = tests
+  # only, tree-sitter-* = release tarballs, velopack = optional, disabled via
+  # -Dvelopack=disabled). The whole SDR stack comes from Nixpkgs (see
+  # `soapysdr`), so no soapy/limesuite/rtlsdr/airspy sources are bundled.
   #
   catch2 = fetchurl {
     name = "Catch2-3.4.0.tar.gz";
@@ -97,41 +99,6 @@ let
     name = "tree-sitter-markdown-0.5.3.tar.gz";
     url = "https://github.com/tree-sitter-grammars/tree-sitter-markdown/releases/download/v0.5.3/tree-sitter-markdown.tar.gz";
     sha256 = "22e40c51810e64c6bf073f0147f3abc167473206789e6dcbed4ba198ff3ca119";
-  };
-  soapysdr = fetchurl {
-    name = "SoapySDR-soapy-sdr-0.8.1.tar.gz";
-    url = "https://github.com/pothosware/SoapySDR/archive/refs/tags/soapy-sdr-0.8.1.tar.gz";
-    sha256 = "a508083875ed75d1090c24f88abef9895ad65f0f1b54e96d74094478f0c400e6";
-  };
-  soapyairspy = fetchurl {
-    name = "SoapyAirspy-soapy-airspy-0.2.0.tar.gz";
-    url = "https://github.com/pothosware/SoapyAirspy/archive/refs/tags/soapy-airspy-0.2.0.tar.gz";
-    sha256 = "4279ab4278fab699ef8325f3f921b2307496130a56028d33022be10916b6ccff";
-  };
-  soapyhackrf = fetchurl {
-    name = "SoapyHackRF-soapy-hackrf-0.3.4.tar.gz";
-    url = "https://github.com/pothosware/SoapyHackRF/archive/refs/tags/soapy-hackrf-0.3.4.tar.gz";
-    sha256 = "c7a1b8aee7af9d9e11e42aa436eae8508f19775cdc8bc52e565a5d7f2e2e43ed";
-  };
-  soapyrtlsdr = fetchurl {
-    name = "SoapyRTLSDR-soapy-rtl-sdr-0.3.3.tar.gz";
-    url = "https://github.com/pothosware/SoapyRTLSDR/archive/refs/tags/soapy-rtl-sdr-0.3.3.tar.gz";
-    sha256 = "757c3c3bd17c5a12c7168db2f2f0fd274457e65f35e23c5ec9aec34e3ef54ece";
-  };
-  limesuite = fetchurl {
-    name = "LimeSuite-23.11.0.tar.gz";
-    url = "https://github.com/myriadrf/LimeSuite/archive/refs/tags/v23.11.0.tar.gz";
-    sha256 = "fd8a448b92bc5ee4012f0ba58785f3c7e0a4d342b24e26275318802dfe00eb33";
-  };
-  libairspy = fetchurl {
-    name = "airspyone_host-1.0.10.tar.gz";
-    url = "https://github.com/airspy/airspyone_host/archive/refs/tags/v1.0.10.tar.gz";
-    sha256 = "fcca23911c9a9da71cebeffeba708c59d1d6401eec6eb2dd73cae35b8ea3c613";
-  };
-  librtlsdr = fetchurl {
-    name = "librtlsdr-1261fbb285297da08f4620b18871b6d6d9ec2a7b.zip";
-    url = "https://github.com/steve-m/librtlsdr/archive/1261fbb285297da08f4620b18871b6d6d9ec2a7b.zip";
-    sha256 = "79925da4e274b87a98e5364459e0e3faf346bd56dfcb7d38fa089e5cc6785797";
   };
   mkBundle =
     { name, files }:
@@ -181,69 +148,6 @@ let
         }
       ];
     })
-    (mkBundle {
-      name = "soapysdr-subproject-bundle";
-      files = [
-        {
-          src = soapysdr;
-          cacheName = "SoapySDR-soapy-sdr-0.8.1.tar.gz";
-        }
-      ];
-    })
-    (mkBundle {
-      name = "soapyairspy-subproject-bundle";
-      files = [
-        {
-          src = soapyairspy;
-          cacheName = "SoapyAirspy-soapy-airspy-0.2.0.tar.gz";
-        }
-      ];
-    })
-    (mkBundle {
-      name = "soapyhackrf-subproject-bundle";
-      files = [
-        {
-          src = soapyhackrf;
-          cacheName = "SoapyHackRF-soapy-hackrf-0.3.4.tar.gz";
-        }
-      ];
-    })
-    (mkBundle {
-      name = "soapyrtlsdr-subproject-bundle";
-      files = [
-        {
-          src = soapyrtlsdr;
-          cacheName = "SoapyRTLSDR-soapy-rtl-sdr-0.3.3.tar.gz";
-        }
-      ];
-    })
-    (mkBundle {
-      name = "limesuite-subproject-bundle";
-      files = [
-        {
-          src = limesuite;
-          cacheName = "LimeSuite-23.11.0.tar.gz";
-        }
-      ];
-    })
-    (mkBundle {
-      name = "libairspy-subproject-bundle";
-      files = [
-        {
-          src = libairspy;
-          cacheName = "airspyone_host-1.0.10.tar.gz";
-        }
-      ];
-    })
-    (mkBundle {
-      name = "librtlsdr-subproject-bundle";
-      files = [
-        {
-          src = librtlsdr;
-          cacheName = "librtlsdr-1261fbb285297da08f4620b18871b6d6d9ec2a7b.zip";
-        }
-      ];
-    })
   ];
 
   # All bundles merged into the meson wrap cache (files and extracted dirs).
@@ -264,12 +168,12 @@ let
 in
 stdenv.mkDerivation {
   pname = "cyberether";
-  version = "1.9.2";
+  version = "1.11.0";
 
   src = fetchgit {
     url = "https://github.com/luigifcruz/cyberether.git";
-    rev = "a8e4bee00be1977f44eee453f3f8b55b999b4b03"; # v1.9.2
-    sha256 = "sha256-YyPrFueGifaV9eAzwEHGwMd9uM0UAamWVx30SxXYMBk=";
+    rev = "3f2d659ac47fd911d14f048787660ba39b9282c2"; # v1.11.0
+    sha256 = "sha256-t/tlszI5ENlnD2Ly3oyi0K3ywgyaJ91iA+bnjGcNz6w=";
   };
 
   # Upstream compiles cpp-httplib as an LTO static archive, which cannot be
@@ -285,6 +189,8 @@ stdenv.mkDerivation {
     ./patches/004-use-system-openssl.patch
     ./patches/005-use-system-qrencode.patch
     ./patches/006-use-system-fmt.patch
+    ./patches/007-use-system-tomlplusplus.patch
+    ./patches/008-use-system-soapysdr.patch
   ];
 
   nativeBuildInputs = [
@@ -322,11 +228,11 @@ stdenv.mkDerivation {
     qrencode
     # System fmt (libfmt) for the patched fmt loader (pkg-config).
     fmt
-    # Upstream libusb for the SDR meson subprojects (see the shim below).
-    libusb1
-    # Upstream hackrf for the soapyhackrf SDR meson subproject (see the shim
-    # below); provides libhackrf via pkg-config.
-    hackrf
+    # System toml++ for the patched tomlplusplus loader (pkg-config).
+    tomlplusplus
+    # SoapySDR joined with the SDR driver plugins (see the patched soapy
+    # loader); the plugins are picked up by SoapySDR at runtime.
+    soapysdr
   ];
 
   enableParallelBuilding = true;
@@ -356,32 +262,27 @@ stdenv.mkDerivation {
     cp -rL ${geodata}/resources/. resources/
 
     # --- offline meson wrap cache -----------------------------------------
-    # The zlib, openssl, qrencode and fmt subproject wraps are dropped: their
-    # loaders now use the system libraries via pkg-config (see patches
-    # 002-use-system-zlib.patch, 004-use-system-openssl.patch,
-    # 005-use-system-qrencode.patch and 006-use-system-fmt.patch).
+    # The zlib, openssl, qrencode, fmt and tomlplusplus subproject wraps are
+    # dropped: their loaders use the system libraries via pkg-config (see
+    # patches 002-use-system-zlib.patch, 004-use-system-openssl.patch,
+    # 005-use-system-qrencode.patch, 006-use-system-fmt.patch and
+    # 007-use-system-tomlplusplus.patch).
     rm -f subprojects/zlib.wrap subprojects/openssl.wrap \
-      subprojects/qrencode.wrap subprojects/fmt.wrap
+      subprojects/qrencode.wrap subprojects/fmt.wrap \
+      subprojects/tomlplusplus.wrap
 
-    # --- system libusb ---------------------------------------------------
-    # libhackrf/librtlsdr/libairspy/limesuite all call
-    # `subproject('libusb').get_variable('libusb_dep')`. Drop the bundled
-    # 1.0.26 wrap and install the local shim subproject (libusb-shim/) that
-    # forwards that variable to the upstream nixpkgs libusb (1.0.29) through
-    # pkg-config.
-    rm -f subprojects/libusb.wrap
-    mkdir -p subprojects/libusb
-    install -m 644 ${./libusb-shim}/meson.build \
-      ${./libusb-shim}/meson_options.txt subprojects/libusb/
-
-    # --- system libhackrf -------------------------------------------------
-    # soapyhackrf does `subproject('libhackrf').get_variable('libhackrf_dep')`.
-    # Drop the bundled hackrf wrap and install the local shim subproject
-    # (libhackrf-shim/) that forwards that variable to the upstream nixpkgs
-    # hackrf package (libhackrf) through pkg-config.
-    rm -f subprojects/libhackrf.wrap
-    mkdir -p subprojects/libhackrf
-    install -m 644 ${./libhackrf-shim}/meson.build subprojects/libhackrf/
+    # --- system SoapySDR ---------------------------------------------------
+    # The patched soapy loader uses the system SoapySDR + its plugin modules
+    # (patch 008-use-system-soapysdr.patch); the bundled soapysdr and
+    # SoapySDR-driver subprojects, and therefore the libusb/libhackrf shims
+    # they needed, are gone. Their wraps are inert but harmless; drop them so
+    # `--wrap-mode=nodownload` never has to consider them.
+    rm -f subprojects/soapysdr.wrap subprojects/soapyairspy.wrap \
+      subprojects/soapyhackrf.wrap subprojects/soapyrtlsdr.wrap \
+      subprojects/limesuite.wrap subprojects/libairspy.wrap \
+      subprojects/librtlsdr.wrap subprojects/soapybladerf.wrap \
+      subprojects/libbladerf.wrap subprojects/bladerf-no-os.wrap \
+      subprojects/libusb.wrap subprojects/libhackrf.wrap
 
     export MESON_PACKAGE_CACHE_DIR="$(pwd)/meson-cache"
     mkdir -p "$MESON_PACKAGE_CACHE_DIR"
