@@ -1,12 +1,28 @@
 {
   system ? builtins.currentSystem,
   upstream_pkgs ? null,
+  # Astro-nix build configuration.  Defaults to ./config.nix; pass a partial
+  # attrset to override individual settings, e.g.
+  #   nix build -f . cuda-hello --arg config '{ cudaArch = [ "sm_121" ]; }'
+  config ? { },
 }:
 let
-  pkgs = import (fetchTarball {
-    url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/25.11.tar.gz";
-    sha256 = "1zn1lsafn62sz6azx6j735fh4vwwghj8cc9x91g5sx2nrg23ap9k";
-  }) { inherit system; };
+  astroConfig = (import ./config.nix) // config;
+
+  # CUDA redistributables (cudaPackages) are unfree; NixGpu and cuda-hello
+  # need them.  Nothing here builds an unfree package unless asked to.
+  # `cudaArch` is an astro-nix setting, not a nixpkgs one, so it is not
+  # forwarded to the nixpkgs import.
+  pkgs =
+    import
+      (fetchTarball {
+        url = "https://github.com/NixOS/nixpkgs/archive/refs/tags/25.11.tar.gz";
+        sha256 = "1zn1lsafn62sz6azx6j735fh4vwwghj8cc9x91g5sx2nrg23ap9k";
+      })
+      {
+        inherit system;
+        config = builtins.removeAttrs astroConfig [ "cudaArch" ];
+      };
 
   astro_pkgs = rec {
 
@@ -69,6 +85,19 @@ let
     };
     aoflagger = pkgs.callPackage ./aoflagger/default.nix { inherit aocommon; };
     ds9 = pkgs.callPackage ./ds9/default.nix { };
+
+    # Host GPU driver wrapper (nixGL-like) with CUDA support.
+    # `nix run -f ./ nixgpu -- <program>` runs <program> with the host drivers.
+    nixgpu = pkgs.callPackage ./nixgpu/default.nix {
+      # intel-media-driver only exists on x86; it is simply omitted elsewhere.
+      intel-media-driver = if pkgs.stdenv.hostPlatform.isx86 then pkgs.intel-media-driver else null;
+    };
+
+    # Small CUDA test program, built hermetically with the Nix CUDA toolkit.
+    cuda-hello = pkgs.callPackage ./cuda-hello/default.nix {
+      cudaPackages = pkgs.cudaPackages_13_0;
+      inherit (astroConfig) cudaArch;
+    };
     cyberether = pkgs.callPackage ./cyberether/default.nix {
       inherit
         meson
