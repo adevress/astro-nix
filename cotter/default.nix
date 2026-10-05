@@ -37,7 +37,14 @@ stdenv.mkDerivation rec {
   # Upstream CMake hard-codes -march=x86-64 (PORTABLE=ON) / -march=native
   # (PORTABLE=OFF).  The former does not compile on aarch64, the latter would
   # make CI-cached binaries depend on the build host CPU.  Drop both.
-  patches = [ ./001-portable-march.patch ];
+  #
+  # 002: averagingwriter.cpp and cotter.cpp include <xmmintrin.h> (x86 SSE
+  # intrinsics) unconditionally, although both have a complete scalar
+  # (#ifndef USE_SSE) fallback; gate them on x86 targets so aarch64 builds.
+  patches = [
+    ./001-portable-march.patch
+    ./002-sse-only-on-x86.patch
+  ];
 
   nativeBuildInputs = [
     cmake
