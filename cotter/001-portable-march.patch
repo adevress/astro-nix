@@ -1,0 +1,16 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -28,10 +28,9 @@
+ find_library(PTHREAD_LIB pthread REQUIRED)
+ 
+ option(PORTABLE "Compile for portability" OFF) #OFF by default
+-if(PORTABLE)    
+-	add_compile_options(-march=x86-64)
+-else()    
+-	add_compile_options(-march=native)
++if(PORTABLE)
++	# -march flags are dropped: -march=x86-64 does not exist on aarch64 and
++	# -march=native makes the binary depend on the build host CPU.
+ endif(PORTABLE)
+ add_compile_options(
+   -O3
