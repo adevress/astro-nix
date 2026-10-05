@@ -68,6 +68,14 @@ let
       inherit casacore ska-sdp-func;
     };
     aoflagger = pkgs.callPackage ./aoflagger/default.nix { inherit aocommon; };
+    pal = pkgs.callPackage ./pal/default.nix { };
+    cotter = pkgs.callPackage ./cotter/default.nix {
+      inherit
+        casacore
+        aoflagger
+        pal
+        ;
+    };
     ds9 = pkgs.callPackage ./ds9/default.nix { };
     cyberether = pkgs.callPackage ./cyberether/default.nix {
       inherit
