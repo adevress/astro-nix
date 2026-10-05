@@ -28,6 +28,21 @@ stdenv.mkDerivation rec {
     "--with-erfa=${liberfa}"
   ];
 
+  # glibc declares strlcpy() in <string.h> behind __USE_MISC, which sources
+  # defining strict feature macros (_POSIX_C_SOURCE, ...) hide; that breaks
+  # the HAVE_STRLCPY build path with an implicit-declaration error.
+  # Backport: have autoconf AC_DEFINE _DEFAULT_SOURCE in config.h (included
+  # before the libc headers) so the glibc strlcpy() declaration is visible
+  # everywhere without touching the individual sources.
+  patches = [ ./001-strlcpy-glibc-default-source.patch ];
+
+  # The patch touches configure.ac, which would make make try to re-run the
+  # (missing, Starlink-patched) aclocal/autoconf/autoheader rules.  Keep the
+  # shipped generated files authoritative by making them newer.
+  postPatch = ''
+    touch aclocal.m4 configure config.h.in Makefile.in
+  '';
+
   # Keep the .la file out of the closure; cotter links with find_library().
   postInstall = ''
     rm -f "$out"/lib/libpal.la
