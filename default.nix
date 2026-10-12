@@ -153,7 +153,7 @@ let
 
   py_astro_pkgs = rec {
 
-    python3Packages = pkgs.python3Packages // rec {
+    python3Packages = pkgs.python3Packages.overrideScope (final: prev: {
       radler = astro_pkgs.radler.override { pythonBuild = true; };
       xtensor-python = pkgs.callPackage ./xtensor-python/default.nix { };
       mapbox-earcut = pkgs.callPackage ./mapbox-earcut/default.nix {
@@ -167,7 +167,41 @@ let
         cmake = pkgs.cmake;
         ninja = pkgs.ninja;
       };
-    };
+
+      # DDF pipeline Python packages (dependency order matters)
+      sharedarray = final.callPackage ./sharedarray/default.nix { };
+      pyephem = final.callPackage ./pyephem/default.nix { };
+      pyfftw = final.callPackage ./pyfftw/default.nix {
+        fftw = pkgs.fftw;
+        fftwFloat = pkgs.fftwFloat;
+      };
+      regions = final.callPackage ./regions/default.nix { };
+      codex-africanus = final.callPackage ./codex-africanus/default.nix { };
+      bdsf = final.callPackage ./bdsf/default.nix {
+        boost = pkgs.boost.override { enablePython = true; enableNumpy = true; python = pkgs.python3; };
+      };
+      purr = final.callPackage ./purr/default.nix { };
+      pdu = final.callPackage ./pdu/default.nix { };
+      treepick = final.callPackage ./treepick/default.nix { };
+      yorn = final.callPackage ./yorn/default.nix { };
+
+      python-casacore = final.callPackage ./python-casacore/default.nix {
+        casacore = astro_pkgs.casacore;
+        boost = pkgs.boost.override { enablePython = true; python = pkgs.python3; };
+        wcslib = astro_pkgs.wcslib;
+        cfitsio = pkgs.cfitsio;
+        readline = pkgs.readline;
+        openblas = pkgs.openblas;
+      };
+
+      meqtrees-cattery = final.callPackage ./meqtrees-cattery/default.nix { };
+
+      ddfacet = final.callPackage ./ddfacet/default.nix { };
+
+      killms = final.callPackage ./killms/default.nix { };
+
+      ddf-pipeline = final.callPackage ./ddf-pipeline/default.nix { };
+    });
 
     astroPyEnv = pkgs.python3Packages.python.withPackages (ps: [
       python3Packages.radler
@@ -178,6 +212,19 @@ let
       ps.xarray
       ps.matplotlib
       ps.astropy
+    ]);
+
+    # Full DDF pipeline Python environment
+    ddfPyEnv = pkgs.python3Packages.python.withPackages (ps: [
+      python3Packages.ddf-pipeline
+      python3Packages.ddfacet
+      python3Packages.killms
+      ps.astropy
+      ps.scipy
+      ps.numpy
+      ps.matplotlib
+      ps.pandas
+      ps.dask
     ]);
   };
 
