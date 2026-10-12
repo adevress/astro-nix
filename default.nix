@@ -105,6 +105,8 @@ let
         pkgs.soapyrtlsdr
         pkgs.limesuite
       ];
+    };
+
     # Host GPU driver wrapper (nixGL-like) with CUDA support.
     # `nix run -f ./ nixgpu -- <program>` runs <program> with the host drivers.
     nixgpu = pkgs.callPackage ./nixgpu/default.nix {
