@@ -30,6 +30,15 @@ let
     libmodes = pkgs.callPackage ./libmodes/default.nix { };
     stb = pkgs.callPackage ./stb/default.nix { };
 
+    # Generic C++ libraries (header only, no astronomy dependency)
+    alea = pkgs.callPackage ./alea/default.nix {
+      cudaPackages = null; # host only build, free software, cacheable
+    };
+
+    aleaWithCuda = pkgs.callPackage ./alea/default.nix {
+      cudaPackages = pkgs.cudaPackages;
+    };
+
     # specialization of packaged
     openblasSingleThreaded = pkgs.openblas.override { singleThreaded = true; };
 
