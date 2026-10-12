@@ -21,6 +21,8 @@ All packages below are attributes of the merged set returned by the repo root `d
 | `wcslib` / `wcstools` | WCS library / WCS CLI tools | wcslib feeds casacore |
 | `ds9` | SAOImage DS9 FITS viewer | `nix run -f ./ ds9` |
 | `xtensor-fftw` | FFTW bindings for xtensor | top-level C++ package |
+| `alea` | Counter based RNGs (threefry, philox, ars) in C++20 | header only, found via pkg-config `alea`; `callPackage { validation = true; }` also runs the random123 comparison tests |
+| `aleaWithCuda` | `alea` + the GPU tests (nvcc, kernels checked against the host) | pass `cudaPackages = null` for the host-only build; needs `sandbox = false` in nix.conf and `NIXPKGS_ALLOW_UNFREE=1`, and is not pushed to the shared cache |
 | `openblasSingleThreaded` | openblas with `singleThreaded = true` | used by casacore/aocommon |
 | `hello` | trivial test package | smoke-test the setup |
 
