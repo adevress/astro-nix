@@ -1,0 +1,12 @@
+--- a/killMS/Array/Dot/dot0.c
++++ b/killMS/Array/Dot/dot0.c
+@@ -19,7 +19,9 @@
+ #include <stdlib.h>
+ #include <math.h>
+ #include <stdio.h>
++#ifdef __x86_64__
+ #include <emmintrin.h>
++#endif
+ #include <time.h>
+ #include "complex.h"
+ #include <omp.h>
