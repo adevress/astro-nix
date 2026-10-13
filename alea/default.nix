@@ -74,26 +74,9 @@ in
     "-DFETCHCONTENT_SOURCE_DIR_RANDOM123=${random123}"
   ];
 
-  doCheck = true;
-
-  # the nix toolchain loader only searches the store, so expose the host driver
-  # through a directory holding nothing else; without it every device call
-  # fails with "CUDA driver version is insufficient for CUDA runtime version"
-  preCheck = lib.optionalString cudaSupport ''
-    driver_dir="$PWD/.cuda-driver"
-    mkdir -p "$driver_dir"
-    for candidate in /usr/lib/*/libcuda.so.1 /usr/lib64/libcuda.so.1 \
-                      /usr/lib/libcuda.so.1 /lib/*/libcuda.so.1 /lib64/libcuda.so.1; do
-      [ -e "$candidate" ] || continue
-      ln -sfn "$candidate" "$driver_dir/libcuda.so.1"
-      break
-    done
-    if [ -e "$driver_dir/libcuda.so.1" ]; then
-      export LD_LIBRARY_PATH="$driver_dir''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-    elif [ -z "''${LD_LIBRARY_PATH:-}" ]; then
-      echo "alea: no libcuda.so.1 found, the GPU tests need the NVIDIA driver of the machine, visible from the build (sandbox = false in nix.conf)" >&2
-    fi
-  '';
+  # disable tests if cuda is enabled to support compilation
+  # on platforms without cuda card
+  doCheck = cudaSupport == false;
 
   meta = with lib; {
     description = "Counter based pseudo random number generators (threefry, philox, ars) in modern C++";
