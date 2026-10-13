@@ -27,3 +27,8 @@ Read @README.md and use the instructions
 ## Purity
 
 - Never rely on `builtins.currentSystem`; pass `system` explicitly through `callPackage`
+
+
+## Restrictions
+
+- Never ever write to the git history. This include rebase and commit. Excepted if explicitely requested by the user
