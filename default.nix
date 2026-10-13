@@ -200,6 +200,13 @@ let
 
       killms = final.callPackage ./killms/default.nix { };
 
+      # Git-tracked development snapshots (see instructions/ddf_dev.md).
+      ddfacet_dev = final.callPackage ./ddfacet/dev.nix { };
+
+      killms_dev = final.callPackage ./killms/dev.nix {
+        ddfacet = final.ddfacet_dev;
+      };
+
       ddf-pipeline = final.callPackage ./ddf-pipeline/default.nix { };
     });
 
@@ -219,6 +226,18 @@ let
       python3Packages.ddf-pipeline
       python3Packages.ddfacet
       python3Packages.killms
+      ps.astropy
+      ps.scipy
+      ps.numpy
+      ps.matplotlib
+      ps.pandas
+      ps.dask
+    ]);
+
+    # Development (Git) variant of the DDF environment.
+    ddfPyEnvDev = pkgs.python3Packages.python.withPackages (ps: [
+      python3Packages.ddfacet_dev
+      python3Packages.killms_dev
       ps.astropy
       ps.scipy
       ps.numpy
@@ -250,4 +269,5 @@ pkgSet
     cyberether = cyberetherFixed;
     libxcb = pkgSet.xorg.libxcb;
   };
+
 }
