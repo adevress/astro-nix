@@ -54,7 +54,7 @@ buildPythonPackage rec {
   meta = with lib; {
     homepage = "https://github.com/pyFFTW/pyFFTW";
     description = "Python wrapper for the FFTW library";
-    license = licenses.gpl3;
+    license = licenses.bsd3;
     maintainers = with maintainers; [ ];
   };
 }

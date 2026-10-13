@@ -29,7 +29,7 @@ buildPythonPackage rec {
   meta = with lib; {
     homepage = "https://github.com/tslight/yorn";
     description = "A boringly simple CLI input function";
-    license = licenses.mit;
+    license = licenses.isc;
     maintainers = with maintainers; [ ];
   };
 }
