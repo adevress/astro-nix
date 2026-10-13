@@ -79,7 +79,24 @@ nix shell -f ./ wsclean --command bash
 wsclean
 ```
 
-### Example III: Python environment for radio astronomy
+### Example III: ddfacet and killms
+
+Install the facet-based imager DDFacet together with its direction-dependent
+calibrator killMS, and get a shell exposing both command-line tools:
+
+```bash
+# download, (compile), install ddfacet + killms and get a shell
+nix shell -f ./ python3Packages.ddfacet python3Packages.killms --command bash
+# execute them
+DDF.py -h    # DDFacet imager
+kMS.py -h    # killMS calibrator
+```
+
+> Note: the full DDF pipeline Python environment (ddf-pipeline, ddfacet and
+> killms plus astropy/scipy/numpy/matplotlib/pandas/dask) is available as
+> `ddfPyEnv`: `nix shell -f ./ ddfPyEnv --command bash`.
+
+### Example IV: Python environment for radio astronomy
 
 Get a Python environment with:
 - astropy
@@ -95,7 +112,7 @@ nix shell -f ./ astroPyEnv --command bash
 python -c "import astropy; print('Success!')"
 ```
 
-### Example IV: Use ds9 for image vizualization
+### Example V: Use ds9 for image vizualization
 
 ```bash
 # download, (compile), install astroPyEnv and get a shell
@@ -104,7 +121,7 @@ nix run -f ./ ds9
 python -c "import astropy; print('Success!')"
 ```
 
-### Example V: Search for a package
+### Example VI: Search for a package
 
 `nix search` works against this repo via the flake (`.`). It searches the
 entire package set provided by astro-nix, which includes both the repo's own
