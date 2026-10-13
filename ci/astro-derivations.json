@@ -12,6 +12,9 @@
 			"cyberether",
 			"blade",
 			"cotter",
-			"alea"
+			"alea",
+			"python3Packages.ddfacet",
+			"python3Packages.killms",
+			"python3Packages.ddf-pipeline"
 			] 
 }
