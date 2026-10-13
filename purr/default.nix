@@ -43,9 +43,9 @@ buildPythonPackage rec {
   pythonImportsCheck = [ ];
 
   meta = with lib; {
-    homepage = "https://github.com/ratt-ru/purr";
+    homepage = "https://github.com/ska-sa/purr";
     description = "Logging utilities for radio astronomy";
-    license = licenses.bsd3;
+    license = licenses.gpl2;
     maintainers = with maintainers; [ ];
   };
 }

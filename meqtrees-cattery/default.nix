@@ -49,7 +49,7 @@ buildPythonPackage rec {
   meta = with lib; {
     homepage = "https://github.com/ska-sa/meqtrees-cattery";
     description = "MeqTrees Cattery library for radio astronomy";
-    license = licenses.gpl3;
+    license = licenses.gpl2Plus;
     maintainers = with maintainers; [ ];
   };
 }

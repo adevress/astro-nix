@@ -31,9 +31,9 @@ buildPythonPackage rec {
   pythonImportsCheck = [ "SharedArray" ];
 
   meta = with lib; {
-    homepage = "https://github.com/donderom/SharedArray";
+    homepage = "https://gitlab.com/tenzing/shared-array";
     description = "NumPy shared memory arrays across processes";
-    license = licenses.gpl3;
+    license = licenses.gpl2Plus;
     maintainers = with maintainers; [ ];
   };
 }

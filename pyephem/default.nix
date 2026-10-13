@@ -29,7 +29,7 @@ buildPythonPackage rec {
   dontCheck = true;
 
   meta = with lib; {
-    homepage = "https://pypi.org/project/pyephem/";
+    homepage = "https://rhodesmill.org/pyephem/";
     description = "Stub package that depends on ephem (astronomical ephemeris)";
     license = licenses.mit;
     maintainers = with maintainers; [ ];

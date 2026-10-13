@@ -29,7 +29,7 @@ buildPythonPackage rec {
   meta = with lib; {
     homepage = "https://github.com/tslight/pdu";
     description = "Python Disk Usage utility";
-    license = licenses.mit;
+    license = licenses.isc;
     maintainers = with maintainers; [ ];
   };
 }
