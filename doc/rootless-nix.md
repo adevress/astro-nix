@@ -18,7 +18,7 @@ chmod 775 ~/bin/nix
 2- Create your software store directory
 
 Tip: If you are in an HPC system, put the software directory in your project directory.
-     Try to avoid to put it on slow filesystem like NFS.
+     Try to avoid putting it on a slow filesystem like NFS.
 
 ```bash
 # This directory prefix will be where all nix software will be installed
@@ -38,28 +38,39 @@ chmod g-s ${NIX_USER_ROOT_STORE}
 ```
 
 
-3- Setup the appropriate config file for a namespaced installation
+3- Set up the appropriate config file for a namespaced installation
 
 ```bash
 mkdir -p ~/.config/nix
 
+# Resolve the distribution-specific CA bundle
+# (Debian/Ubuntu/Arch/Alpine, RHEL/Fedora, openSUSE)
+CA_BUNDLE=""
+for f in /etc/ssl/certs/ca-certificates.crt \
+         /etc/pki/tls/certs/ca-bundle.crt \
+         /etc/ssl/ca-bundle.pem; do
+  [ -e "$f" ] && CA_BUNDLE="$f" && break
+done
+[ -n "$CA_BUNDLE" ] || { echo "No CA bundle found" >&2; exit 1; }
+
 cat > ~/.config/nix/nix.conf << EOF
 store = ${NIX_USER_ROOT_STORE}
 extra-experimental-features = flakes nix-command
-ssl-cert-file = /etc/ssl/ca-bundle.pem
+ssl-cert-file = ${CA_BUNDLE}
 extra-substituters = https://cache.astro-nix.space/
-extra-trusted-public-keys = astro-nix-secret:QASg0gb6rH/PxxthSsoGvw739dyKwEIVnhhhD7wA02A= 
-ignored-acls =  lustre.lov
-EOF  
+extra-trusted-public-keys = astro-nix-secret:QASg0gb6rH/PxxthSsoGvw739dyKwEIVnhhhD7wA02A=
+ignored-acls = lustre.lov
+EOF
+
 
 ```
 
-3- bootstrap basic packages and test it
+4- Bootstrap basic packages and test it
 
 ```
 # will take some time on first run
 nix search nixpkgs hello
-# 
+# install and run a first package
 nix run nixpkgs#hello
 
 ```
