@@ -68,7 +68,9 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     description = "AOFlagger - Radio Frequency Interference detection and removal tool";
     homepage = "https://gitlab.com/aroffringa/aoflagger";
-    license = licenses.gpl3;
+    # GPL-3.0-or-later: upstream README states "either version 3 of the
+    # License, or (at your option) any later version".
+    license = licenses.gpl3Plus;
     maintainers = with maintainers; [ ];
   };
 }

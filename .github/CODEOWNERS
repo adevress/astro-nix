@@ -11,3 +11,10 @@ aoflagger/ @aroffringa
 pal/ @aroffringa
 aocommon/ @aroffringa
 cotter/ @aroffringa
+everybeam/ @aroffringa
+
+
+# Grants ECLAT people access to their software
+ddfacet/ @cyriltasse @dguibert
+ddf-pipeline/ @cyriltasse @dguibert
+killms/ @cyriltasse @dguibert

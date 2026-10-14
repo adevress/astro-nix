@@ -77,11 +77,14 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
-  # Upstream ships no LICENSE file; the Dockerfile is what defines the
-  # supported dependency set.  meta.license is therefore left unset on purpose.
   meta = with lib; {
     description = "MWA pre-processing pipeline: cotter and fixmwams";
     homepage = "https://github.com/MWATelescope/cotter";
+    # Upstream ships no LICENSE file (GitHub API reports license: null).
+    # The author (André Offringa) licenses all his other radio-astronomy
+    # tools (aoflagger, wsclean, dysco) as GPL-3.0-or-later, and cotter
+    # links against aoflagger (GPL-3.0+), so it must be GPL-compatible.
+    license = licenses.gpl3Plus;
     platforms = platforms.linux;
     maintainers = with maintainers; [ ];
   };
