@@ -60,6 +60,9 @@
   pyproj,
   bdsf,
   meqtrees-cattery,
+  zarr,
+  xarray,
+  mpi4py
 }:
 
 buildPythonPackage rec {
@@ -141,6 +144,9 @@ buildPythonPackage rec {
     # Optional extras
     bdsf # kms-support
     meqtrees-cattery # fits-beam-support
+    zarr
+    xarray
+    mpi4py
   ];
 
   pythonImportsCheck = [ "DDFacet" ];
