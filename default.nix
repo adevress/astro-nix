@@ -228,19 +228,33 @@ let
       killms = final.callPackage ./killms/default.nix { };
 
       # Git-tracked development snapshots (see instructions/ddf_dev.md).
-      ddfacet_dev = final.callPackage ./ddfacet/dev.nix { };
+      ddfacet_dev = (final.callPackage ./ddfacet/dev.nix { }).overrideAttrs (old: {
+        ## Error: Private fetchFromGitHub requires the nix building process (nix-daemon in multi user mode) to have the NIX_GITHUB_PRIVATE_USERNAME and NIX_GITHUB_PRIVATE_PASSWORD env vars set.
+        #src = pkgs.fetchFromGitHub {
+        #  owner = "cyriltasse";
+        #  repo = "DDFacet";
+        #  rev = "refs/heads/HackathonRennes_June26_Adastra";
+        #  hash = prev.lib.fakeHash;
+        #  private = true;
+        #};
+        src = builtins.fetchGit {
+          url = "ssh://git@github.com/cyriltasse/DDFacet";
+          ref="refs/heads/HackathonRennes_June26_Adastra";
+        };
+      });
 
-      killms_dev = final.callPackage ./killms/dev.nix {
+      killms_dev = (final.callPackage ./killms/dev.nix {
         ddfacet = final.ddfacet_dev;
-      };
+      }).overrideAttrs (old: {
+        src = builtins.fetchGit {
+          url = "ssh://git@github.com/cyriltasse/killMS";
+          ref="refs/heads/HackathonRennes_June26_Adastra";
+        };
+      });
 
-      ddf-pipeline = final.callPackage ./ddf-pipeline/default.nix { };
-
-      # CUDA-enabled PyTorch binary wheel (aarch64/GB10 + x86_64).  Kept
-      # separate from the nixpkgs `torch-bin` default wheel and the
-      # `torchWithCuda` source build.
-      torch-cuda = final.callPackage ./torch-cuda {
-        cudaPackages = pkgs.cudaPackages_13_0;
+      ddf-pipeline = final.callPackage ./ddf-pipeline/default.nix {
+        ddfacet = final.ddfacet_dev;
+        killms = final.killms_dev;
       };
     });
 
