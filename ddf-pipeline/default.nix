@@ -33,6 +33,7 @@
   emcee,
   packaging,
   six,
+  mpi4py
 }:
 
 buildPythonPackage rec {
@@ -123,6 +124,7 @@ buildPythonPackage rec {
     emcee
     packaging
     six
+    mpi4py
   ];
 
   pythonImportsCheck = [
