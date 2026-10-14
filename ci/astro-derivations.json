@@ -5,6 +5,7 @@
 		        "aoflagger",	
 			"python3Packages.radler",
 			"casacore",
+			"everybeam",
 			"dysco",
 			"oskar",
 			"ds9",
