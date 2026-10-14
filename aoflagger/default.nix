@@ -46,6 +46,10 @@ stdenv.mkDerivation rec {
     aocommon
   ];
 
+  # Casacore >= 3.8.2 no longer leaks `using std::string` into its namespace;
+  # qualify the few unqualified `string` uses in aoflagger instead.
+  patches = [ ./001-std-string.patch ];
+
   # Remove aocommon submodule from source since we're providing it separately
   postPatch = ''
     rm -rf external/aocommon

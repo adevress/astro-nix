@@ -1,0 +1,20 @@
+diff --git a/oskar/ms/CMakeLists.txt b/oskar/ms/CMakeLists.txt
+index 8d16061..90a32f5 100644
+--- a/oskar/ms/CMakeLists.txt
++++ b/oskar/ms/CMakeLists.txt
+@@ -34,11 +34,11 @@ if (CASACORE_FOUND)
+     # (PARENT_SCOPE is no good here, as there may not be a parent.)
+     set(CASACORE_FOUND TRUE CACHE BOOL "CASACORE_FOUND")
+ 
+-    # C++17 is now required for casacore headers.
++    # C++20 is required for casacore >= 3.8.2 headers.
+     include(CheckCXXCompilerFlag)
+-    CHECK_CXX_COMPILER_FLAG(-std=c++17 COMPILER_SUPPORTS_CXX17)
+-    if (COMPILER_SUPPORTS_CXX17)
+-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
++    CHECK_CXX_COMPILER_FLAG(-std=c++20 COMPILER_SUPPORTS_CXX20)
++    if (COMPILER_SUPPORTS_CXX20)
++        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+     endif()
+ 
+     include_directories(${CASACORE_INCLUDE_DIR})

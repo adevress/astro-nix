@@ -1,0 +1,26 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 33eb95b..49afc6a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -46,7 +46,7 @@ add_compile_options(
+   -Wno-unused-parameter)
+ unset(PORTABLE CACHE)
+ 
+-set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD 20)
+ set(CMAKE_CXX_STANDARD_REQUIRED YES)
+ 
+ # The following stuff will set the "rpath" correctly, so that
+diff --git a/mwams.cpp b/mwams.cpp
+index 322eff2..e3cad16 100644
+--- a/mwams.cpp
++++ b/mwams.cpp
+@@ -58,7 +58,7 @@ const std::string MWAMS::_keywordNames[] = {
+ 	"MWA_COTTER_VERSION", "MWA_COTTER_VERSION_DATE"
+ };
+ 
+-MWAMS::MWAMS(const string& filename) : _filename(filename),
++MWAMS::MWAMS(const std::string& filename) : _filename(filename),
+ 	_data(new MWAMSData(filename))
+ {
+ }
