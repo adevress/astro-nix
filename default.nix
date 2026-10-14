@@ -83,7 +83,7 @@ let
     ska-sdp-func = pkgs.callPackage ./ska-sdp-func/default.nix { };
     xtensor-fftw = pkgs.callPackage ./xtensor-fftw/default.nix { };
     everybeam = pkgs.callPackage ./everybeam/default.nix {
-      inherit aocommon schaapcommon ska-sdp-func;
+      inherit aocommon schaapcommon ska-sdp-func xtensor-fftw;
     };
     idg = pkgs.callPackage ./idg/default.nix { inherit aocommon schaapcommon; };
     dysco = pkgs.callPackage ./dysco/default.nix { inherit casacore; };
