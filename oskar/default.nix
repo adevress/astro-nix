@@ -28,6 +28,10 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-Zy/WElLHY1ZvnNn5TqWgl2uc9yvVF0NiajFOHglVZaU=";
   };
 
+  # Casacore >= 3.8.2 requires C++20 in its public headers; OSKAR's ms module
+  # explicitly compiles with C++17.
+  patches = [ ./001-cxx20.patch ];
+
   nativeBuildInputs = [
     cmake
     wrapQtAppsHook

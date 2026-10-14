@@ -22,13 +22,13 @@
 
 stdenv.mkDerivation rec {
   name = "casacore";
-  version = "3.8.0";
+  version = "3.8.2";
 
   src = fetchFromGitHub {
     owner = "casacore";
     repo = "casacore";
     rev = "v${version}";
-    sha256 = "sha256-NOxuHMCuHGk9XuWXMwQTN6kOFDI0QuHMgfNRDdlPw44=";
+    sha256 = "sha256-c8bRAx08YIERkAyXDWRV2v6ZjKtT0BWz8+W1Y1VmvBM=";
   };
 
   nativeBuildInputs = [

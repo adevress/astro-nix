@@ -1,0 +1,117 @@
+diff --git a/msproviders/contiguousms.cpp b/msproviders/contiguousms.cpp
+index 9e6df70..af87a3d 100644
+--- a/msproviders/contiguousms.cpp
++++ b/msproviders/contiguousms.cpp
+@@ -37,7 +37,7 @@ void OutputOpeningMessage(const std::string& ms_path,
+ }
+ }  // namespace
+ 
+-ContiguousMS::ContiguousMS(const string& msPath, const std::string& dataColumnName,
++ContiguousMS::ContiguousMS(const std::string& msPath, const std::string& dataColumnName,
+                            const std::string& modelColumnName,
+                            StorageManagerType modelStorageManager, const MSSelection& selection,
+                            const aocommon::VectorMap<ChannelRange>& channel_ranges,
+diff --git a/msproviders/contiguousms.h b/msproviders/contiguousms.h
+index 21dffc2..2315751 100644
+--- a/msproviders/contiguousms.h
++++ b/msproviders/contiguousms.h
+@@ -27,7 +27,7 @@ class ContiguousMS final : public MSProvider {
+   friend class ContiguousMSReader;
+ 
+  public:
+-  ContiguousMS(const string& msPath, const std::string& dataColumnName,
++  ContiguousMS(const std::string& msPath, const std::string& dataColumnName,
+                const std::string& modelColumnName,
+                schaapcommon::reordering::StorageManagerType modelStorageManager,
+                const schaapcommon::reordering::MSSelection& selection,
+diff --git a/msproviders/rowproviders/averagingmsrowprovider.h b/msproviders/rowproviders/averagingmsrowprovider.h
+index c131200..d7b7bb1 100644
+--- a/msproviders/rowproviders/averagingmsrowprovider.h
++++ b/msproviders/rowproviders/averagingmsrowprovider.h
+@@ -9,7 +9,7 @@ namespace wsclean {
+ 
+ class AveragingMSRowProvider : public MSRowProvider {
+  public:
+-  AveragingMSRowProvider(double nWavelengthsAveraging, const string& msPath,
++  AveragingMSRowProvider(double nWavelengthsAveraging, const std::string& msPath,
+                          const schaapcommon::reordering::MSSelection& selection,
+                          const std::map<size_t, size_t>& selectedDataDescIds, size_t fieldId,
+                          const std::string& dataColumnName, const std::string& modelColumnName,
+diff --git a/msproviders/rowproviders/directmsrowprovider.h b/msproviders/rowproviders/directmsrowprovider.h
+index 29f8958..05d4eee 100644
+--- a/msproviders/rowproviders/directmsrowprovider.h
++++ b/msproviders/rowproviders/directmsrowprovider.h
+@@ -7,7 +7,7 @@ namespace wsclean {
+ 
+ class DirectMSRowProvider : public MSRowProvider {
+  public:
+-  DirectMSRowProvider(const string& msPath, const schaapcommon::reordering::MSSelection& selection,
++  DirectMSRowProvider(const std::string& msPath, const schaapcommon::reordering::MSSelection& selection,
+                       const std::map<size_t, size_t>& selectedDataDescIds,
+                       const std::string& dataColumnName, const std::string& modelColumnName,
+                       bool requireModel)
+diff --git a/msproviders/rowproviders/msrowprovider.cpp b/msproviders/rowproviders/msrowprovider.cpp
+index 43dcb16..3d7325d 100644
+--- a/msproviders/rowproviders/msrowprovider.cpp
++++ b/msproviders/rowproviders/msrowprovider.cpp
+@@ -10,7 +10,7 @@ using schaapcommon::reordering::MSSelection;
+ 
+ namespace wsclean {
+ 
+-MSRowProvider::MSRowProvider(const string& msPath, const MSSelection& selection,
++MSRowProvider::MSRowProvider(const std::string& msPath, const MSSelection& selection,
+                              const std::map<size_t, size_t>& selectedDataDescIds,
+                              const std::string& dataColumnName,
+                              const std::string& model_column_name, bool requireModel)
+diff --git a/msproviders/rowproviders/msrowprovider.h b/msproviders/rowproviders/msrowprovider.h
+index 0be6a7e..c58a8bc 100644
+--- a/msproviders/rowproviders/msrowprovider.h
++++ b/msproviders/rowproviders/msrowprovider.h
+@@ -19,7 +19,7 @@ namespace wsclean {
+  */
+ class MSRowProvider : public MsRowProviderBase {
+  public:
+-  MSRowProvider(const string& msPath, const schaapcommon::reordering::MSSelection& selection,
++  MSRowProvider(const std::string& msPath, const schaapcommon::reordering::MSSelection& selection,
+                 const std::map<size_t, size_t>& selectedDataDescIds,
+                 const std::string& dataColumnName, const std::string& model_column_name,
+                 bool requireModel);
+diff --git a/msproviders/rowproviders/noisemsrowprovider.cpp b/msproviders/rowproviders/noisemsrowprovider.cpp
+index 07d4dfb..961a9cf 100644
+--- a/msproviders/rowproviders/noisemsrowprovider.cpp
++++ b/msproviders/rowproviders/noisemsrowprovider.cpp
+@@ -47,7 +47,7 @@ float NoiseMSRowProvider::NoiseMap::GetNoiseValue(size_t antenna1, size_t antenn
+   return iter->second;
+ }
+ 
+-NoiseMSRowProvider::NoiseMSRowProvider(const string& msPath,
++NoiseMSRowProvider::NoiseMSRowProvider(const std::string& msPath,
+                                        const schaapcommon::reordering::MSSelection& selection,
+                                        const std::map<size_t, size_t>& selectedDataDescIds,
+                                        const std::string& dataColumnName,
+diff --git a/msproviders/rowproviders/noisemsrowprovider.h b/msproviders/rowproviders/noisemsrowprovider.h
+index 0184c98..fe2fb99 100644
+--- a/msproviders/rowproviders/noisemsrowprovider.h
++++ b/msproviders/rowproviders/noisemsrowprovider.h
+@@ -11,7 +11,7 @@ namespace wsclean {
+ 
+ class NoiseMSRowProvider : public DirectMSRowProvider {
+  public:
+-  NoiseMSRowProvider(const string& msPath, const schaapcommon::reordering::MSSelection& selection,
++  NoiseMSRowProvider(const std::string& msPath, const schaapcommon::reordering::MSSelection& selection,
+                      const std::map<size_t, size_t>& selectedDataDescIds,
+                      const std::string& dataColumnName, const std::string& modelColumnName,
+                      bool requireModel);
+diff --git a/structures/imageweights.cpp b/structures/imageweights.cpp
+index c592a13..9d4ec75 100644
+--- a/structures/imageweights.cpp
++++ b/structures/imageweights.cpp
+@@ -288,7 +288,7 @@ void ImageWeights::GetGrid(double* image) const {
+   });
+ }
+ 
+-void ImageWeights::Save(const string& filename) const {
++void ImageWeights::Save(const std::string& filename) const {
+   aocommon::UVector<double> image(_imageWidth * _imageHeight);
+   GetGrid(&image[0]);
+   aocommon::FitsWriter writer;

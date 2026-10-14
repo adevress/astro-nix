@@ -44,6 +44,11 @@ stdenv.mkDerivation rec {
   patches = [
     ./001-portable-march.patch
     ./002-sse-only-on-x86.patch
+    # 003: casacore >= 3.8.2 requires C++20 in its public headers and no
+    # longer leaks `using std::string` into its namespace (see
+    # dysco/001-cxx20.patch); fix cotter's explicit C++17 and unqualified
+    # `string` uses accordingly.
+    ./003-cxx20.patch
   ];
 
   nativeBuildInputs = [

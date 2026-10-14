@@ -26,6 +26,11 @@ stdenv.mkDerivation rec {
     boost
   ];
 
+  # Casacore >= 3.8.2 uses C++20 constructs in its public headers
+  # (e.g. std::string_view iterator-pair constructors), so consumers must be
+  # compiled as C++20 as well.
+  patches = [ ./001-cxx20.patch ];
+
   cmakeFlags = [
     "-DPORTABLE=ON"
     "-DBUILD_PACKAGES=OFF"

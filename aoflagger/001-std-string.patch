@@ -1,0 +1,83 @@
+diff --git a/aoqplot/controllers/aoqplotcontroller.cpp b/aoqplot/controllers/aoqplotcontroller.cpp
+index 5c32303..6ae3d5d 100644
+--- a/aoqplot/controllers/aoqplotcontroller.cpp
++++ b/aoqplot/controllers/aoqplotcontroller.cpp
+@@ -36,7 +36,7 @@ void AOQPlotController::close() {
+   }
+ }
+ 
+-void AOQPlotController::readMetaInfoFromMS(const string& filename) {
++void AOQPlotController::readMetaInfoFromMS(const std::string& filename) {
+   const MSMetaData ms(filename);
+   _polarizationCount = ms.PolarizationCount();
+   const unsigned antennaCount = ms.AntennaCount();
+diff --git a/aoqplot/controllers/aoqplotpagecontroller.cpp b/aoqplot/controllers/aoqplotpagecontroller.cpp
+index 4ab72a6..ff21d7a 100644
+--- a/aoqplot/controllers/aoqplotpagecontroller.cpp
++++ b/aoqplot/controllers/aoqplotpagecontroller.cpp
+@@ -127,7 +127,7 @@ void AOQPlotPageController::plotStatistic(QualityTablesFormatter::StatisticKind
+   }
+ }
+ 
+-void AOQPlotPageController::SavePdf(const string& filename,
++void AOQPlotPageController::SavePdf(const std::string& filename,
+                                     QualityTablesFormatter::StatisticKind kind) {
+   const std::vector<QualityTablesFormatter::StatisticKind> kinds{kind};
+   const std::set<SelectedPol> pols{PolI};
+diff --git a/imagesets/imageset.cpp b/imagesets/imageset.cpp
+index f106a85..676434b 100644
+--- a/imagesets/imageset.cpp
++++ b/imagesets/imageset.cpp
+@@ -115,7 +115,7 @@ bool ImageSet::IsFilterBankFile(const std::string& file) {
+   return file.size() >= 4 && file.substr(file.size() - 4) == ".fil";
+ }
+ 
+-bool ImageSet::IsQualityStatSet(const string& file) {
++bool ImageSet::IsQualityStatSet(const std::string& file) {
+   if (file.empty()) return false;
+   std::string copy(file);
+   if (*copy.rbegin() == '/') copy.resize(copy.size() - 1);
+diff --git a/msio/baselinereader.cpp b/msio/baselinereader.cpp
+index 7ab8e85..dc65311 100644
+--- a/msio/baselinereader.cpp
++++ b/msio/baselinereader.cpp
+@@ -134,7 +134,7 @@ static uint64_t GetMeasurementSetDataSize(casacore::MeasurementSet& ms) {
+          (uint64_t)(sizeof(num_t) * 2 + sizeof(bool));
+ }
+ 
+-uint64_t BaselineReader::MeasurementSetDataSize(const string& filename) {
++uint64_t BaselineReader::MeasurementSetDataSize(const std::string& filename) {
+   casacore::MeasurementSet ms(filename);
+ 
+   return GetMeasurementSetDataSize(ms);
+@@ -154,7 +154,7 @@ static size_t GetNTimeSteps(casacore::MeasurementSet& ms) {
+   return result;
+ }
+ 
+-static uint64_t GetMeasurementSetIntervalDataSize(const string& filename, size_t start,
++static uint64_t GetMeasurementSetIntervalDataSize(const std::string& filename, size_t start,
+                                                   size_t end) {
+   assert(start <= end && "Reqested begin and end aren't a valid range");
+   casacore::MeasurementSet ms(filename);
+@@ -169,7 +169,7 @@ static uint64_t GetMeasurementSetIntervalDataSize(const string& filename, size_t
+   return result * static_cast<double>(time_steps_requested) / time_steps_ms;
+ }
+ 
+-uint64_t BaselineReader::MeasurementSetIntervalDataSize(const string& filename,
++uint64_t BaselineReader::MeasurementSetIntervalDataSize(const std::string& filename,
+                                                         std::optional<size_t> start,
+                                                         std::optional<size_t> end) {
+   if (start) {
+diff --git a/msio/baselinereader.h b/msio/baselinereader.h
+index 24306e8..a232eca 100644
+--- a/msio/baselinereader.h
++++ b/msio/baselinereader.h
+@@ -142,7 +142,7 @@ class BaselineReader {
+    * \ref Options::startTimestep and \ref Options::endTimestep in this function
+    * call.
+    */
+-  static uint64_t MeasurementSetIntervalDataSize(const string& filename,
++  static uint64_t MeasurementSetIntervalDataSize(const std::string& filename,
+                                                  std::optional<size_t> start,
+                                                  std::optional<size_t> end);
+ 

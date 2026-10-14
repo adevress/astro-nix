@@ -49,7 +49,12 @@ stdenv.mkDerivation rec {
     idg
   ];
 
-  patches = [ ./0001-Add-a-cmake-option-to-allow-build-from-external-dire.patch ];
+  patches = [
+    ./0001-Add-a-cmake-option-to-allow-build-from-external-dire.patch
+    # 0002: casacore >= 3.8.2 no longer leaks `using std::string` into its
+    # namespace; qualify wsclean's unqualified `string` uses instead.
+    ./0002-use-std-string.patch
+  ];
 
   # Remove submodules from source since we're providing them separately
   postPatch = ''
