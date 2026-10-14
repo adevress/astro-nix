@@ -1,0 +1,89 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 83778ec..9589388 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -77,67 +77,24 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
+ set(CMAKE_C_VISIBILITY_PRESET "hidden")
+ set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
+ 
+-# Build an ska-sdp-func library, for inclusion into EveryBeam.
+-include(FetchContent)
+-message(STATUS "Fetching and configuring ska-sdp-func")
+-
+-# Disable CUDA support for ska-sdp-func, since it may cause compilation errors
+-# if CUDA is found. Currently, EveryBeam does not use any CUDA functions.
+-set(FIND_CUDA
+-    OFF
+-    CACHE INTERNAL "")
+-
+-set(SKA_SDP_FUNC_REPO "https://gitlab.com/ska-telescope/sdp/ska-sdp-func.git")
+-set(SKA_SDP_FUNC_TAG "7f691cb376883c234383712c206b1ac8a7a3e58f")
+-
+-# CMake < 3.28 does not support the EXCLUDE_FROM_ALL option in
+-# FetchContent_Declare. Instead, patch ska-sdp-func manually.
+-if(CMAKE_VERSION VERSION_LESS "3.28")
+-
+-  # This empty function allows replacing install() calls by do_nothing() calls
+-  # in the ska-sdp-func CMakeLists.txt file. See the PATCH_COMMAND below.
+-  function(do_nothing)
+-
+-  endfunction()
+-
+-  FetchContent_Declare(
+-    ska_sdp_func
+-    GIT_REPOSITORY ${SKA_SDP_FUNC_REPO}
+-    GIT_TAG ${SKA_SDP_FUNC_TAG}
+-    PATCH_COMMAND
+-      # Turn the ska-sdp-func library from a shared library into an 'OBJECT'
+-      # library. See the code for CMake >= 3.28, below.
+-      #
+-      # Also, replace all install() calls by do_nothing() calls, since
+-      # ska-sdp-func should not install anything when installing EveryBeam.
+-      sed -i -e
+-      "s=\\\\(add_library(.{PROJECT_NAME}\\\\) \\\\$=\\\\1 OBJECT $=g" -e
+-      "s=^install(=do_nothing(=g" CMakeLists.txt)
+-
+-else() # CMake >= 3.28
+-
+-  FetchContent_Declare(
+-    ska_sdp_func
+-    GIT_REPOSITORY ${SKA_SDP_FUNC_REPO}
+-    GIT_TAG ${SKA_SDP_FUNC_TAG}
+-    EXCLUDE_FROM_ALL # Do not install ska-sdp-func when installing EveryBeam.
+-    PATCH_COMMAND
+-      # Turn the ska-sdp-func library from a shared library into an 'OBJECT'
+-      # library. Bundling ska-sdp-func statically this way avoids conflicts with
+-      # other ska-sdp-func library installations.
+-      # Since EveryBeam only uses few functions from ska-sdp-func (for OSKAR),
+-      # the overhead of including these objects in EveryBeam is minimal.
+-      #
+-      # In the command, replace \ by \\\\ since CMake first copies the string to
+-      # an ExternalProject_Add command in another CMakeLists.txt file, and the
+-      # command needs \\ escapes at that point.
+-      sed -i -e
+-      "s=\\\\(add_library(.{PROJECT_NAME}\\\\) \\\\$=\\\\1 OBJECT $=g"
+-      CMakeLists.txt)
+-
++# Use the ska-sdp-func library that is provided by the build environment
++# (found through find_package) instead of vendoring a private copy through
++# FetchContent.  Bundling ska-sdp-func's objects into EveryBeam's libraries
++# produces duplicate symbols when another package (e.g. OSKAR or WSClean)
++# links the shared ska-sdp-func as well.
++find_package(ska-sdp-func CONFIG REQUIRED)
++
++# The targets below expect the FetchContent target name 'ska_sdp_func'.
++if(NOT TARGET ska_sdp_func)
++  get_target_property(_ska_sdp_func_include_dirs ska-sdp-func::ska_sdp_func
++                      INTERFACE_INCLUDE_DIRECTORIES)
++  add_library(ska_sdp_func INTERFACE)
++  target_link_libraries(ska_sdp_func INTERFACE ska-sdp-func::ska_sdp_func)
++  set_target_properties(
++    ska_sdp_func PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
++                            "${_ska_sdp_func_include_dirs}")
+ endif()
+-FetchContent_MakeAvailable(ska_sdp_func)
+-message(STATUS "Finished configuring ska-sdp-func")
++message(STATUS "Using system ska-sdp-func")
+ 
+ # Configure directory for data files
+ add_compile_options(

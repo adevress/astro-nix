@@ -1,0 +1,12 @@
+diff -ruN a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2026-10-14 22:27:28.736187441 +0200
++++ b/CMakeLists.txt	2026-10-14 22:27:28.737641160 +0200
+@@ -230,7 +230,7 @@
+ # Find and include Casacore
+ # Ignore version errors when building ReadTheDocs documentation.
+ set(CASACORE_MAKE_REQUIRED_EXTERNALS_OPTIONAL TRUE)
+-find_package(Casacore REQUIRED COMPONENTS casa ms tables measures)
++find_package(Casacore REQUIRED COMPONENTS casa ms tables measures fits)
+ if(CASACORE_VERSION VERSION_LESS "3.6" AND NOT DEFINED ENV{READTHEDOCS})
+   message(
+     FATAL_ERROR
