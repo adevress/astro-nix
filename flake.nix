@@ -30,5 +30,7 @@
           value = mkPkgs system;
         }) systems
       );
+      
+      overlays.default = import ./overlay.nix;
     };
 }
