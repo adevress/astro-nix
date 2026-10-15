@@ -87,6 +87,10 @@ let
     };
     idg = pkgs.callPackage ./idg/default.nix { inherit aocommon schaapcommon; };
     dysco = pkgs.callPackage ./dysco/default.nix { inherit casacore; };
+
+    # Test data shared by the DP3 test suite: the MWA MeasurementSet and a
+    # pinned casacore measures snapshot (see test_data/default.nix).
+    dp3TestData = pkgs.callPackage ./test_data/default.nix { };
     oskar = pkgs.callPackage ./oskar/default.nix { inherit ska-sdp-func casacore; };
     oskarWithGUI = pkgs.libsForQt5.callPackage ./oskar/default.nix {
       withGUI = true;
@@ -195,6 +199,14 @@ let
       };
 
       meqtrees-cattery = final.callPackage ./meqtrees-cattery/default.nix { };
+
+      # DP3 Python package (pybind11 bindings + DP3.py CLI).  Built through
+      # CMake, using the astro-nix casacore/aoflagger/everybeam/idg.
+      dp3 = final.callPackage ./dp3/default.nix {
+        inherit (astro_pkgs) casacore aoflagger everybeam idg dysco;
+        inherit (astro_pkgs.dp3TestData) mwaTestMs casarc;
+        openblas = astro_pkgs.openblasSingleThreaded;
+      };
 
       ddfacet = final.callPackage ./ddfacet/default.nix { };
 
