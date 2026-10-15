@@ -16,6 +16,7 @@
 			"alea",
 			"python3Packages.ddfacet",
 			"python3Packages.killms",
-			"python3Packages.ddf-pipeline"
+			"python3Packages.ddf-pipeline",
+			"python3Packages.dp3"
 			] 
 }

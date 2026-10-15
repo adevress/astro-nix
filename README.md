@@ -138,6 +138,29 @@ nix search . oskar      # find oskar (and oskarWithGUI)
 > unrelated packages. Use it to discover package attributes before running
 > or building them.
 
+### Example VII: DP3
+
+DP3 is packaged as a Python package that also installs the `DP3` (and
+`DP3.py`) command-line tools:
+
+```bash
+# get a shell with the DP3 CLI and the Python bindings
+nix shell -f ./ python3Packages.dp3 --command bash
+DP3 -h
+python -c "import dp3; print(dp3.__file__)"
+```
+
+To use the bindings from a custom interpreter, add the package to a
+`python3.withPackages` environment (see Example IV):
+
+```nix
+astro.python3Packages.python.withPackages (ps: [
+  astro.python3Packages.dp3
+  ps.astropy
+  ps.numpy
+])
+```
+
 ## Tests and support
 
 Tested on:
