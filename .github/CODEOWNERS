@@ -2,24 +2,23 @@
 * @adevress @Amzashoo
 
 # Grant Breakthrough and SETI people rw access on their soft
+
 blade/ @luigifcruz @adevress @Amzashoo
 cyberether/ @luigifcruz @adevress @Amzashoo
 
 
-# Grant Astron people rw access on their soft
-
-wsclean/ @aroffringa @adevress @Amzashoo
-aoflagger/ @aroffringa @adevress @Amzashoo
-pal/ @aroffringa @adevress @Amzashoo
-aocommon/ @aroffringa @adevress @Amzashoo
-cotter/ @aroffringa @adevress @Amzashoo
-everybeam/ @aroffringa @adevress @Amzashoo
-
-
-# Grants ECLAT people rw access on their soft
+# Grants ECLAT people rw access on their software
 
 ddfacet/ @cyriltasse @dguibert @adevress @Amzashoo
 ddf-pipeline/ @cyriltasse @dguibert @adevress @Amzashoo
 killms/ @cyriltasse @dguibert @adevress @Amzashoo
 
+
+# Grant Astron people rw access on their software
+
+aoflagger/ @aroffringa @adevress @Amzashoo
+pal/ @aroffringa @adevress @Amzashoo
+aocommon/ @aroffringa @adevress @Amzashoo
+cotter/ @aroffringa @adevress @Amzashoo
+everybeam/ @aroffringa @adevress @Amzashoo
 
