@@ -1,0 +1,14 @@
+--- a/ddecal/gain_solvers/SolverTools.cc	2026-10-14 14:43:07.557810230 +0200
++++ b/ddecal/gain_solvers/SolverTools.cc	2026-10-14 14:43:07.559315535 +0200
+@@ -50,9 +50,9 @@
+   assert(in.shape() == out.shape() && in.shape() == weights.shape());
+ 
+   constexpr auto kLowMask =
+-      xsimd::make_batch_constant<unsigned int, DuplicateLow>();
++      xsimd::make_batch_constant<unsigned int, xsimd::default_arch, DuplicateLow>();
+   constexpr auto kHighMask =
+-      xsimd::make_batch_constant<unsigned int, DuplicateHigh>();
++      xsimd::make_batch_constant<unsigned int, xsimd::default_arch, DuplicateHigh>();
+ 
+   // Process two 'data' batches and one 'weights' batch in each iteration.
+   size_t i = 0;
