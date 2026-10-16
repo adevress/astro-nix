@@ -221,8 +221,11 @@ lib.makeScope pkgs.newScope (self: with self; {
       }).overrideAttrs (old: {
         src = builtins.fetchGit {
           url = "https://github.com/mhardcastle/ddf-pipeline";
-          ref="refs/heads/HackathonRennes_June26_Adastra";
-          rev = "0b6b52258414fe35c58e3229c274bdc13e530b6a";
+          ref="refs/heads/HackathonRennes_June26";
+          rev = "2a7648d2ac866f69f9a25eed1d64b73bc2b25589";
+          # TODO requires simms
+          #ref="refs/heads/HackathonRennes_June26_Adastra";
+          #rev = "0b6b52258414fe35c58e3229c274bdc13e530b6a";
         };
       });
     });
