@@ -66,8 +66,8 @@
 }:
 
 buildPythonPackage rec {
-  pname = "DDFacet-dev";
-  version = "1.0.0.0";
+  pname = "DDFacet";
+  version = "1.0.0.0-dev";
   pyproject = true;
 
   src = fetchFromGitHub {
