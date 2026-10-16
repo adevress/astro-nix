@@ -195,6 +195,7 @@ lib.makeScope pkgs.newScope (self: with self; {
         #  hash = prev.lib.fakeHash;
         #  private = true;
         #};
+        version = "0.9.1.0";
         src = builtins.fetchGit {
           url = "ssh://git@github.com/cyriltasse/DDFacet";
           ref="refs/heads/HackathonRennes_June26_Adastra";
