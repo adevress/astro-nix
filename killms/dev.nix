@@ -34,8 +34,8 @@
 }:
 
 buildPythonPackage rec {
-  pname = "killMS-dev";
-  version = "3.3.0";
+  pname = "killMS";
+  version = "3.3.0-dev";
   pyproject = true;
 
   src = fetchFromGitHub {
