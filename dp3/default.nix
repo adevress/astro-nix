@@ -59,7 +59,14 @@ buildPythonPackage rec {
   # DP3 6.6 is written against the xsimd >= 14 make_batch_constant<T, G> API,
   # while the pinned nixpkgs ships xsimd 13.2.0, whose generator API takes an
   # explicit architecture: make_batch_constant<T, A, G>.
-  patches = [ ./0001-xsimd-13-compat.patch ];
+  #
+  # 0002: casacore >= 3.8.2 no longer leaks `using std::string` into the global
+  # namespace (String.h dropped it), so DP3's few unqualified `string` uses no
+  # longer compile; qualify them with `std::string` instead.
+  patches = [
+    ./0001-xsimd-13-compat.patch
+    ./0002-use-std-string.patch
+  ];
 
   nativeBuildInputs = [
     cmake
