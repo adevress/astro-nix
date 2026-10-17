@@ -1,0 +1,400 @@
+diff --git a/base/BaselineSelection.cc b/base/BaselineSelection.cc
+index f446784..f700db5 100644
+--- a/base/BaselineSelection.cc
++++ b/base/BaselineSelection.cc
+@@ -312,7 +312,7 @@ Matrix<bool> BaselineSelection::handleBLVector(
+ 
+ void BaselineSelection::handleCorrType(Matrix<bool>& selectBL) const {
+   // Process corrtype if given.
+-  string corrType = boost::to_lower_copy(itsCorrType);
++  std::string corrType = boost::to_lower_copy(itsCorrType);
+   if (corrType != "auto" && corrType != "cross")
+     throw std::runtime_error(
+         "DP3 corrType " + corrType +
+diff --git a/base/DP3.cc b/base/DP3.cc
+index a1f1049..8df2734 100644
+--- a/base/DP3.cc
++++ b/base/DP3.cc
+@@ -443,7 +443,7 @@ void ExecuteFromCommandLine(const std::vector<std::string>& arguments) {
+ 
+   // Get the name of the parset file.
+   if (argc > 1) {
+-    string param = arguments[1];
++    std::string param = arguments[1];
+     if (param == "--help" || param == "-help" || param == "-h" ||
+         param == "--usage" || param == "-usage") {
+       ShowUsage();
+diff --git a/common/VdsMaker.h b/common/VdsMaker.h
+index 51cf8ff..57b58e1 100644
+--- a/common/VdsMaker.h
++++ b/common/VdsMaker.h
+@@ -75,13 +75,13 @@ class VdsMaker {
+   /// Find out which file contains the DATA column.
+   /// Determine if the DATA are stored in a TSM file of itself.
+   /// Determine the cube and tile shape.
+-  static void getDataFileInfo(casacore::MS& ms, string& name, bool& regular,
++  static void getDataFileInfo(casacore::MS& ms, std::string& name, bool& regular,
+                               std::vector<int>& tileShape,
+                               std::vector<int>& cubeShape);
+ 
+   /// Find the file system on which the given file is located.
+   /// If the host name is empty, gethostname() will be used.
+-  static string findFileSys(const std::string& fileName,
++  static std::string findFileSys(const std::string& fileName,
+                             const common::ClusterDesc& cdesc,
+                             const std::string& hostName);
+ };
+diff --git a/parmdb/ParmDBCasa.cc b/parmdb/ParmDBCasa.cc
+index dde08fc..6f751d0 100644
+--- a/parmdb/ParmDBCasa.cc
++++ b/parmdb/ParmDBCasa.cc
+@@ -123,8 +123,8 @@ void ParmDBCasa::createTables(const std::string& tableName) {
+   tddef.addColumn(ArrayColumnDesc<double>("VALUES"));
+ 
+   SetupNewTable newtab(tableName, td, Table::New);
+-  SetupNewTable newnamtab(tableName + string("/NAMES"), tdnam, Table::New);
+-  SetupNewTable newdeftab(tableName + string("/DEFAULTVALUES"), tddef,
++  SetupNewTable newnamtab(tableName + std::string("/NAMES"), tdnam, Table::New);
++  SetupNewTable newdeftab(tableName + std::string("/DEFAULTVALUES"), tddef,
+                           Table::New);
+ 
+   Table tab(newtab);
+@@ -250,12 +250,12 @@ void ParmDBCasa::fillDefMap(ParmMap& defMap) {
+   Table& table = itsTables[2];
+   TableLocker locker(table, FileLocker::Read);
+   for (unsigned int row = 0; row < table.nrow(); ++row) {
+-    std::pair<string, ParmValueSet> val = extractDefValue(table, row);
++    std::pair<std::string, ParmValueSet> val = extractDefValue(table, row);
+     defMap.define(val.first, val.second);
+   }
+ }
+ 
+-std::pair<string, ParmValueSet> ParmDBCasa::extractDefValue(const Table& tab,
++std::pair<std::string, ParmValueSet> ParmDBCasa::extractDefValue(const Table& tab,
+                                                             int row) {
+   ScalarColumn<casacore::String> nameCol(tab, "NAME");
+   ScalarColumn<int> typeCol(tab, "FUNKLETTYPE");
+@@ -377,7 +377,7 @@ void ParmDBCasa::getDefValues(ParmMap& result,
+   Table sel = table(table.col("NAME") == regex);
+   ScalarColumn<casacore::String> nameCol(sel, "NAME");
+   for (unsigned int row = 0; row < sel.nrow(); ++row) {
+-    std::pair<string, ParmValueSet> pset(extractDefValue(sel, row));
++    std::pair<std::string, ParmValueSet> pset(extractDefValue(sel, row));
+     result.define(pset.first, pset.second);
+   }
+ }
+diff --git a/parmdb/ParmDBCasa.h b/parmdb/ParmDBCasa.h
+index 65ee76d..5482ff9 100644
+--- a/parmdb/ParmDBCasa.h
++++ b/parmdb/ParmDBCasa.h
+@@ -122,7 +122,7 @@ class ParmDBCasa : public ParmDBRep {
+   /// Extract the parm values from a table selection with a single parm name.
+   ///@{
+   // void extractValues (ParmMap& result, const casacore::Table& table);
+-  std::pair<string, ParmValueSet> extractDefValue(const casacore::Table& sel,
++  std::pair<std::string, ParmValueSet> extractDefValue(const casacore::Table& sel,
+                                                   int row);
+   ///@}
+ 
+diff --git a/parmdb/ParmFacade.h b/parmdb/ParmFacade.h
+index a0043a6..30c37cd 100644
+--- a/parmdb/ParmFacade.h
++++ b/parmdb/ParmFacade.h
+@@ -46,7 +46,7 @@ class ParmFacade {
+   ~ParmFacade();
+ 
+   /// Get the version info (tree, top, full or other)
+-  string version(const std::string& type) const;
++  std::string version(const std::string& type) const;
+ 
+   /// Get the domain range (as startx,endx,starty,endy) of the given
+   /// parameters in the table.
+diff --git a/parmdb/PatchInfo.cc b/parmdb/PatchInfo.cc
+index 7848a33..0e07ccc 100644
+--- a/parmdb/PatchInfo.cc
++++ b/parmdb/PatchInfo.cc
+@@ -53,7 +53,7 @@ blob::BlobOStream operator<<(blob::BlobOStream& bos, const PatchInfo& info) {
+ 
+ // Read the contents of a PatchInfo object from a blob.
+ blob::BlobIStream operator>>(blob::BlobIStream& bis, PatchInfo& info) {
+-  string patchName;
++  std::string patchName;
+   int16_t cType;
+   double apparentBrightness, ra, dec;
+   if (bis.getStart("patch") != 1)  // version must be 1
+diff --git a/parmdb/SourceDBCasa.cc b/parmdb/SourceDBCasa.cc
+index c47ed50..5146965 100644
+--- a/parmdb/SourceDBCasa.cc
++++ b/parmdb/SourceDBCasa.cc
+@@ -39,7 +39,7 @@ namespace parmdb {
+ 
+ SourceDBCasa::SourceDBCasa(const ParmDBMeta& pdm, bool forceNew)
+     : SourceDBRep(pdm, forceNew), itsSetsFilled(false), itsRowNr(1, 0) {
+-  string tableName = pdm.getTableName() + "/SOURCES";
++  std::string tableName = pdm.getTableName() + "/SOURCES";
+   // Create the table if needed or if it does not exist yet.
+   if (forceNew || !Table::isReadable(tableName)) {
+     createTables(pdm.getTableName());
+@@ -97,7 +97,7 @@ void SourceDBCasa::createTables(const std::string& tableName) {
+   tdpat.addColumn(ScalarColumnDesc<double>("RA"));
+   tdpat.addColumn(ScalarColumnDesc<double>("DEC"));
+   // Create the tables.
+-  string tabNameSrc = tableName + "/SOURCES";
++  std::string tabNameSrc = tableName + "/SOURCES";
+   SetupNewTable newtab(tabNameSrc, td, Table::New);
+   SetupNewTable newpattab(tabNameSrc + "/PATCHES", tdpat, Table::New);
+   Table tab(newtab);
+@@ -344,11 +344,11 @@ void SourceDBCasa::addSrc(const SourceInfo& sourceInfo, unsigned int patchId,
+   // Now add the default parameters to the ParmDB DEFAULTVALUES table.
+   bool foundRa = false;
+   bool foundDec = false;
+-  string suffix = ':' + sourceInfo.getName();
++  std::string suffix = ':' + sourceInfo.getName();
+   for (ParmMap::const_iterator iter = defaultParameters.begin();
+        iter != defaultParameters.end(); ++iter) {
+     // Add source name suffix if not part of name yet.
+-    string name = iter->first;
++    std::string name = iter->first;
+     if (name.size() <= suffix.size() ||
+         name.substr(name.size() - suffix.size()) != suffix) {
+       name = name + suffix;
+@@ -390,7 +390,7 @@ void SourceDBCasa::deleteSources(const std::string& sourceNamePattern) {
+   // A patch will never be removed from the PATCH table, otherwise the
+   // PATCHID keys (which are row numbers) do not match anymore.
+   // Delete the sources from the ParmDB tables.
+-  string parmNamePattern = "*:" + sourceNamePattern;
++  std::string parmNamePattern = "*:" + sourceNamePattern;
+   getParmDB().deleteDefValues(parmNamePattern);
+   getParmDB().deleteValues(parmNamePattern,
+                            Box(Point(-1e30, -1e30), Point(1e30, 1e30)));
+diff --git a/parmdb/SourceData.h b/parmdb/SourceData.h
+index 320a130..1ee3294 100644
+--- a/parmdb/SourceData.h
++++ b/parmdb/SourceData.h
+@@ -109,7 +109,7 @@ class SourceData {
+                 bool pertRel = true) const;
+ 
+   SourceInfo itsInfo;
+-  string itsPatchName;
++  std::string itsPatchName;
+   double itsRa;   ///< radians
+   double itsDec;  ///< radians
+   double itsI;
+diff --git a/parmdb/SourceInfo.h b/parmdb/SourceInfo.h
+index 499c7a5..2a753e0 100644
+--- a/parmdb/SourceInfo.h
++++ b/parmdb/SourceInfo.h
+@@ -118,9 +118,9 @@ class SourceInfo {
+   void read(dp3::blob::BlobIStream&);
+ 
+  private:
+-  string itsName;            ///< source name
++  std::string itsName;            ///< source name
+   Type itsType;              ///< source type
+-  string itsRefType;         ///< reference type
++  std::string itsRefType;         ///< reference type
+   uint32_t itsNSpTerms;      ///< nr of terms in the spectral index function
+   double itsSpTermsRefFreq;  ///< reference frequency (Hz) for spectral index
+   bool itsHasLogarithmicSI;  ///< Spectral indices are logarithmic terms (false
+diff --git a/parmdb/showsourcedb.cc b/parmdb/showsourcedb.cc
+index e120879..f9396c6 100644
+--- a/parmdb/showsourcedb.cc
++++ b/parmdb/showsourcedb.cc
+@@ -35,7 +35,7 @@ using aocommon::Logger;
+ void show(const std::string& name, const std::string& mode,
+           const std::string& patt) {
+   // Open the input SourceDB.
+-  dp3::parmdb::SourceDB in(dp3::parmdb::ParmDBMeta(string(), name), false,
++  dp3::parmdb::SourceDB in(dp3::parmdb::ParmDBMeta(std::string(), name), false,
+                            false);
+   // Read all patches from the SourceDB and write them.
+   vector<dp3::parmdb::PatchInfo> patch(in.getPatchInfo(-1, patt));
+@@ -88,13 +88,13 @@ int main(int argc, char* argv[]) {
+                   "string");
+     // Read and check the input parameters.
+     inputs.readArguments(argc, argv);
+-    string in = inputs.getString("in");
++    std::string in = inputs.getString("in");
+     if (in.empty()) throw std::runtime_error("no input sourcedb name given");
+-    string mode = boost::to_lower_copy(inputs.getString("mode"));
++    std::string mode = boost::to_lower_copy(inputs.getString("mode"));
+     if (mode != "patch" && mode != "source" && mode != "all" &&
+         mode != "skymodel")
+       throw std::runtime_error("incorrect mode given");
+-    string patt = inputs.getString("patches");
++    std::string patt = inputs.getString("patches");
+     if (mode == "skymodel")
+       showSkymodel(in, patt);
+     else
+diff --git a/steps/ApplyBeam.h b/steps/ApplyBeam.h
+index 929805a..fd781e3 100644
+--- a/steps/ApplyBeam.h
++++ b/steps/ApplyBeam.h
+@@ -162,7 +162,7 @@ class ApplyBeam final : public Step {
+   bool ProcessData(std::unique_ptr<base::DPBuffer> buffer);
+   bool ProcessModelData(std::unique_ptr<base::DPBuffer> buffer);
+ 
+-  string itsName;
++  std::string itsName;
+   bool itsInvert;
+   bool itsUpdateWeights;
+   std::vector<std::string> itsDirectionStr;
+diff --git a/steps/ApplyCal.cc b/steps/ApplyCal.cc
+index 4ebd6c8..2ff851f 100644
+--- a/steps/ApplyCal.cc
++++ b/steps/ApplyCal.cc
+@@ -58,8 +58,8 @@ ApplyCal::ApplyCal(const common::ParameterSet& parset,
+   std::vector<std::string>::const_iterator subStepNameIter;
+   for (subStepNameIter = subStepNames.begin();
+        subStepNameIter != subStepNames.end(); ++subStepNameIter) {
+-    string subStepName = (*subStepNameIter);
+-    string subStepPrefix;
++    std::string subStepName = (*subStepNameIter);
++    std::string subStepPrefix;
+     if (subStepName.empty()) {
+       // No substeps given, use parameters of this step
+       subStepPrefix = prefix;
+diff --git a/steps/Averager.cc b/steps/Averager.cc
+index ae08e79..e5c8a20 100644
+--- a/steps/Averager.cc
++++ b/steps/Averager.cc
+@@ -37,7 +37,7 @@ Averager::Averager(const common::ParameterSet& parset,
+       itsNTimes(0),
+       itsOriginalTimeInterval(0),
+       itsNoAvg(true) {
+-  string freqResolutionStr = parset.getString(prefix + "freqresolution", "0");
++  std::string freqResolutionStr = parset.getString(prefix + "freqresolution", "0");
+   itsFreqResolution = getFreqHz(freqResolutionStr);
+ 
+   if (itsFreqResolution > 0) {
+diff --git a/steps/GainCal.cc b/steps/GainCal.cc
+index 134b12c..ef73627 100644
+--- a/steps/GainCal.cc
++++ b/steps/GainCal.cc
+@@ -838,7 +838,7 @@ void GainCal::initParmDB() {
+   resolution[1] = getInfoOut().timeInterval() * itsSolInt;
+   itsParmDB->setDefaultSteps(resolution);
+ 
+-  string parmname = parmName() + "*";
++  std::string parmname = parmName() + "*";
+ 
+   if (!itsParmDB->getNames(parmname).empty()) {
+     aocommon::Logger::Warn << "Solutions for " << parmname << " already in "
+@@ -1006,7 +1006,7 @@ void GainCal::writeSolutionsH5Parm(double) {
+   }
+ 
+   // Put solutions in a contiguous piece of memory
+-  string historyString = "CREATE by " + DP3Version::AsString() + "\n" +
++  std::string historyString = "CREATE by " + DP3Version::AsString() + "\n" +
+                          "step " + itsName + " in parset: \n" + itsParsetString;
+ 
+   if (itsMode == CalType::kTec || itsMode == CalType::kTecAndPhase) {
+@@ -1217,7 +1217,7 @@ void GainCal::writeSolutionsParmDB(double startTime) {
+       }
+       for (int realim = 0; realim < realimmax;
+            ++realim) {  // For real and imaginary
+-        string name = parmName();
++        std::string name = parmName();
+ 
+         if (itsMode != CalType::kScalarPhase &&
+             itsMode != CalType::kScalarAmplitude) {
+diff --git a/steps/MSWriter.cc b/steps/MSWriter.cc
+index d9ed47b..a0cc70e 100644
+--- a/steps/MSWriter.cc
++++ b/steps/MSWriter.cc
+@@ -240,12 +240,12 @@ void MSWriter::FinishMs() {
+ 
+   // Create the VDS file.
+   if (!cluster_desc_.empty()) {
+-    string vds_name = ms_.tableName() + ".vds";
++    std::string vds_name = ms_.tableName() + ".vds";
+     if (!vds_dir_.empty()) {
+       if (vds_dir_[vds_dir_.size() - 1] != '/') {
+         vds_dir_.append("/");
+       }
+-      vds_name = vds_dir_ + string(casacore::Path(vds_name).baseName());
++      vds_name = vds_dir_ + std::string(casacore::Path(vds_name).baseName());
+     }
+     // Create VDS file without detailed time info.
+     dp3::common::VdsMaker::create(ms_.tableName(), vds_name, cluster_desc_, "",
+diff --git a/steps/PhaseShift.cc b/steps/PhaseShift.cc
+index e98fed2..c767336 100644
+--- a/steps/PhaseShift.cc
++++ b/steps/PhaseShift.cc
+@@ -165,7 +165,7 @@ MDirection PhaseShift::handleCenter() {
+   ///"Up to 3 values can be given in PhaseShift phasecenter");
+   casacore::MDirection phaseCenter;
+   if (itsCenter.size() == 1) {
+-    string str = boost::to_upper_copy(itsCenter[0]);
++    std::string str = boost::to_upper_copy(itsCenter[0]);
+     MDirection::Types tp;
+     if (!MDirection::getType(tp, str))
+       throw std::runtime_error(str +
+@@ -184,7 +184,7 @@ MDirection PhaseShift::handleCenter() {
+                              " in PhaseShift phasecenter");
+   MDirection::Types type = MDirection::J2000;
+   if (itsCenter.size() > 2) {
+-    string str = boost::to_upper_copy(itsCenter[2]);
++    std::string str = boost::to_upper_copy(itsCenter[2]);
+     MDirection::Types tp;
+     if (!MDirection::getType(tp, str))
+       throw std::runtime_error(str +
+diff --git a/steps/PreFlagger.cc b/steps/PreFlagger.cc
+index bf7b759..7555db5 100644
+--- a/steps/PreFlagger.cc
++++ b/steps/PreFlagger.cc
+@@ -68,7 +68,7 @@ PreFlagger::PreFlagger(const common::ParameterSet& parset,
+       itsPSet(parset, prefix),
+       itsCount(0),
+       itsFlagCounter(parset, prefix + "count.") {
+-  string mode = boost::to_lower_copy(parset.getString(prefix + "mode", "set"));
++  std::string mode = boost::to_lower_copy(parset.getString(prefix + "mode", "set"));
+   if (mode == "clear") {
+     itsMode = Mode::kClearFlag;
+   } else if (mode == "setcomplement" || mode == "setother") {
+@@ -822,7 +822,7 @@ std::vector<std::string> PreFlagger::PSet::exprToRpn(
+   // Operators & (or &&) | (or ||) and , are used as well as parentheses.
+   // The operators must have a value in order of precedence, thus &&
+   // has a higher precedence than || (as in C).
+-  string expr = boost::to_upper_copy(origExpr);
++  std::string expr = boost::to_upper_copy(origExpr);
+   std::stack<int> tokens;
+   std::vector<std::string> names;
+   unsigned int i = 0;
+@@ -1088,8 +1088,8 @@ xt::xtensor<int, 1> PreFlagger::PSet::handleFreqRanges(
+         throw std::runtime_error("PreFlagger freqrange '" + *str +
+                                  "' should be range using .. or +-");
+     }
+-    string str1 = str->substr(0, pos);
+-    string str2 = str->substr(pos + 2);
++    std::string str1 = str->substr(0, pos);
++    std::string str2 = str->substr(pos + 2);
+     casacore::String u1, u2;
+     double v1, v2;
+     getValue(str1, v1, u1);
+diff --git a/steps/test/unit/tApplyCalH5.cc b/steps/test/unit/tApplyCalH5.cc
+index cdbbd8b..e165ff2 100644
+--- a/steps/test/unit/tApplyCalH5.cc
++++ b/steps/test/unit/tApplyCalH5.cc
+@@ -303,7 +303,7 @@ void testampl(int ntime, int nchan, bool freqaxis, bool timeaxis) {
+ }
+ 
+ // Test with missing antenna option
+-void testmissingant(int ntime, int nchan, string missingant,
++void testmissingant(int ntime, int nchan, std::string missingant,
+                     bool solshadfreqaxis = false,
+                     bool solshadtimeaxis = false) {
+   TestInput* in = new TestInput(ntime, nchan);
+diff --git a/steps/test/unit/tAverager.cc b/steps/test/unit/tAverager.cc
+index 39e1a26..010e8ba 100644
+--- a/steps/test/unit/tAverager.cc
++++ b/steps/test/unit/tAverager.cc
+@@ -447,7 +447,7 @@ void test1(int ntime, int nbl, int nchan, int ncorr, int navgtime, int navgchan,
+ // Like test 1, but specify target resolution
+ void test1resolution(int ntime, int nbl, int nchan, int ncorr,
+                      double timeresolution, double freqresolution,
+-                     string frequnit, bool flag) {
++                     std::string frequnit, bool flag) {
+   auto step1 = std::make_shared<TestInput>(ntime, nbl, nchan, ncorr, flag);
+   ParameterSet parset;
+   parset.add("freqresolution", std::to_string(freqresolution) + frequnit);
