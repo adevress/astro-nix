@@ -49,9 +49,12 @@ buildPythonPackage rec {
   # pybind11, predict, schaap-packaging) checked out at the revisions DP3 pins.
   # DP3's CMake hard-codes these in-tree submodules and uses them both for the
   # build and as the source of its CMake helper modules.
+  # Upstream tags use only major.minor (e.g. "v6.6") while the version
+  # declared in CMakeLists.txt/setup.py is the full "6.6.0", so derive the tag
+  # from majorMinor(version) instead of using `version` verbatim.
   src = fetchgit {
     url = "https://github.com/lofar-astron/DP3.git";
-    rev = "v${version}";
+    rev = "v${lib.versions.majorMinor version}";
     hash = "sha256-/+q3kNGR266frb1oXH8nIAPiQV4H7Xx1vQufHxPBYY4=";
     fetchSubmodules = true;
   };
