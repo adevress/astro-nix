@@ -1,10 +1,10 @@
---- a/include/jetstream/logger.hh
-+++ b/include/jetstream/logger.hh
+--- a/include/jetstream/logger.hh	2026-10-18 23:48:40.199154627 +0200
++++ b/include/jetstream/logger.hh	2026-10-18 23:48:49.819188203 +0200
 @@ -8,13 +8,17 @@
  #ifndef JST_FMT_INCLUDED
  #define JST_FMT_INCLUDED
  
--#ifndef JST_FMT_HEADER_ONLY
+-#if !defined(JST_FMT_HEADER_ONLY) && !defined(JST_FMT_COMPILED)
 -#define JST_FMT_HEADER_ONLY
 -#endif
 -#include <jetstream/fmt/format.h>
@@ -25,8 +25,8 @@
  
  #endif  // JST_FMT_INCLUDED
  
---- a/meson/loaders/fmt/meson.build
-+++ b/meson/loaders/fmt/meson.build
+--- a/meson/loaders/fmt/meson.build	2026-10-18 23:48:40.204820606 +0200
++++ b/meson/loaders/fmt/meson.build	2026-10-18 23:48:49.819350891 +0200
 @@ -1,5 +1,7 @@
 +# Use the system fmt (libfmt) discovered through pkg-config instead of the
 +# bundled meson subproject.

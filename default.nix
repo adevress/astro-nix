@@ -147,6 +147,9 @@ let
       fmt = pkgs.fmt;
       tomlplusplus = pkgs.tomlplusplus;
       soapysdr = soapysdrWithPlugins;
+      # Nixpkgs renamed librtlsdr to rtl-sdr; the recipe uses `rtlsdr` as a
+      # valid Nix identifier.
+      rtlsdr = pkgs.rtl-sdr;
       geodata = pkgs.callPackage ./cyberether/geodata/default.nix { };
     };
   };
