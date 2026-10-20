@@ -1,7 +1,8 @@
-# CyberEther 1.11.0 — GPU-accelerated signal processing framework.
+# CyberEther 1.15.0 — GPU-accelerated signal processing framework.
 #
 # Features enabled: Vulkan GUI, Superluminal Python bindings (-Dpython=true),
-# SDR stack (SoapySDR/Airspy/HackRF/RTLSDR/LimeSuite/bladeRF), examples, tests.
+# the native SDR stack (RTLSDR/Airspy/AirspyHF/HackRF/LimeSDR/bladeRF/PlutoSDR),
+# SoapySDR (loaded at runtime via dlopen), examples and tests.
 # `remote` (static GStreamer) and `inference` (ONNX Runtime) are disabled:
 # they are heavy upstream subprojects, same scope as the project's own
 # native (non-Docker) build notes.
@@ -9,13 +10,18 @@
 # Meson subprojects are resolved fully offline: every source/patch the wrap
 # files pin is provided as a Nix derivation (flat namespace siblings of this
 # package: glfw glm rapidyaml cpp-httplib nlohmann_json nanobench nanobind
-# robin-map libmodes stb) or bundled inline (catch2, tree-sitter-*,
-# velopack [optional, disabled via -Dvelopack=disabled]). zlib, openssl,
-# libqrencode, fmt, toml++ and the whole SDR stack are exceptions: the loaders
-# use Nixpkgs' zlib/openssl/libqrencode/fmt/toml++ through pkg-config, and
-# SoapySDR (with its driver plugins) is taken from Nixpkgs and loaded at runtime
-# by the patched soapy loader (008-use-system-soapysdr.patch). All remaining
-# sources are merged into MESON_PACKAGE_CACHE_DIR before
+# robin-map libmodes stb) or bundled inline (catch2, the tree-sitter grammar
+# sources, velopack [optional, disabled via -Dvelopack=disabled]). The
+# following are exceptions and come from Nixpkgs instead:
+#   * zlib, openssl, libqrencode, fmt and toml++ are reached through pkg-config
+#     by the patched loaders;
+#   * the SDR vendors (librtlsdr, libairspy, libairspyhf, libhackrf, LimeSuite,
+#     libbladeRF, libad9361 and libiio) are reached through pkg-config by the
+#     patched SDR loader (009-use-system-sdr.patch);
+#   * SoapySDR (with its driver plugins) is taken from Nixpkgs and loaded at
+#     runtime with `dlopen` by the `soapy` module; it only needs to be on the
+#     library search path.
+# All remaining sources are merged into MESON_PACKAGE_CACHE_DIR before
 # `meson setup --wrap-mode=nodownload`.
 {
   lib,
@@ -62,9 +68,22 @@
   # tarball into a meson subproject).
   tomlplusplus,
   # Nixpkgs' SoapySDR, joined with the SDR driver plugins (airspy, bladeRF,
-  # HackRF, Lime, rtlsdr) through `soapysdr.override { extraPackages = ...; }`
-  # so that SoapySDR discovers them at runtime (see the patched soapy loader).
+  # HackRF, Lime, rtlsdr) through `soapysdr.override { extraPackages = ...; }`.
+  # The `soapy` module dlopen()s libSoapySDR at runtime, so this is only needed
+  # on the library search path (the RUNPATH produced by meson).
   soapysdr,
+  # System SDR vendor libraries, discovered by the patched SDR loader through
+  # pkg-config (009-use-system-sdr.patch). PlutoSDR additionally needs libiio.
+  rtlsdr,
+  airspy,
+  airspyhf,
+  hackrf,
+  limesuite,
+  libbladeRF,
+  libad9361,
+  libiio,
+  # libusb is referenced by the vendor .pc files (Airspy/AirspyHF/HackRF).
+  libusb1,
   geodata,
 }:
 
@@ -72,8 +91,8 @@ let
   #
   # Inline subproject bundles (kept out of the flat namespace: catch2 = tests
   # only, tree-sitter-* = release tarballs, velopack = optional, disabled via
-  # -Dvelopack=disabled). The whole SDR stack comes from Nixpkgs (see
-  # `soapysdr`), so no soapy/limesuite/rtlsdr/airspy sources are bundled.
+  # -Dvelopack=disabled). The SDR stack comes from Nixpkgs (see the `sdr`
+  # loader patch), so no vendor sources are bundled.
   #
   catch2 = fetchurl {
     name = "Catch2-3.4.0.tar.gz";
@@ -99,6 +118,26 @@ let
     name = "tree-sitter-markdown-0.5.3.tar.gz";
     url = "https://github.com/tree-sitter-grammars/tree-sitter-markdown/releases/download/v0.5.3/tree-sitter-markdown.tar.gz";
     sha256 = "22e40c51810e64c6bf073f0147f3abc167473206789e6dcbed4ba198ff3ca119";
+  };
+  tree-sitter-yaml = fetchurl {
+    name = "tree-sitter-yaml-0.7.2.tar.gz";
+    url = "https://github.com/tree-sitter-grammars/tree-sitter-yaml/releases/download/v0.7.2/tree-sitter-yaml.tar.gz";
+    sha256 = "2707d9ff0556ee6c36a77299b4c08e5b2dcbd0d35f0b9688bb2ac8e276025f72";
+  };
+  tree-sitter-bash = fetchurl {
+    name = "tree-sitter-bash-0.25.1.tar.gz";
+    url = "https://github.com/tree-sitter/tree-sitter-bash/releases/download/v0.25.1/tree-sitter-bash.tar.gz";
+    sha256 = "bd0d72814c6512de190439ce6562635c69ce27fa8bc59eaf381d44263579df36";
+  };
+  tree-sitter-cpp = fetchurl {
+    name = "tree-sitter-cpp-0.23.4.tar.gz";
+    url = "https://github.com/tree-sitter/tree-sitter-cpp/archive/refs/tags/v0.23.4.tar.gz";
+    sha256 = "7a2c55afe3028f4105f25762ea58cc16537d1f5a1dcd9cca90410b3cd5d46051";
+  };
+  tree-sitter-json = fetchurl {
+    name = "tree-sitter-json-0.24.8.tar.xz";
+    url = "https://github.com/tree-sitter/tree-sitter-json/releases/download/v0.24.8/tree-sitter-json.tar.xz";
+    sha256 = "3f53c9d908328ac6004dd51b1e1b617315886e1bd7e772430c5090252ec72fab";
   };
   mkBundle =
     { name, files }:
@@ -148,6 +187,42 @@ let
         }
       ];
     })
+    (mkBundle {
+      name = "tree-sitter-yaml-subproject-bundle";
+      files = [
+        {
+          src = tree-sitter-yaml;
+          cacheName = "tree-sitter-yaml-0.7.2.tar.gz";
+        }
+      ];
+    })
+    (mkBundle {
+      name = "tree-sitter-bash-subproject-bundle";
+      files = [
+        {
+          src = tree-sitter-bash;
+          cacheName = "tree-sitter-bash-0.25.1.tar.gz";
+        }
+      ];
+    })
+    (mkBundle {
+      name = "tree-sitter-cpp-subproject-bundle";
+      files = [
+        {
+          src = tree-sitter-cpp;
+          cacheName = "tree-sitter-cpp-0.23.4.tar.gz";
+        }
+      ];
+    })
+    (mkBundle {
+      name = "tree-sitter-json-subproject-bundle";
+      files = [
+        {
+          src = tree-sitter-json;
+          cacheName = "tree-sitter-json-0.24.8.tar.xz";
+        }
+      ];
+    })
   ];
 
   # All bundles merged into the meson wrap cache (files and extracted dirs).
@@ -168,19 +243,24 @@ let
 in
 stdenv.mkDerivation {
   pname = "cyberether";
-  version = "1.11.0";
+  version = "1.15.0";
 
   src = fetchgit {
     url = "https://github.com/luigifcruz/cyberether.git";
-    rev = "3f2d659ac47fd911d14f048787660ba39b9282c2"; # v1.11.0
-    sha256 = "sha256-t/tlszI5ENlnD2Ly3oyi0K3ywgyaJ91iA+bnjGcNz6w=";
+    rev = "f79fc17fa0ee8fd838cb456b3fb67c7a98be4ccc"; # v1.15.0
+    sha256 = "sha256-vEdQTJdO0a4YYRcA9QLTydGGFGvnvJLAjHp7N1T8+Yg=";
   };
 
   # Upstream compiles cpp-httplib as an LTO static archive, which cannot be
   # resolved when the consumer links without the GCC LTO plugin (Nix binutils
   # does not auto-load it). Also: `find_installation()` with no argument binds
   # meson's own runtime python, which lacks numpy/mapbox_earcut; look up
-  # `python3` on PATH so the env python (with those modules) is used.
+  # `python3` on PATH so the env python (with those modules) is used. The
+  # remaining patches route zlib, openssl, qrencode, fmt, toml++ and the SDR
+  # vendor libraries through the system (pkg-config) copies; velopack is made
+  # opt-out. The soapy module (the only user of a non-lock-free 32-byte
+  # atomic) is built as its own static library so libatomic is attached to it
+  # rather than to the whole jetstream target.
   patches = [
     ./patches/000-cpp-httplib-no-lto.patch
     ./patches/001-find-python3.patch
@@ -190,7 +270,8 @@ stdenv.mkDerivation {
     ./patches/005-use-system-qrencode.patch
     ./patches/006-use-system-fmt.patch
     ./patches/007-use-system-tomlplusplus.patch
-    ./patches/008-use-system-soapysdr.patch
+    ./patches/009-use-system-sdr.patch
+    ./patches/010-soapy-libatomic.patch
   ];
 
   nativeBuildInputs = [
@@ -230,8 +311,20 @@ stdenv.mkDerivation {
     fmt
     # System toml++ for the patched tomlplusplus loader (pkg-config).
     tomlplusplus
-    # SoapySDR joined with the SDR driver plugins (see the patched soapy
-    # loader); the plugins are picked up by SoapySDR at runtime.
+    # System SDR vendor libraries for the patched SDR loader (pkg-config).
+    rtlsdr
+    airspy
+    airspyhf
+    hackrf
+    limesuite
+    libbladeRF
+    libad9361
+    libusb1
+    # libiio ships its headers/.pc in the `dev` output and the shared library
+    # in the `lib` output.
+    (lib.getDev libiio)
+    (lib.getLib libiio)
+    # SoapySDR + driver plugins: dlopen()ed at runtime by the `soapy` module.
     soapysdr
   ];
 
@@ -242,9 +335,9 @@ stdenv.mkDerivation {
   # (see meson/008-keep-nix-store-rpath.patch). Nixpkgs' fixupPhase would
   # otherwise run `patchelf --shrink-rpath` and drop the store directories
   # that are not direct DT_NEEDED dependencies (GLFW dlopen()s X11/Wayland
-  # and the Vulkan loader, so those libraries are intentionally absent from
-  # DT_NEEDED). Opt out of that stripping so the RUNPATH produced by meson
-  # survives into the final output.
+  # and the Vulkan loader, and the `soapy` module dlopen()s libSoapySDR, so
+  # those libraries are intentionally absent from DT_NEEDED). Opt out of that
+  # stripping so the RUNPATH produced by meson survives into the final output.
   dontPatchELF = true;
 
   # The meson buildInput ships a setup-hook that would install its own
@@ -271,18 +364,17 @@ stdenv.mkDerivation {
       subprojects/qrencode.wrap subprojects/fmt.wrap \
       subprojects/tomlplusplus.wrap
 
-    # --- system SoapySDR ---------------------------------------------------
-    # The patched soapy loader uses the system SoapySDR + its plugin modules
-    # (patch 008-use-system-soapysdr.patch); the bundled soapysdr and
-    # SoapySDR-driver subprojects, and therefore the libusb/libhackrf shims
-    # they needed, are gone. Their wraps are inert but harmless; drop them so
+    # --- system SDR vendors ------------------------------------------------
+    # The patched SDR loader uses the system vendor libraries via pkg-config
+    # (patch 009-use-system-sdr.patch); the bundled vendor subprojects are
+    # gone. Their wraps are inert but harmless; drop them so
     # `--wrap-mode=nodownload` never has to consider them.
-    rm -f subprojects/soapysdr.wrap subprojects/soapyairspy.wrap \
-      subprojects/soapyhackrf.wrap subprojects/soapyrtlsdr.wrap \
-      subprojects/limesuite.wrap subprojects/libairspy.wrap \
-      subprojects/librtlsdr.wrap subprojects/soapybladerf.wrap \
-      subprojects/libbladerf.wrap subprojects/bladerf-no-os.wrap \
-      subprojects/libusb.wrap subprojects/libhackrf.wrap
+    rm -f subprojects/librtlsdr.wrap subprojects/libairspy.wrap \
+      subprojects/libairspyhf.wrap subprojects/libhackrf.wrap \
+      subprojects/limesuite.wrap subprojects/libbladerf.wrap \
+      subprojects/libad9361.wrap subprojects/libiio.wrap \
+      subprojects/libxml2.wrap subprojects/libusb.wrap \
+      subprojects/libusb-browser.wrap subprojects/bladerf-no-os.wrap
 
     export MESON_PACKAGE_CACHE_DIR="$(pwd)/meson-cache"
     mkdir -p "$MESON_PACKAGE_CACHE_DIR"
@@ -323,8 +415,26 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doCheck = true;
+
+  # The full test suite needs a Vulkan device (headless builders have none), so
+  # run the GPU-independent slice: the Python parser tests plus the core suites
+  # that only touch memory/tools/serialization/settings/platform. The platform
+  # `[process]` cases shell out to `/bin/echo` and `/bin/sh`, which do not exist
+  # in the build sandbox, so they are excluded.
+  checkPhase = ''
+    runHook preCheck
+
+    meson test -C build --print-errorlogs shader-parser geodata-parser
+
+    meson test -C build --print-errorlogs --test-args "~[process]" \
+      core-memory core-tools core-serialization core-settings core-platform
+
+    runHook postCheck
+  '';
+
   meta = with lib; {
-    description = "CyberEther - multi-platform GPU-accelerated signal processing framework (Vulkan GUI + Superluminal Python bindings + SoapySDR)";
+    description = "CyberEther - multi-platform GPU-accelerated signal processing framework (Vulkan GUI + Superluminal Python bindings + SDR stack)";
     homepage = "https://cyberether.org";
     license = licenses.mit;
     mainProgram = "cyberether";

@@ -1,0 +1,84 @@
+--- a/meson/loaders/sdr/meson.build	2026-10-18 23:48:40.205183935 +0200
++++ b/meson/loaders/sdr/meson.build	2026-10-18 23:55:01.305547977 +0200
+@@ -2,47 +2,51 @@
+ sdr_found = false
+ 
+ if jst_is_macos or jst_is_linux or jst_is_windows or jst_is_browser
++    # Use the system SDR libraries (discovered through pkg-config) instead of
++    # building the bundled meson subprojects. The loader only needs the stable
++    # vendor C APIs, and the system copies avoid shipping the static archives
++    # into the output. PlutoSDR additionally needs libiio.
+     sdr_families = {
+-        'RTLSDR': ['librtlsdr', 'librtlsdr_dep'],
+-        'AIRSPY': ['libairspy', 'libairspy_dep'],
+-        'AIRSPYHF': ['libairspyhf', 'libairspyhf_dep'],
+-        'HACKRF': ['libhackrf', 'libhackrf_dep'],
+-        'LIMESUITE': ['limesuite', 'limesuite_dep'],
+-        'BLADERF': ['libbladerf', 'libbladerf_dep'],
++        'RTLSDR': ['librtlsdr'],
++        'AIRSPY': ['libairspy'],
++        'AIRSPYHF': ['libairspyhf'],
++        'HACKRF': ['libhackrf'],
++        'LIMESUITE': ['LimeSuite'],
++        'BLADERF': ['libbladeRF'],
+     }
+     if not jst_is_browser
+-        sdr_families += {'PLUTOSDR': ['libad9361', 'libad9361_dep']}
++        sdr_families += {'PLUTOSDR': ['libad9361', 'libiio']}
+     endif
+ 
+     foreach family, source : sdr_families
+-        family_dep = subproject(
+-            source[0],
+-            required: true,
+-            default_options: sdr_static_options,
+-        ).get_variable(source[1])
++        family_deps = []
++        family_found = true
+ 
+-        if family_dep.found()
++        foreach source_dep : source
++            family_dep = dependency(source_dep, required: true)
++            # LimeSuite installs its headers under `include/lime`, but its
++            # pkg-config file only advertises the top-level include directory.
++            # Add the `lime` subdirectory so `#include <LimeSuite.h>` and
++            # `#include <ConnectionRegistry.h>` resolve.
++            if source_dep == 'LimeSuite'
++                family_dep = declare_dependency(
++                    dependencies: family_dep,
++                    compile_args: [
++                        '-I' + family_dep.get_variable(pkgconfig: 'includedir') + '/lime',
++                    ],
++                )
++            endif
++            family_deps += family_dep
++            family_found = family_found and family_dep.found()
++        endforeach
++
++        if family_found
+             cfg_lst.set('JETSTREAM_LOADER_' + family + '_AVAILABLE', true)
+-            dep_lst += family_dep
++            dep_lst += family_deps
+             sdr_found = true
+         endif
+-        ldr_lst += {family: family_dep.found()}
++        ldr_lst += {family: family_found}
+     endforeach
+-
+-    if jst_is_linux and not jst_is_static
+-        lib_link_args += [
+-            '-Wl,--exclude-libs,liblibrtlsdr.a:liblibairspy.a:liblibairspyhf.a:libhackrf.a:' +
+-            'libLimeSuite.a:' +
+-            'libbladeRF.a:libiio.a:libad9361.a:libxml2.a:libusb-1.0.a',
+-        ]
+-    endif
+-
+-    if jst_is_macos and not jst_is_static
+-        foreach symbols : ['_rtlsdr_*', '_airspy_*', '_airspyhf_*', '_hackrf_*', '_bladerf_*', '_LMS_*',
+-                           '_iio_*', '_ad9361_*', '_xml*', '___xml*', '_libusb_*', '__ZN4lime*']
+-            lib_link_args += '-Wl,-unexported_symbol,' + symbols
+-        endforeach
+-    endif
+ endif
+ 
+ if sdr_found

@@ -1,0 +1,45 @@
+--- a/src/domains/io/soapy/meson.build	2026-10-17 09:11:22.000000000 +0200
++++ b/src/domains/io/soapy/meson.build	2026-10-19 12:07:39.327398368 +0200
+@@ -1,10 +1,35 @@
+-src_lst += files([
+-    'block_impl.cc',
+-    'module_impl.cc',
+-    'library/soapysdr.cc',
+-    'library/soapy_runtime.cc',
+-    'module_impl_native_cpu.cc',
+-])
++# The soapy module is the only place in the tree that instantiates a
++# std::atomic<T> over a type larger than the widest lock-free atomic: its
++# `Tools::Snapshot<std::optional<SoapyAbi::Range>>` is a 32-byte trivially
++# copyable payload, so GCC lowers it to libatomic's generic
++# __atomic_load/__atomic_store. Build the module as its own static library and
++# attach libatomic to it, instead of leaking the link flag into the whole
++# jetstream target.
++soapy_libatomic_dep = cpp.find_library('atomic', required: false)
++soapy_extra_deps = []
++if soapy_libatomic_dep.found()
++    soapy_extra_deps += soapy_libatomic_dep
++endif
++
++libsoapy = static_library(
++    'jetstream-soapy',
++    files([
++        'block_impl.cc',
++        'module_impl.cc',
++        'library/soapysdr.cc',
++        'library/soapy_runtime.cc',
++        'module_impl_native_cpu.cc',
++    ]),
++    cpp_args: ['-DJST_IS_LIBRARY'],
++    include_directories: inc_lst,
++    dependencies: dep_lst + soapy_extra_deps,
++    pic: true,
++)
++
++whole_dep_lst += declare_dependency(
++    link_whole: libsoapy,
++    dependencies: soapy_extra_deps,
++)
+ 
+ module_test_lst += files([
+     'module_tests.cc',
