@@ -56,7 +56,16 @@ let
     };
 
     # specialization of packaged
-    openblasSingleThreaded = pkgs.openblas.override { singleThreaded = true; };
+    #
+    # nixpkgs >= 25.11 defaults OpenBLAS to ILP64 (64-bit integers) on
+    # x86_64, while the reference BLAS/LAPACK API used by casacore,
+    # aocommon and DP3 passes 32-bit ``int`` arguments.  Forcing LP64 keeps
+    # the BLAS integer width consistent on every platform; on aarch64 the
+    # default already is LP64, so this is a no-op there.
+    openblasSingleThreaded = pkgs.openblas.override {
+      singleThreaded = true;
+      blas64 = false;
+    };
 
     # Astronomy packages
     wcstools = pkgs.callPackage ./wcstools/default.nix { };
@@ -198,7 +207,10 @@ let
         wcslib = astro_pkgs.wcslib;
         cfitsio = pkgs.cfitsio;
         readline = pkgs.readline;
-        openblas = pkgs.openblas;
+        # Must match the OpenBLAS linked into casacore (see
+        # openblasSingleThreaded above); loading two OpenBLAS variants with
+        # the same SONAME but different integer widths would be undefined.
+        openblas = astro_pkgs.openblasSingleThreaded;
       };
 
       meqtrees-cattery = final.callPackage ./meqtrees-cattery/default.nix { };
