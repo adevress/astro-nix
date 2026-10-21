@@ -49,7 +49,7 @@
   meqtrees-cattery,
   zarr,
   xarray,
-  mpi4py
+  mpi4py,
 }:
 
 buildPythonPackage rec {
@@ -62,6 +62,11 @@ buildPythonPackage rec {
     ref = "refs/heads/HackathonRennes_June26_Adastra";
     rev = "e8dce1e0c68e05c49cea3bfe874375680a703036";
   };
+
+  # Python 3.14 defaults to the fork-server start method, which cannot pickle
+  # the psutil.Process objects held by AsyncProcessPool.  Force fork, which
+  # is the semantics DDFacet was designed around.
+  patches = [ ./patches/001-python314-fork-start-method.patch ];
 
   # Relax version pins in pyproject.toml to work with nixpkgs versions
   postPatch = ''

@@ -54,6 +54,11 @@ buildPythonPackage rec {
     sha256 = "sha256-P1qwkjzIhukdbTgnd5Q6yTFjOGuRZ3j3yH233O0lEb0=";
   };
 
+  # Python 3.14 defaults to the fork-server start method, which cannot pickle
+  # the psutil.Process objects held by AsyncProcessPool.  Force fork, which
+  # is the semantics DDFacet was designed around.
+  patches = [ ./patches/001-python314-fork-start-method.patch ];
+
   # Relax version pins in pyproject.toml to work with nixpkgs versions
   postPatch = ''
     python3 << 'PYEOF'
