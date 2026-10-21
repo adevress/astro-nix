@@ -23,5 +23,5 @@ let
         inherit system;
         config = builtins.removeAttrs astroConfig [ "cudaArch" ];
       };
-  pkgSet = import ./scope.nix { lib = pkgs.lib; inherit pkgs; };
+  pkgSet = import ./all_packages.nix { lib = pkgs.lib; inherit pkgs; };
 in pkgSet
