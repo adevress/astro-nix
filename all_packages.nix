@@ -213,32 +213,11 @@ lib.makeScope pkgs.newScope (self: with self; {
       killms = final.callPackage ./killms/default.nix { };
       
       # Git-tracked development snapshots (see instructions/ddf_dev.md).
-      ddfacet_dev = (final.callPackage ./ddfacet/dev.nix { }).overrideAttrs (old: {
-        ## Error: Private fetchFromGitHub requires the nix building process (nix-daemon in multi user mode) to have the NIX_GITHUB_PRIVATE_USERNAME and NIX_GITHUB_PRIVATE_PASSWORD env vars set.
-        #src = pkgs.fetchFromGitHub {
-        #  owner = "cyriltasse";
-        #  repo = "DDFacet";
-        #  rev = "refs/heads/HackathonRennes_June26_Adastra";
-        #  hash = prev.lib.fakeHash;
-        #  private = true;
-        #};
-        version = "0.9.1.0";
-        src = builtins.fetchGit {
-          url = "ssh://git@github.com/cyriltasse/DDFacet";
-          ref="refs/heads/HackathonRennes_June26_Adastra";
-          rev = "e8dce1e0c68e05c49cea3bfe874375680a703036";
-        };
-      });
-      
-      killms_dev = (final.callPackage ./killms/dev.nix {
+      ddfacet_dev = final.callPackage ./ddfacet/dev.nix { };
+
+      killms_dev = final.callPackage ./killms/dev.nix {
         ddfacet = final.ddfacet_dev;
-      }).overrideAttrs (old: {
-        src = builtins.fetchGit {
-          url = "ssh://git@github.com/cyriltasse/killMS";
-          ref="refs/heads/HackathonRennes_June26_Adastra";
-          rev = "5784d5aef6c3a2c137b5783c12216b9b661fca09";
-        };
-      });
+      };
       
       ddf-pipeline = final.callPackage ./ddf-pipeline/default.nix {};
 
@@ -246,13 +225,11 @@ lib.makeScope pkgs.newScope (self: with self; {
         ddfacet = final.ddfacet_dev;
         killms = final.killms_dev;
       }).overrideAttrs (old: {
+	version = "3.3.0-dev";
         src = builtins.fetchGit {
           url = "https://github.com/mhardcastle/ddf-pipeline";
           ref="refs/heads/HackathonRennes_June26";
           rev = "2a7648d2ac866f69f9a25eed1d64b73bc2b25589";
-          # TODO requires simms
-          #ref="refs/heads/HackathonRennes_June26_Adastra";
-          #rev = "0b6b52258414fe35c58e3229c274bdc13e530b6a";
         };
       });
     });
