@@ -1,28 +1,15 @@
-# DDFacet "dev" — build the imager from its Git history instead of the PyPI
-# sdist.
+# DDFacet "dev" — build the imager from the private development fork.
 #
-# Upstream development happens on the `HackathonRennes_June26` branch of the
-# private fork `cyriltasse/DDFacet`.  That fork is not reachable without
-# credentials, so this recipe defaults to the public `saopicc/DDFacet`
-# repository at the commit that carries the same development snapshot.
-#
-# To build the private fork, override the source, e.g.
-#
-#   ddfacet_dev.overrideAttrs (old: {
-#     src = pkgs.fetchFromGitHub {
-#       owner = "cyriltasse";
-#       repo = "DDFacet";
-#       rev = "<commit on HackathonRennes_June26>";
-#       hash = "sha256-...";
-#     };
-#   })
+# Upstream development happens on the `HackathonRennes_June26_Adastra` branch
+# of the private fork `cyriltasse/DDFacet`.  The source is fetched with
+# `builtins.fetchGit` over SSH, so GitHub credentials (and network access) are
+# required at evaluation time.  The commit is pinned by `rev`.
 #
 # The build itself is identical to ddfacet/default.nix (scikit-build-core +
 # CMake backend); only the source location differs.
 {
   lib,
   buildPythonPackage,
-  fetchFromGitHub,
   cmake,
   ninja,
   numpy,
@@ -67,16 +54,13 @@
 
 buildPythonPackage rec {
   pname = "DDFacet";
-  version = "1.0.0.0-dev";
+  version = "0.9.1.0-dev";
   pyproject = true;
 
-  src = fetchFromGitHub {
-    owner = "saopicc";
-    repo = "DDFacet";
-    # Public commit equivalent to the development snapshot; the private
-    # cyriltasse/DDFacet HackathonRennes_June26 branch is not reachable here.
-    rev = "2fe05ab4a3399ef44a631b6116608f21239e2a57";
-    hash = "sha256-JwiiIzPdNg8pQMu+C1exyU1xmo/R9q2QjtV+kjRhiPs=";
+  src = builtins.fetchGit {
+    url = "ssh://git@github.com/cyriltasse/DDFacet";
+    ref = "refs/heads/HackathonRennes_June26_Adastra";
+    rev = "e8dce1e0c68e05c49cea3bfe874375680a703036";
   };
 
   # Relax version pins in pyproject.toml to work with nixpkgs versions

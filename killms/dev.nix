@@ -1,28 +1,15 @@
-# killMS "dev" — build the DD-calibrator from its Git history instead of the
-# PyPI sdist.
+# killMS "dev" — build the DD-calibrator from the private development fork.
 #
-# Upstream development happens on the `HackathonRennes_June26` branch of the
-# private fork `cyriltasse/killMS`.  That fork is not reachable without
-# credentials, so this recipe defaults to the public `saopicc/killMS`
-# repository at the commit that carries the same development snapshot.
-#
-# To build the private fork, override the source, e.g.
-#
-#   killms_dev.overrideAttrs (old: {
-#     src = pkgs.fetchFromGitHub {
-#       owner = "cyriltasse";
-#       repo = "killMS";
-#       rev = "<commit on HackathonRennes_June26>";
-#       hash = "sha256-...";
-#     };
-#   })
+# Upstream development happens on the `HackathonRennes_June26_Adastra` branch
+# of the private fork `cyriltasse/killMS`.  The source is fetched with
+# `builtins.fetchGit` over SSH, so GitHub credentials (and network access) are
+# required at evaluation time.  The commit is pinned by `rev`.
 #
 # The build itself is identical to killms/default.nix (scikit-build-core +
 # CMake backend); only the source location differs.
 {
   lib,
   buildPythonPackage,
-  fetchFromGitHub,
   cmake,
   ninja,
   numpy,
@@ -38,13 +25,10 @@ buildPythonPackage rec {
   version = "3.3.0";
   pyproject = true;
 
-  src = fetchFromGitHub {
-    owner = "saopicc";
-    repo = "killMS";
-    # Public commit equivalent to the development snapshot; the private
-    # cyriltasse/killMS HackathonRennes_June26 branch is not reachable here.
-    rev = "350f22c67a4b769b2c105327116028e7b13a86fb";
-    hash = "sha256-2Q01G+Oo1KH6V77QlSHxWx3wRHCofiGIl6Ff6c8QuqQ=";
+  src = builtins.fetchGit {
+    url = "ssh://git@github.com/cyriltasse/killMS";
+    ref = "refs/heads/HackathonRennes_June26_Adastra";
+    rev = "5784d5aef6c3a2c137b5783c12216b9b661fca09";
   };
 
   # Relax version pins and fix NumPy 2.x / ARM compatibility
