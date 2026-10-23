@@ -225,7 +225,7 @@ lib.makeScope pkgs.newScope (self: with self; {
         ddfacet = final.ddfacet_dev;
         killms = final.killms_dev;
       }).overrideAttrs (old: {
-	version = "3.3.0-dev";
+        version = "0.1.0";
         src = builtins.fetchGit {
           url = "https://github.com/mhardcastle/ddf-pipeline";
           ref="refs/heads/HackathonRennes_June26";
