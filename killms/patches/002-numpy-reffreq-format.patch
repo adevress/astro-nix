@@ -1,0 +1,13 @@
+NumPy >= 2.4 refuses %f formatting of a 1-element array: REF_FREQUENCY is an array (one entry per SPW).
+
+--- a/killMS/Data/ClassMS.py
++++ b/killMS/Data/ClassMS.py
+@@ -1064,7 +1064,7 @@
+         ll.append("   - Pointing center: (ra, dec)=(%s, %s) "%(rad2hmsdms(self.rarad,Type="ra").replace(" ",":")\
+                                                                ,rad2hmsdms(self.decrad,Type="dec").replace(" ",".")))
+         f0,f1=self.ChanFreq.min()/1e6,self.ChanFreq.max()/1e6
+-        ll.append("   - Frequency = %.2f MHz [ %.2f -> %.2f MHz]"%(self.reffreq/1e6,f0,f1))
++        ll.append("   - Frequency = %.2f MHz [ %.2f -> %.2f MHz]"%(np.mean(self.reffreq)/1e6,f0,f1))
+         ll.append("   - Wavelength = %5.2f meters"%(np.mean(self.wavelength_chan)))
+         ll.append("   - Time bin = %4.1f seconds"%(self.dt))
+         ll.append("   - Total Integration time = %6.2f hours"%self.DTh)
