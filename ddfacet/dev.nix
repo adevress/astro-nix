@@ -51,6 +51,7 @@
   xarray,
   mpi4py,
   fasteners,
+  lofarbeam,
 }:
 
 buildPythonPackage rec {
@@ -138,6 +139,7 @@ buildPythonPackage rec {
     xarray
     mpi4py
     fasteners
+    lofarbeam
   ];
 
   pythonImportsCheck = [ "DDFacet" ];

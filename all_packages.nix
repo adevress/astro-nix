@@ -209,6 +209,7 @@ lib.makeScope pkgs.newScope (self: with self; {
       };
 
       ddfacet = final.callPackage ./ddfacet/default.nix { };
+
       lofarbeam = final.callPackage ./lofarbeam/default.nix {
         casacore = casacore;
         openblas = openblasSingleThreaded;
