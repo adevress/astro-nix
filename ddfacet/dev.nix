@@ -68,7 +68,13 @@ buildPythonPackage rec {
   # Python 3.14 defaults to the fork-server start method, which cannot pickle
   # the psutil.Process objects held by AsyncProcessPool.  Force fork, which
   # is the semantics DDFacet was designed around.
-  patches = [ ./patches/001-python314-fork-start-method.patch ];
+  #
+  # 002: NumPy >= 2.4 refuses to assign a 1-element array to a scalar slot
+  # (ClusterCat.ra[i] = lm2radec(...)), which broke ClusterCat.py.
+  patches = [
+    ./patches/001-python314-fork-start-method.patch
+    ./patches/002-numpy-scalar-assignment.patch
+  ];
 
   # Relax version pins in pyproject.toml to work with nixpkgs versions
   postPatch = ''

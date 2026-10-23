@@ -1,0 +1,28 @@
+NumPy >= 2.4 no longer converts 1-element arrays to scalars when assigning to a scalar slot; lm2radec returns 1-element arrays.
+
+--- a/SkyModel/ClusterCat.py
++++ b/SkyModel/ClusterCat.py
+@@ -297,8 +297,8 @@
+         for iDir in range(nNodes):
+             l,m=xc[iDir],yc[iDir]
+             ramean,decmean=self.CoordMachine.lm2radec(np.array([l]),np.array([m]))
+-            ClusterCat.ra[iDir]=ramean
+-            ClusterCat.dec[iDir]=decmean
++            ClusterCat.ra[iDir]=np.ravel(ramean)[0]
++            ClusterCat.dec[iDir]=np.ravel(decmean)[0]
+             ClusterCat.SumI[iDir]=0.
+             ClusterCat.Cluster[iDir]=iDir
+         if not self.OutClusterCat:
+--- a/SkyModel/Sky/ClassSM.py
++++ b/SkyModel/Sky/ClassSM.py
+@@ -753,8 +753,8 @@
+                 ramean,decmean=self.CoordMachine.lm2radec(np.array([lmean]),np.array([mmean]))
+             else:
+                 ramean,decmean=np.sum(cat.ra*cat.I)/np.sum(cat.I),np.sum(cat.dec*cat.I)/np.sum(cat.I)
+-            ClusterCat.ra[icat]=ramean
+-            ClusterCat.dec[icat]=decmean
++            ClusterCat.ra[icat]=np.ravel(ramean)[0]
++            ClusterCat.dec[icat]=np.ravel(decmean)[0]
+             ClusterCat.SumI[icat]=np.sum(cat.I)
+             ClusterCat.Cluster[icat]=d
+             if "Patch" in cat.dtype.fields.keys() and len(cat["Patch"][0].decode("ascii"))>0:
