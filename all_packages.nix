@@ -260,6 +260,7 @@ lib.makeScope pkgs.newScope (self: with self; {
   
   # Development (Git) variant of the DDF environment.
   ddfPyEnvDev = pkgs.python3Packages.python.withPackages (ps: [
+    python3Packages.ddf-pipeline_dev
     python3Packages.ddfacet_dev
     python3Packages.killms_dev
     ps.astropy

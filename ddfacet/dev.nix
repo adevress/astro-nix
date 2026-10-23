@@ -50,11 +50,12 @@
   zarr,
   xarray,
   mpi4py,
+  fasteners,
 }:
 
 buildPythonPackage rec {
   pname = "DDFacet";
-  version = "0.9.1.0-dev";
+  version = "0.9.1.0";
   pyproject = true;
 
   src = builtins.fetchGit {
@@ -136,6 +137,7 @@ buildPythonPackage rec {
     zarr
     xarray
     mpi4py
+    fasteners
   ];
 
   pythonImportsCheck = [ "DDFacet" ];
