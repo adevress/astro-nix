@@ -81,6 +81,10 @@ buildPythonPackage rec {
     # Include brackets for extras like "dask[array]" and "codex-africanus[dask]"
     content = re.sub(r'"([A-Za-z0-9_.\[\]-]+)\s*[<>=!~][^"]*"', r'"\1"', content)
     content = re.sub(r"'([A-Za-z0-9_.\[\]-]+)\s*[<>=!~][^']*'", r"'\1'", content)
+    # Upstream does not declare lofarbeam (provided by the astro-nix `lofarbeam`
+    # package) in its project dependencies: add it.
+    content, n = re.subn(r'(^dependencies\s*=\s*\[\n)', r'\1    "lofarbeam",\n', content, count=1, flags=re.MULTILINE)
+    assert n == 1, "could not find the dependencies list in pyproject.toml"
     with open('pyproject.toml', 'w') as f:
         f.write(content)
     PYEOF
