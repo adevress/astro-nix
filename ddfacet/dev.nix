@@ -73,10 +73,13 @@ buildPythonPackage rec {
   # (ClusterCat.ra[i] = lm2radec(...)), which broke ClusterCat.py.
   # 003: Python 2 leftovers (tuple parameters, `except E,e`, empty function body) that fail
   # to byte-compile on Python 3.
+  # 004: re.sub(..., count) positional use is deprecated since Python 3.13 and
+  # DDF.py turns that warning into an error, breaking the log formatter.
   patches = [
     ./patches/001-python314-fork-start-method.patch
     ./patches/002-numpy-scalar-assignment.patch
     ./patches/003-python3-syntax.patch
+    ./patches/004-re-sub-count-keyword.patch
   ];
 
   # Relax version pins in pyproject.toml to work with nixpkgs versions
