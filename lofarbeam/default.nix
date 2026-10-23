@@ -25,7 +25,32 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ cmake ninja pkg-config python ];
-  patches = [ ./patches/0001-std-string.patch ./patches/0002-cxx17.patch ];
+  # 0001: casacore >= 3.8.2 no longer leaks `using std::string` globally.
+  # 0002/0003: casacore headers need C++17+; install the python package into
+  # site-packages with an absolute RPATH instead of `$out/lofar`.
+  patches = [
+    ./patches/0001-std-string.patch
+    ./patches/0002-cxx20.patch
+    ./patches/0003-install-in-site-packages.patch
+  ];
+
+  cmakeFlags = [ "-DLOFARBEAM_PYTHON_DIR=${python.sitePackages}/" ];
+
+  # The CMake install does not produce Python metadata: provide a minimal
+  # .dist-info so that dependants' runtime-deps check (and importlib.metadata)
+  # can see the package.
+  postInstall = ''
+    distinfo=$out/${python.sitePackages}/lofarbeam-${version}.dist-info
+    mkdir -p $distinfo
+    cat > $distinfo/METADATA <<EOF
+    Metadata-Version: 2.1
+    Name: lofarbeam
+    Version: ${version}
+    Requires-Dist: numpy
+    Requires-Dist: python-casacore
+    EOF
+    echo "cmake" > $distinfo/INSTALLER
+  '';
   buildInputs = [ casacore boost openblas ];
   dependencies = [ numpy python-casacore ];
 
