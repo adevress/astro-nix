@@ -71,9 +71,12 @@ buildPythonPackage rec {
   #
   # 002: NumPy >= 2.4 refuses to assign a 1-element array to a scalar slot
   # (ClusterCat.ra[i] = lm2radec(...)), which broke ClusterCat.py.
+  # 003: Python 2 leftovers (tuple parameters, `except E,e`, empty function body) that fail
+  # to byte-compile on Python 3.
   patches = [
     ./patches/001-python314-fork-start-method.patch
     ./patches/002-numpy-scalar-assignment.patch
+    ./patches/003-python3-syntax.patch
   ];
 
   # Relax version pins in pyproject.toml to work with nixpkgs versions
