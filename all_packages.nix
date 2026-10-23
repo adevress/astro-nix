@@ -2,10 +2,10 @@
 lib.makeScope pkgs.newScope (self: with self; {
   # astro_pkgs
   hello = callPackage ./hello/default.nix { };
-  
+
   # Meson >= 1.11 override (upstream nixpkgs recipe, version bumped; CyberEther needs it)
   meson = callPackage ./meson/default.nix { };
-  
+
   # CyberEther meson subproject bundles (flat namespace; sources pinned to
   # the exact revisions CyberEther's .wrap files commit). fmt is not bundled
   # here: CyberEther's fmt loader is patched to use the system libfmt via
@@ -20,16 +20,16 @@ lib.makeScope pkgs.newScope (self: with self; {
   robin-map = callPackage ./robin-map/default.nix { };
   libmodes = callPackage ./libmodes/default.nix { };
   stb = callPackage ./stb/default.nix { };
-  
+
   # Generic C++ libraries (header only, no astronomy dependency)
   alea = callPackage ./alea/default.nix {
     cudaPackages = null; # host only build, free software, cacheable
   };
-  
+
   aleaWithCuda = callPackage ./alea/default.nix {
     cudaPackages = pkgs.cudaPackages;
   };
-  
+
   # specialization of packaged
   #
   # nixpkgs >= 25.11 defaults OpenBLAS to ILP64 (64-bit integers) on
@@ -41,7 +41,7 @@ lib.makeScope pkgs.newScope (self: with self; {
     singleThreaded = true;
     blas64 = false;
   };
-  
+
   # Astronomy packages
   wcstools = callPackage ./wcstools/default.nix { };
   wcslib = callPackage ./wcslib/default.nix { };
@@ -90,7 +90,7 @@ lib.makeScope pkgs.newScope (self: with self; {
     ;
   };
   ds9 = callPackage ./ds9/default.nix { };
-  
+
   # SoapySDR with the SDR driver plugins CyberEther supports, joined into the
   # SoapySDR output with Nixpkgs' own `extraPackages` mechanism so that
   # SoapySDR discovers them at runtime (`SoapySDR::listModules()`).
@@ -103,20 +103,20 @@ lib.makeScope pkgs.newScope (self: with self; {
       pkgs.limesuite
     ];
   };
-  
+
   # Host GPU driver wrapper (nixGL-like) with CUDA support.
   # `nix run -f ./ nixgpu -- <program>` runs <program> with the host drivers.
   nixgpu = callPackage ./nixgpu/default.nix {
     # intel-media-driver only exists on x86; it is simply omitted elsewhere.
     intel-media-driver = if pkgs.stdenv.hostPlatform.isx86 then pkgs.intel-media-driver else null;
   };
-  
+
   # Small CUDA test program, built hermetically with the Nix CUDA toolkit.
   cuda-hello = callPackage ./cuda-hello/default.nix {
     cudaPackages = pkgs.cudaPackages_13_0;
     inherit (astroConfig) cudaArch;
   };
-  
+
   # CyberEther's geodata step (resources/geodata) requires a python with
   # numpy + mapbox_earcut; give the build the full interpreted env.
   cyberetherPython = python3Packages.python.withPackages (ps: [
@@ -150,7 +150,7 @@ lib.makeScope pkgs.newScope (self: with self; {
     python3 = cyberetherPython;
   };
   blade = callPackage ./blade/default.nix { };
-                             
+
   # py_astro_pkgs
   python3Packages = pkgs.python3Packages.overrideScope (final: prev: {
   #pythonPackagesExtensions = pkgs.pythonPackagesExtensions ++ [
@@ -168,7 +168,7 @@ lib.makeScope pkgs.newScope (self: with self; {
         cmake = pkgs.cmake;
         ninja = pkgs.ninja;
       };
-      
+
       # DDF pipeline Python packages (dependency order matters)
       sharedarray = final.callPackage ./sharedarray/default.nix { };
       pyephem = final.callPackage ./pyephem/default.nix { };
@@ -185,7 +185,7 @@ lib.makeScope pkgs.newScope (self: with self; {
       pdu = final.callPackage ./pdu/default.nix { };
       treepick = final.callPackage ./treepick/default.nix { };
       yorn = final.callPackage ./yorn/default.nix { };
-      
+
       python-casacore = final.callPackage ./python-casacore/default.nix {
         casacore = casacore;
         boost = pkgs.boost.override { enablePython = true; python = pkgs.python3; };
@@ -209,16 +209,20 @@ lib.makeScope pkgs.newScope (self: with self; {
       };
 
       ddfacet = final.callPackage ./ddfacet/default.nix { };
-      
+      lofarbeam = final.callPackage ./lofarbeam/default.nix {
+        casacore = casacore;
+        openblas = openblasSingleThreaded;
+      };
+
       killms = final.callPackage ./killms/default.nix { };
-      
+
       # Git-tracked development snapshots (see instructions/ddf_dev.md).
       ddfacet_dev = final.callPackage ./ddfacet/dev.nix { };
 
       killms_dev = final.callPackage ./killms/dev.nix {
         ddfacet = final.ddfacet_dev;
       };
-      
+
       ddf-pipeline = final.callPackage ./ddf-pipeline/default.nix {};
 
       ddf-pipeline_dev = (final.callPackage ./ddf-pipeline/default.nix {
@@ -233,7 +237,7 @@ lib.makeScope pkgs.newScope (self: with self; {
         };
       });
     });
-                               
+
   astroPyEnv = pkgs.python3Packages.python.withPackages (ps: [
     python3Packages.radler
     python3Packages.mapbox-earcut
@@ -244,7 +248,7 @@ lib.makeScope pkgs.newScope (self: with self; {
     ps.matplotlib
     ps.astropy
   ]);
-  
+
   # Full DDF pipeline Python environment
   ddfPyEnv = pkgs.python3Packages.python.withPackages (ps: [
     python3Packages.ddf-pipeline
@@ -257,7 +261,7 @@ lib.makeScope pkgs.newScope (self: with self; {
     ps.pandas
     ps.dask
   ]);
-  
+
   # Development (Git) variant of the DDF environment.
   ddfPyEnvDev = pkgs.python3Packages.python.withPackages (ps: [
     python3Packages.ddf-pipeline_dev

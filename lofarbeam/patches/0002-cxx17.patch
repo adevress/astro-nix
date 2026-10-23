@@ -1,0 +1,5 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -11,1 +11,1 @@
+-add_compile_options(-std=c++14 -Wall -DNDEBUG -Wl,--no-undefined)
++add_compile_options(-std=c++20 -Wall -DNDEBUG -Wl,--no-undefined)
