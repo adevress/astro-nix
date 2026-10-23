@@ -31,6 +31,10 @@ buildPythonPackage rec {
     rev = "5784d5aef6c3a2c137b5783c12216b9b661fca09";
   };
 
+  # NumPy >= 2.4 refuses to format the 1-element REF_FREQUENCY array with %f
+  # (ClassMS.__str__).
+  patches = [ ./patches/002-numpy-reffreq-format.patch ];
+
   # Relax version pins and fix NumPy 2.x / ARM compatibility
   postPatch = ''
     # Remove version constraints from build-system requires
