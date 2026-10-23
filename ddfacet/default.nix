@@ -70,6 +70,11 @@ buildPythonPackage rec {
     # Include brackets for extras like "dask[array]" and "codex-africanus[dask]"
     content = re.sub(r'"([A-Za-z0-9_.\[\]-]+)\s*[<>=!~][^"]*"', r'"\1"', content)
     content = re.sub(r"'([A-Za-z0-9_.\[\]-]+)\s*[<>=!~][^']*'", r"'\1'", content)
+    # Upstream ships DDFacet.__main__:iomonitor_main (and IOMonitor.driver) but
+    # forgets to declare the IOMonitor.py console script: add it.
+    if "iomonitor_main" not in content:
+        content, n = re.subn(r'(^\[project\.scripts\]\n)', r'\1"IOMonitor.py" = "DDFacet.__main__:iomonitor_main"\n', content, count=1, flags=re.MULTILINE)
+        assert n == 1, "could not find [project.scripts] in pyproject.toml"
     with open('pyproject.toml', 'w') as f:
         f.write(content)
     PYEOF
