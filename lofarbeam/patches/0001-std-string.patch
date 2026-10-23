@@ -1,0 +1,430 @@
+diff --git a/AntennaField.cc b/AntennaField.cc
+index 944c1e8..cab1f4b 100644
+--- a/AntennaField.cc
++++ b/AntennaField.cc
+@@ -33,7 +33,7 @@ namespace LOFAR
+ namespace StationResponse
+ {
+ 
+-AntennaField::AntennaField(const string &name,
++AntennaField::AntennaField(const std::string &name,
+     const CoordinateSystem &coordinates)
+     :   itsName(name),
+         itsCoordinateSystem(coordinates),
+@@ -49,7 +49,7 @@ AntennaField::~AntennaField()
+ {
+ }
+ 
+-const string &AntennaField::name() const
++const std::string &AntennaField::name() const
+ {
+     return itsName;
+ }
+diff --git a/AntennaField.h b/AntennaField.h
+index c92a891..db042d5 100644
+--- a/AntennaField.h
++++ b/AntennaField.h
+@@ -108,12 +108,12 @@ public:
+     typedef std::vector<Antenna> AntennaList;
+ 
+ 
+-    AntennaField(const string &name, const CoordinateSystem &coordinates);
++    AntennaField(const std::string &name, const CoordinateSystem &coordinates);
+ 
+     virtual ~AntennaField();
+ 
+     /** Return the name of the antenna field. */
+-    const string &name() const;
++    const std::string &name() const;
+ 
+     /** Return the phase reference position of the antenna field. */
+     const vector3r_t &position() const;
+@@ -246,7 +246,7 @@ private:
+     vector3r_t ncp(real_t time) const;
+     vector3r_t ncppol0(real_t time) const;
+ 
+-    string              itsName;
++    std::string              itsName;
+     CoordinateSystem    itsCoordinateSystem;
+     AntennaList         itsAntennae;
+     ITRFDirection::Ptr  itsNCP;
+diff --git a/AntennaFieldHBA.cc b/AntennaFieldHBA.cc
+index 24f6bbf..f52ebbc 100644
+--- a/AntennaFieldHBA.cc
++++ b/AntennaFieldHBA.cc
+@@ -28,7 +28,7 @@ namespace LOFAR
+ namespace StationResponse
+ {
+ 
+-AntennaFieldHBA::AntennaFieldHBA(const string &name,
++AntennaFieldHBA::AntennaFieldHBA(const std::string &name,
+     const CoordinateSystem &coordinates, const AntennaModelHBA::ConstPtr &model)
+     :   AntennaField(name, coordinates),
+         itsAntennaModel(model)
+diff --git a/AntennaFieldHBA.h b/AntennaFieldHBA.h
+index ae0c532..bd32290 100644
+--- a/AntennaFieldHBA.h
++++ b/AntennaFieldHBA.h
+@@ -45,7 +45,7 @@ public:
+     typedef std::shared_ptr<AntennaFieldHBA>         Ptr;
+     typedef std::shared_ptr<const AntennaFieldHBA>   ConstPtr;
+ 
+-    AntennaFieldHBA(const string &name, const CoordinateSystem &coordinates,
++    AntennaFieldHBA(const std::string &name, const CoordinateSystem &coordinates,
+         const AntennaModelHBA::ConstPtr &model);
+ 
+     virtual matrix22c_t response(real_t time, real_t freq,
+diff --git a/AntennaFieldLBA.cc b/AntennaFieldLBA.cc
+index 605059f..ee90875 100644
+--- a/AntennaFieldLBA.cc
++++ b/AntennaFieldLBA.cc
+@@ -28,7 +28,7 @@ namespace LOFAR
+ namespace StationResponse
+ {
+ 
+-AntennaFieldLBA::AntennaFieldLBA(const string &name,
++AntennaFieldLBA::AntennaFieldLBA(const std::string &name,
+     const CoordinateSystem &coordinates, const AntennaModelLBA::ConstPtr &model)
+     :   AntennaField(name, coordinates),
+         itsAntennaModel(model)
+diff --git a/AntennaFieldLBA.h b/AntennaFieldLBA.h
+index 6b6bd99..303de87 100644
+--- a/AntennaFieldLBA.h
++++ b/AntennaFieldLBA.h
+@@ -43,7 +43,7 @@ public:
+     typedef std::shared_ptr<AntennaFieldLBA>         Ptr;
+     typedef std::shared_ptr<const AntennaFieldLBA>   ConstPtr;
+ 
+-    AntennaFieldLBA(const string &name, const CoordinateSystem &coordinates,
++    AntennaFieldLBA(const std::string &name, const CoordinateSystem &coordinates,
+         const AntennaModelLBA::ConstPtr &model);
+ 
+     virtual raw_array_factor_t rawArrayFactor(real_t time, real_t freq,
+diff --git a/LofarMetaDataUtil.cc b/LofarMetaDataUtil.cc
+index 8681f0c..a1bc97b 100644
+--- a/LofarMetaDataUtil.cc
++++ b/LofarMetaDataUtil.cc
+@@ -62,17 +62,17 @@ namespace StationResponse
+ using namespace casacore;
+ using namespace std;
+ 
+-bool hasColumn(const Table &table, const string &column)
++bool hasColumn(const Table &table, const std::string &column)
+ {
+     return table.tableDesc().isColumn(column);
+ }
+ 
+-bool hasSubTable(const Table &table, const string &name)
++bool hasSubTable(const Table &table, const std::string &name)
+ {
+     return table.keywordSet().isDefined(name);
+ }
+ 
+-Table getSubTable(const Table &table, const string &name)
++Table getSubTable(const Table &table, const std::string &name)
+ {
+     return table.keywordSet().asTable(name);
+ }
+@@ -192,7 +192,7 @@ AntennaField::Ptr readAntennaField(const Table &table, unsigned int id)
+     AntennaField::CoordinateSystem system = readCoordinateSystem(table, id);
+ 
+     ROScalarColumn<String> c_name(table, "NAME");
+-    const string &name = c_name(id);
++    const std::string &name = c_name(id);
+ 
+     if(name == "LBA")
+     {
+@@ -212,7 +212,7 @@ AntennaField::Ptr readAntennaField(const Table &table, unsigned int id)
+     return field;
+ }
+ 
+-AntennaField::Ptr readAntennaFieldAartfaac(const Table &table, const string &ant_type,
++AntennaField::Ptr readAntennaFieldAartfaac(const Table &table, const std::string &ant_type,
+                                            unsigned int id)
+ {
+     AntennaField::Ptr field;
+@@ -245,7 +245,7 @@ AntennaField::Ptr readAntennaFieldAartfaac(const Table &table, const string &ant
+ void readStationPhaseReference(const Table &table, unsigned int id,
+     const Station::Ptr &station)
+ {
+-    const string columnName("LOFAR_PHASE_REFERENCE");
++    const std::string columnName("LOFAR_PHASE_REFERENCE");
+     if(hasColumn(table, columnName))
+     {
+         ROScalarMeasColumn<MPosition> c_reference(table, columnName);
+@@ -265,7 +265,7 @@ Station::Ptr readStation(const MeasurementSet &ms, unsigned int id)
+     assert(antenna.nrow() > id && !antenna.flagRow()(id));
+ 
+     // Get station name.
+-    const string name(antenna.name()(id));
++    const std::string name(antenna.name()(id));
+ 
+     // Get station position (ITRF).
+     MPosition mPosition = MPosition::Convert(antenna.positionMeas()(id),
+@@ -282,7 +282,7 @@ Station::Ptr readStation(const MeasurementSet &ms, unsigned int id)
+     // Read antenna field information.
+     ROScalarColumn<String> telescope_name_col(getSubTable(ms, "OBSERVATION"),
+                                               "TELESCOPE_NAME");
+-    string telescope_name = telescope_name_col(0);
++    std::string telescope_name = telescope_name_col(0);
+ 
+     if (telescope_name == "LOFAR")
+     {
+@@ -298,7 +298,7 @@ Station::Ptr readStation(const MeasurementSet &ms, unsigned int id)
+     {
+         ROScalarColumn<String> ant_type_col(getSubTable(ms, "OBSERVATION"),
+                                             "AARTFAAC_ANTENNA_TYPE");
+-        string ant_type = ant_type_col(0);
++        std::string ant_type = ant_type_col(0);
+ 
+         Table tab_field = getSubTable(ms, "ANTENNA");
+         station -> addField(readAntennaFieldAartfaac(tab_field, ant_type, id));
+diff --git a/Station.cc b/Station.cc
+index 0b36ef7..a0a18f2 100644
+--- a/Station.cc
++++ b/Station.cc
+@@ -28,14 +28,14 @@ namespace LOFAR
+ namespace StationResponse
+ {
+ 
+-Station::Station(const string &name, const vector3r_t &position)
++Station::Station(const std::string &name, const vector3r_t &position)
+     :   itsName(name),
+         itsPosition(position),
+         itsPhaseReference(position)
+ {
+ }
+ 
+-const string &Station::name() const
++const std::string &Station::name() const
+ {
+     return itsName;
+ }
+diff --git a/Station.h b/Station.h
+index 06f24dd..03fb0e1 100644
+--- a/Station.h
++++ b/Station.h
+@@ -53,12 +53,12 @@ public:
+      *  \param name Name of the station.
+      *  \param position Position of the station (ITRF, m).
+      */
+-    Station(const string &name, const vector3r_t &position);
++    Station(const std::string &name, const vector3r_t &position);
+ 
+     /*!
+      *  \brief Return the name of the station.
+      */
+-    const string &name() const;
++    const std::string &name() const;
+ 
+     /*!
+      *  \brief Return the position of the station (ITRF, m).
+@@ -302,7 +302,7 @@ private:
+         const vector3r_t &position0, const vector3r_t &direction0) const;
+ 
+ private:
+-    string      itsName;
++    std::string      itsName;
+     vector3r_t  itsPosition;
+     vector3r_t  itsPhaseReference;
+     FieldList   itsFields;
+diff --git a/makeresponseimage.cc b/makeresponseimage.cc
+index aa545ed..bcd49f9 100644
+--- a/makeresponseimage.cc
++++ b/makeresponseimage.cc
+@@ -154,7 +154,7 @@ namespace
+      *  \param table The Table instance to check.
+      *  \param column The name of the column.
+      */
+-    bool hasColumn(const Table &table, const string &column);
++    bool hasColumn(const Table &table, const std::string &column);
+ 
+     /*!
+      *  \brief Check if the specified sub-table exists as a sub-table of the
+@@ -163,7 +163,7 @@ namespace
+      *  \param table The Table instance to check.
+      *  \param name The name of the sub-table.
+      */
+-    bool hasSubTable(const Table &table, const string &name);
++    bool hasSubTable(const Table &table, const std::string &name);
+ 
+     /*!
+      *  \brief Provide access to a sub-table by name.
+@@ -171,7 +171,7 @@ namespace
+      *  \param table The Table instance to which the sub-table is associated.
+      *  \param name The name of the sub-table.
+      */
+-    Table getSubTable(const Table &table, const string &name);
++    Table getSubTable(const Table &table, const std::string &name);
+ 
+     /*!
+      *  \brief Attempt to read the position of the observatory. If the
+@@ -248,10 +248,10 @@ namespace
+      */
+     template <class T>
+     void store(const Cube<T> &data, const DirectionCoordinate &coordinates,
+-        double frequency, const string &name);
++        double frequency, const std::string &name);
+ 
+     /*!
+-     *  \brief Convert a string to a CASA Quantity (value with unit).
++     *  \brief Convert a std::string to a CASA Quantity (value with unit).
+      */
+     Quantity readQuantity(const String &in);
+ 
+@@ -273,18 +273,18 @@ namespace
+ int main(int argc, char *argv[])
+ {
+     TEST_SHOW_VERSION(argc, argv, StationResponse);
+-    INIT_LOGGER(basename(string(argv[0])));
++    INIT_LOGGER(basename(std::string(argv[0])));
+     Version::show<StationResponseVersion>(cout);
+ 
+     // Parse inputs.
+     LOFAR::InputParSet inputs;
+-    inputs.create("ms", "", "Name of input MeasurementSet", "string");
++    inputs.create("ms", "", "Name of input MeasurementSet", "std::string");
+     inputs.create("stations", "0", "IDs of stations to process", "int vector");
+     inputs.create("cellsize", "60arcsec", "Angular pixel size",
+-        "quantity string");
++        "quantity std::string");
+     inputs.create("size", "256", "Number of pixels along each axis", "int");
+     inputs.create("offset", "0s", "Time offset from the start of the MS",
+-        "quantity string");
++        "quantity std::string");
+     inputs.create("frames", "0", "Number of images that will be generated for"
+         " each station (equally spaced over the duration of the MS)", "int");
+     inputs.create("abs", "false", "If set to true, store the absolute value of"
+@@ -489,17 +489,17 @@ namespace
+       return result;
+     }
+ 
+-    bool hasColumn(const Table &table, const string &column)
++    bool hasColumn(const Table &table, const std::string &column)
+     {
+         return table.tableDesc().isColumn(column);
+     }
+ 
+-    bool hasSubTable(const Table &table, const string &name)
++    bool hasSubTable(const Table &table, const std::string &name)
+     {
+         return table.keywordSet().isDefined(name);
+     }
+ 
+-    Table getSubTable(const Table &table, const string &name)
++    Table getSubTable(const Table &table, const std::string &name)
+     {
+         return table.keywordSet().asTable(name);
+     }
+@@ -514,7 +514,7 @@ namespace
+         ASSERT(!observation.flagRow()(idObservation));
+ 
+         // Read observatory name and try to look-up its position.
+-        const string observatory = observation.telescopeName()(idObservation);
++        const std::string observatory = observation.telescopeName()(idObservation);
+ 
+         // Look-up observatory position, default to specified default position.
+         MPosition position(defaultPosition);
+@@ -590,7 +590,7 @@ namespace
+ 
+     template <class T>
+     void store(const Cube<T> &data, const DirectionCoordinate &coordinates,
+-        double frequency, const string &name)
++        double frequency, const std::string &name)
+     {
+         ASSERT(data.shape()(2) == 4);
+ 
+diff --git a/pystationresponse.cc b/pystationresponse.cc
+index 4b8b2bb..022e401 100755
+--- a/pystationresponse.cc
++++ b/pystationresponse.cc
+@@ -79,7 +79,7 @@ namespace BBS
+     *  \param table The Table instance to check.
+     *  \param column The name of the column.
+     */
+-    bool hasColumn(const Table &table, const string &column);
++    bool hasColumn(const Table &table, const std::string &column);
+ 
+     /*!
+     *  \brief Check if the specified sub-table exists as a sub-table of the
+@@ -88,7 +88,7 @@ namespace BBS
+     *  \param table The Table instance to check.
+     *  \param name The name of the sub-table.
+     */
+-    bool hasSubTable(const Table &table, const string &name);
++    bool hasSubTable(const Table &table, const std::string &name);
+ 
+     /*!
+     *  \brief Provide access to a sub-table by name.
+@@ -96,7 +96,7 @@ namespace BBS
+     *  \param table The Table instance to which the sub-table is associated.
+     *  \param name The name of the sub-table.
+     */
+-    Table getSubTable(const Table &table, const string &name);
++    Table getSubTable(const Table &table, const std::string &name);
+ 
+     /*!
+     *  \brief Attempt to read the position of the observatory. If the
+@@ -148,12 +148,12 @@ namespace BBS
+   class PyStationResponse
+   {
+   public:
+-    PyStationResponse(const string& msName, bool inverse = false,
++    PyStationResponse(const std::string& msName, bool inverse = false,
+         bool useElementResponse = true, bool useArrayFactor = true,
+         bool useChanFreq = false);
+ 
+     // Get the software version.
+-    string version(const string& type) const;
++    std::string version(const std::string& type) const;
+ 
+     // Set the delay reference direction in radians, J2000. The delay reference
+     // direction is the direction used by the station beamformer.
+@@ -219,7 +219,7 @@ namespace BBS
+     ITRFDirection::Ptr    itsDirection;
+   };
+ 
+-  PyStationResponse::PyStationResponse(const string &name, bool inverse,
++  PyStationResponse::PyStationResponse(const std::string &name, bool inverse,
+     bool useElementResponse, bool useArrayFactor, bool useChanFreq)
+     : itsInverse(inverse),
+       itsUseElementResponse(useElementResponse),
+@@ -275,7 +275,7 @@ namespace BBS
+       MDirection::J2000)())));
+   }
+ 
+-  string PyStationResponse::version(const string& type) const
++  std::string PyStationResponse::version(const std::string& type) const
+   {
+ //     return Version::getInfo<pystationresponseVersion>("stationresponse", type);
+       return "0.1";
+@@ -667,17 +667,17 @@ namespace BBS
+       return result;
+     }
+ 
+-    bool hasColumn(const Table &table, const string &column)
++    bool hasColumn(const Table &table, const std::string &column)
+     {
+       return table.tableDesc().isColumn(column);
+     }
+ 
+-    bool hasSubTable(const Table &table, const string &name)
++    bool hasSubTable(const Table &table, const std::string &name)
+     {
+       return table.keywordSet().isDefined(name);
+     }
+ 
+-    Table getSubTable(const Table &table, const string &name)
++    Table getSubTable(const Table &table, const std::string &name)
+     {
+       return table.keywordSet().asTable(name);
+     }
+@@ -692,7 +692,7 @@ namespace BBS
+       assert(!observation.flagRow()(idObservation));
+ 
+       // Read observatory name and try to look-up its position.
+-      const string observatory = observation.telescopeName()(idObservation);
++      const std::string observatory = observation.telescopeName()(idObservation);
+ 
+       // Look-up observatory position, default to specified default position.
+       MPosition position(defaultPosition);
