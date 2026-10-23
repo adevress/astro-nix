@@ -80,6 +80,7 @@ buildPythonPackage rec {
     ./patches/002-numpy-scalar-assignment.patch
     ./patches/003-python3-syntax.patch
     ./patches/004-re-sub-count-keyword.patch
+    ./patches/005-mpi-manager-exception.patch
   ];
 
   # Relax version pins in pyproject.toml to work with nixpkgs versions
