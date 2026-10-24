@@ -1,0 +1,10 @@
+MPIManager's wildcard import does not define `Error` in the module namespace.
+When mpi4py import or initialization fails, the handler then raises NameError
+and hides the original exception. Catch the Python exception base class so the
+existing fallback/error handling can run.
+
+--- a/DDFacet/Other/MPIManager.py
++++ b/DDFacet/Other/MPIManager.py
+@@ -46 +46 @@
+-    except Error as e:
++    except Exception as e:

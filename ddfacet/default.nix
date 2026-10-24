@@ -54,6 +54,11 @@ buildPythonPackage rec {
     sha256 = "sha256-P1qwkjzIhukdbTgnd5Q6yTFjOGuRZ3j3yH233O0lEb0=";
   };
 
+  # Python 3.14 defaults to the fork-server start method, which cannot pickle
+  # the psutil.Process objects held by AsyncProcessPool.  Force fork, which
+  # is the semantics DDFacet was designed around.
+  patches = [ ./patches/001-python314-fork-start-method.patch ];
+
   # Relax version pins in pyproject.toml to work with nixpkgs versions
   postPatch = ''
     python3 << 'PYEOF'
@@ -65,6 +70,11 @@ buildPythonPackage rec {
     # Include brackets for extras like "dask[array]" and "codex-africanus[dask]"
     content = re.sub(r'"([A-Za-z0-9_.\[\]-]+)\s*[<>=!~][^"]*"', r'"\1"', content)
     content = re.sub(r"'([A-Za-z0-9_.\[\]-]+)\s*[<>=!~][^']*'", r"'\1'", content)
+    # Upstream ships DDFacet.__main__:iomonitor_main (and IOMonitor.driver) but
+    # forgets to declare the IOMonitor.py console script: add it.
+    if "iomonitor_main" not in content:
+        content, n = re.subn(r'(^\[project\.scripts\]\n)', r'\1"IOMonitor.py" = "DDFacet.__main__:iomonitor_main"\n', content, count=1, flags=re.MULTILINE)
+        assert n == 1, "could not find [project.scripts] in pyproject.toml"
     with open('pyproject.toml', 'w') as f:
         f.write(content)
     PYEOF

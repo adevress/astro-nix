@@ -1,0 +1,66 @@
+Python 3 syntax fixes: tuple parameter unpacking (removed by PEP 3113), 'except E,e' (Python 2 form) and an empty function body.
+
+--- a/DDFacet/Data/ClassData.py
++++ b/DDFacet/Data/ClassData.py
+@@ -230,7 +230,8 @@
+ 
+     ###################
+ 
+-    def setCurrentTimeBin(self,(it0,it1)):
++    def setCurrentTimeBin(self,it0_it1):
++        it0,it1=it0_it1
+         self.itimes=it0,it1
+         MS=self.giveMS()
+         Row0,Row1=it0*MS.nbl,it1*MS.nbl
+--- a/DDFacet/Imager/ClassImageDeconvMachine.py
++++ b/DDFacet/Imager/ClassImageDeconvMachine.py
+@@ -191,7 +191,8 @@
+         print("   ... Done", file=log)
+ 
+ 
+-    def FindBestScale(self,(x,y),Fpol):
++    def FindBestScale(self,xy,Fpol):
++        x,y=xy
+         x0,y0=x,y
+         x,y=x0,y0
+         
+@@ -294,7 +295,8 @@
+         return Aedge,Bedge
+ 
+ 
+-    def SubStep(self,(dx,dy),Fpol,iScale=0):
++    def SubStep(self,dxdy,Fpol,iScale=0):
++        dx,dy=dxdy
+         npol,_,_=self.Dirty.shape
+         x0,x1,y0,y1=self.DirtyExtent
+ 
+--- a/DDFacet/Imager/SSD2/GA/ClassSmearSM.py
++++ b/DDFacet/Imager/SSD2/GA/ClassSmearSM.py
+@@ -483,7 +483,7 @@
+             #gc.enable()
+             try:
+                 iQueue = self.work_queue.get_nowait()#(True,2)
+-            except Exception,e:
++            except Exception as e:
+                 #print "Exception worker: %s"%str(e)
+                 break
+ 
+--- a/DDFacet/Imager/SSD3/ClassFluxScale.py
++++ b/DDFacet/Imager/SSD3/ClassFluxScale.py
+@@ -2,4 +2,5 @@
+ 
+ class ClassFluxScale():
+     def __init__(self,Scale="Linear"):
++        pass
+         
+--- a/DDFacet/Imager/SSD3/GA/ClassSmearSM.py
++++ b/DDFacet/Imager/SSD3/GA/ClassSmearSM.py
+@@ -483,7 +483,7 @@
+             #gc.enable()
+             try:
+                 iQueue = self.work_queue.get_nowait()#(True,2)
+-            except Exception,e:
++            except Exception as e:
+                 #print "Exception worker: %s"%str(e)
+                 break
+ 

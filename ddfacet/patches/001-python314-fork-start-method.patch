@@ -1,0 +1,22 @@
+--- a/DDFacet/Other/AsyncProcessPool.py
++++ b/DDFacet/Other/AsyncProcessPool.py
+@@ -33,6 +33,19 @@
+ else:
+     import Queue
+ import multiprocessing
++
++# DDFacet's worker pool is built around fork(): the "Taras Bulba" supervisor
++# is forked from the main process and then re-forks the worker processes, so
++# it relies on inheriting the parent's memory state.  Python 3.14 changed the
++# default multiprocessing start method on POSIX from fork to forkserver,
++# which pickles the arguments of Process(target=AsyncProcessPool._startBulba,
++# args=(self,)); self holds psutil.Process() objects that carry a
++# threading.RLock and are therefore not picklable.  Restore fork explicitly.
++# See https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods
++try:
++    multiprocessing.set_start_method("fork", force=True)
++except RuntimeError:
++    pass
+ import numpy as np
+ import traceback
+ import inspect
