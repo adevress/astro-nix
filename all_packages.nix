@@ -3,6 +3,13 @@ lib.makeScope pkgs.newScope (self: with self; {
   # astro_pkgs
   hello = callPackage ./hello/default.nix { };
 
+  # MPI hello worlds.  Open MPI is nixpkgs' PMIx-enabled build (it is
+  # configured with `--with-pmix`), so programs linked against it can be
+  # started directly by Slurm's `srun` PMIx plugin.  Exposing the same
+  # Open MPI here also lets the Python package set build mpi4py against it.
+  openmpi = pkgs.openmpi;
+  mpi-hello-cpp = callPackage ./mpi-hello/default.nix { inherit openmpi; };
+
   # Meson >= 1.11 override (upstream nixpkgs recipe, version bumped; CyberEther needs it)
   meson = callPackage ./meson/default.nix { };
 
@@ -153,6 +160,10 @@ lib.makeScope pkgs.newScope (self: with self; {
 
   # py_astro_pkgs
   python3Packages = pkgs.python3Packages.overrideScope (final: prev: {
+      # Keep mpi4py on the same Open MPI build as mpi-hello-cpp.  Open MPI's
+      # external PMIx support is what makes direct `srun` launch work.
+      mpi4py = prev.mpi4py.override { mpi = openmpi; };
+      mpi-hello = final.callPackage ./mpi-hello/python.nix { };
   #pythonPackagesExtensions = pkgs.pythonPackagesExtensions ++ [
   #  (python-final: python-prev: {
       radler = radler.override { pythonBuild = true; };
@@ -238,6 +249,10 @@ lib.makeScope pkgs.newScope (self: with self; {
         };
       });
     });
+
+  # Convenience alias so the Python hello world can also be selected without
+  # spelling out the Python package set.
+  mpi-hello-python = python3Packages.mpi-hello;
 
   astroPyEnv = pkgs.python3Packages.python.withPackages (ps: [
     python3Packages.radler
