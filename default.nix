@@ -46,6 +46,15 @@ let
     libmodes = pkgs.callPackage ./libmodes/default.nix { };
     stb = pkgs.callPackage ./stb/default.nix { };
 
+    # Generic profiling tooling (profiler GUI + CLI tools + client library).
+    # `withGpu` exposes the GPU instrumentation headers; tracyWithCuda adds the
+    # CUDA/CUPTI headers needed by <tracy/TracyCUDA.hpp>.
+    tracy = pkgs.callPackage ./tracy/default.nix { };
+    tracyWithCuda = pkgs.callPackage ./tracy/default.nix {
+      withGpu = true;
+      cudaPackages = pkgs.cudaPackages;
+    };
+
     # Generic C++ libraries (header only, no astronomy dependency)
     alea = pkgs.callPackage ./alea/default.nix {
       cudaPackages = null; # host only build, free software, cacheable
