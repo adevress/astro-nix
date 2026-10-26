@@ -44,44 +44,42 @@ MPI plugin types are...
         none
         pmi2
         pmix
-specific pmix plugin versions available: pmix_v6
+specific pmix plugin versions available: pmix_v5
 ```
 
-If `pmix` is listed, an Open MPI program can be started without
-`mpiexec`/`mpirun`:
+If PMIx is listed, an Open MPI program can be started without
+`mpiexec`/`mpirun`. On a Slurm HPC cluster the site PMIx plugin version must be
+selected, e.g. `--mpi=pmix_v5` for PMIx v5:
 
 ```console
-$ nix shell -f .. mpi-hello-cpp --command bash
-$ srun --mpi=pmix -n 4 mpi-hello-cpp
+$ srun --mpi=pmix_v5 nix run -f .. mpi-hello-cpp
+```
+
+That single command is also the quickest way to smoke-test the MPI support
+for the C++ version. The Python variant is used the same way:
+
+```console
+$ srun --mpi=pmix_v5 nix run -f .. python3Packages.mpi-hello
 ```
 
 To use the literal short form
 
 ```console
-$ srun -n 4 mpi-hello-cpp
+$ srun nix run -f .. mpi-hello-cpp
 ```
 
-Slurm must select the PMIx plugin by default. There are two ways to do that:
-
-1. Set `MpiDefault=pmix` in `slurm.conf` (cluster administrator), or
-2. export `SLURM_MPI_TYPE=pmix` in the shell before running `srun`:
+Slurm must select the PMIx plugin by default. Set `MpiDefault=pmix_v5` in
+`slurm.conf` (cluster administrator), or export the plugin in the shell:
 
 ```console
-$ export SLURM_MPI_TYPE=pmix
-$ srun -n 4 mpi-hello-cpp
+$ export SLURM_MPI_TYPE=pmix_v5
+$ srun nix run -f .. mpi-hello-cpp
 ```
 
-The same applies to the Python program:
-
-```console
-$ nix shell -f .. python3Packages.mpi-hello --command bash
-$ export SLURM_MPI_TYPE=pmix
-$ srun -n 4 mpi-hello
-```
-
-Both `SLURM_MPI_TYPE` and `--mpi=pmix` only choose the Slurm-side plugin; they
+`SLURM_MPI_TYPE` and `--mpi=pmix_v5` only choose the Slurm-side plugin; they
 do not replace Open MPI's PMIx support, which is compiled into the nixpkgs
-Open MPI package.
+Open MPI package. Use the version-specific name (`pmix_v5`, `pmix_v6`, ...)
+that matches the PMIx library installed on the cluster.
 
 > **PMIx version note**
 >

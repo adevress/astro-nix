@@ -1,6 +1,6 @@
 ---
 name: astro-nix-use
-description: Search, list, install, run, and compose radio-astronomy / radio-interferometry software with the astro-nix Nix package collection (wsclean, casacore, radler, idg, everybeam, dysco, aoflagger, oskar, ds9, astroPyEnv). Covers nix shell/run/build/profile, shell.nix and default.nix, callPackage-based derivation composition, python3.withPackages environments, and binary-cache or rootless/HPC troubleshooting. Use when setting up, editing, or debugging astro-nix packages, Nix environments, shell.nix, or custom derivations.
+description: Search, list, install, run, and compose radio-astronomy / radio-interferometry software with the astro-nix Nix package collection (wsclean, casacore, radler, idg, everybeam, dysco, aoflagger, oskar, ds9, astroPyEnv, mpi-hello-cpp, mpi4py). Covers nix shell/run/build/profile, shell.nix and default.nix, callPackage-based derivation composition, python3.withPackages environments, Open MPI/Slurm PMIx usage, and binary-cache or rootless/HPC troubleshooting. Use when setting up, editing, or debugging astro-nix packages, Nix environments, shell.nix, or custom derivations.
 compatibility: Requires the nix CLI (>= 2.x) with nix-command enabled. Works with root or rootless Nix installs on Linux x86_64 and aarch64.
 ---
 
@@ -276,3 +276,33 @@ For pure-Python or pybind packages, prefer `python3Packages.buildPythonPackage`;
 - **`nix search -f ./` errors / evaluating entire nixpkgs** — this repo is not a flake and its merged set is the entire nixpkgs tree; use the `nix eval` listing commands from section 1 instead of `nix search -f ./`.
 - **Rootless/HPC** — set `store`, `ssl-cert-file`, and `ignored-acls = lustre.lov` as in `doc/rootless-nix.md`; avoid NFS store locations.
 - **Pin for reproducibility** — reference astro-nix via `fetchTarball` with a sha256 (or `builtins.fetchGit` with a revision) in your `shell.nix`, so all machines resolve the identical source tree and share cache paths.
+
+## 9. MPI (Open MPI / mpi4py)
+
+Minimal Open MPI examples:
+
+```bash
+nix run -f ./ mpi-hello-cpp                 # C++
+nix run -f ./ python3Packages.mpi-hello     # Python / mpi4py
+```
+
+On a Slurm HPC cluster, prefix the command with the site PMIx plugin. For a
+PMIx v5 installation:
+
+```bash
+srun --mpi=pmix_v5 nix run -f ./ mpi-hello-cpp
+srun --mpi=pmix_v5 nix run -f ./ python3Packages.mpi-hello
+```
+
+`srun --mpi=pmix_v5 nix run -f ./ mpi-hello-cpp` is a quick smoke test of MPI
+support for the C++ version. The plugin name must match the cluster PMIx
+version (`pmix_v5`, `pmix_v6`, ...). To make plain `srun` work, set
+`MpiDefault=pmix_v5` in `slurm.conf` or `export SLURM_MPI_TYPE=pmix_v5`.
+
+For local testing without Slurm, `mpiexec`/`mpirun` from the Open MPI package
+can be used:
+
+```bash
+nix shell -f ./ mpi-hello-cpp openmpi --command bash -c 'mpiexec -n 2 mpi-hello-cpp'
+nix shell -f ./ python3Packages.mpi-hello openmpi --command bash -c 'mpiexec -n 2 mpi-hello'
+```

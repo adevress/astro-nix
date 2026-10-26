@@ -25,6 +25,8 @@ All packages below are attributes of the merged set returned by the repo root `d
 | `aleaWithCuda` | `alea` + the GPU tests (nvcc, kernels checked against the host) | pass `cudaPackages = null` for the host-only build; needs `sandbox = false` in nix.conf and `NIXPKGS_ALLOW_UNFREE=1`, and is not pushed to the shared cache |
 | `openblasSingleThreaded` | openblas with `singleThreaded = true` | used by casacore/aocommon |
 | `hello` | trivial test package | smoke-test the setup |
+| `mpi-hello-cpp` | minimal Open MPI hello world (C++) | `srun --mpi=pmix_v5 nix run -f ./ mpi-hello-cpp` on Slurm |
+| `mpi-hello-python` | alias for `python3Packages.mpi-hello` | Python / mpi4py hello world |
 
 ## Python environment
 
@@ -33,6 +35,7 @@ All packages below are attributes of the merged set returned by the repo root `d
 | `astroPyEnv` | python3 with radler (python bindings), scipy, numpy, dask, xarray, matplotlib, astropy |
 | `python3Packages.radler` | radler built with `pythonBuild = true` |
 | `python3Packages.xtensor-python` | xtensor python bindings |
+| `python3Packages.mpi-hello` | minimal MPI hello world using mpi4py (same Open MPI as `mpi-hello-cpp`) |
 
 To build a custom Python env, mirror `astroPyEnv` in root `default.nix`:
 
