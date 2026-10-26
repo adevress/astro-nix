@@ -161,6 +161,28 @@ astro.python3Packages.python.withPackages (ps: [
 ])
 ```
 
+### Example VIII: MPI hello world (Open MPI)
+
+Minimal MPI programs are available for C++ (`mpi-hello-cpp`) and Python
+(`python3Packages.mpi-hello`, using mpi4py):
+
+```bash
+nix run -f ./ mpi-hello-cpp                 # C++
+nix run -f ./ python3Packages.mpi-hello     # Python / mpi4py
+```
+
+On a Slurm-based HPC cluster, prefix the command with the site PMIx plugin
+(for a PMIx v5 installation, `--mpi=pmix_v5`):
+
+```bash
+srun --mpi=pmix_v5 nix run -f ./ mpi-hello-cpp
+srun --mpi=pmix_v5 nix run -f ./ python3Packages.mpi-hello
+```
+
+The first command is a quick smoke test of the MPI support for the C++
+version. `srun --mpi=pmix_v5` replaces `mpiexec`/`mpirun` for direct launch;
+see [mpi-hello/README.md](./mpi-hello/README.md) for details.
+
 ## Tests and support
 
 Tested on:
