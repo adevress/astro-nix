@@ -161,6 +161,33 @@ astro.python3Packages.python.withPackages (ps: [
 ])
 ```
 
+### Example VIII: Tracy profiler
+
+Tracy is packaged in full: the GUI profiler (`tracy`), the headless capture
+and export CLIs, and the Tracy client library with its instrumentation headers
+(CPU + GPU).
+
+```bash
+# get a shell with the profiler and all command-line tools
+nix shell -f ./ tracy --command bash
+
+tracy-capture -o trace.tracy   # live capture from a running client
+tracy-csvexport trace.tracy    # export a trace to CSV
+tracy trace.tracy              # review a recorded trace in the GUI
+```
+
+The GUI defaults to the Wayland backend on Linux; use the GLFW/X11 build with
+`tracy.override { withWayland = false; }`.
+
+GPU profiling is opt-in. `tracyWithCuda` adds the CUDA/CUPTI headers needed by
+`<tracy/TracyCUDA.hpp>`; `withGpu = true` also exposes the OpenGL/Vulkan/OpenCL
+GPU SDK headers and enables the AMD ROCm `rocprofiler-sdk` backend when a
+package is supplied through the `rocprofiler-sdk` argument:
+
+```bash
+nix shell -f ./ tracyWithCuda --command bash
+```
+
 ## Tests and support
 
 Tested on:
