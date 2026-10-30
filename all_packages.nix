@@ -237,6 +237,13 @@ lib.makeScope pkgs.newScope (self: with self; {
 
       ddf-pipeline = final.callPackage ./ddf-pipeline/default.nix {};
 
+      # CUDA-enabled PyTorch binary wheel (aarch64/GB10 + x86_64).  Kept
+      # separate from the nixpkgs `torch-bin` default wheel and the
+      # `torchWithCuda` source build.
+      torch-cuda = final.callPackage ./torch-cuda {
+        cudaPackages = pkgs.cudaPackages_13_0;
+      };
+
       ddf-pipeline_dev = (final.callPackage ./ddf-pipeline/default.nix {
         ddfacet = final.ddfacet_dev;
         killms = final.killms_dev;
