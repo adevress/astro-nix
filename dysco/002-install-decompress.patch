@@ -1,0 +1,10 @@
+--- a/CMakeLists.txt	2026-10-29 16:08:12.440603954 +0100
++++ b/CMakeLists.txt	2026-10-29 16:08:12.470173412 +0100
+@@ -94,6 +94,7 @@
+ 
+ install(TARGETS dyscostman DESTINATION lib)
+ install(TARGETS dscompress DESTINATION bin)
++install(TARGETS decompress DESTINATION bin)
+ 
+ # Add CPack directory if user wants to generate Debian packages
+ if(BUILD_PACKAGES)
