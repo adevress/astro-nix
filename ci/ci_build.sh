@@ -82,11 +82,17 @@ EOF
 }
 
 
+# jq is not guaranteed to be installed on the CI image, so always run it
+# straight from the repository's pinned nixpkgs instead of a system jq.
+run_jq() {
+    nix run -f "${ASTRO_NIX_SRC_DIR}" jq -- "$@"
+}
+
 # Check that ci/astro-derivations.json is valid JSON and contains a "default" array
 check_derivations_json() {
     local json_file="${SCRIPT_DIR}/astro-derivations.json"
-    jq -e . "${json_file}" >/dev/null 2>&1 || { echo "Error: ${json_file} is not valid JSON"; return 1; }
-    jq -e '.default | type == "array"' "${json_file}" >/dev/null 2>&1 || { echo "Error: ${json_file} must contain a \"default\" array"; return 1; }
+    run_jq -e . "${json_file}" >/dev/null 2>&1 || { echo "Error: ${json_file} is not valid JSON"; return 1; }
+    run_jq -e '.default | type == "array"' "${json_file}" >/dev/null 2>&1 || { echo "Error: ${json_file} must contain a \"default\" array"; return 1; }
     echo "${json_file} is valid."
 }
 
@@ -95,7 +101,7 @@ check_derivations_json() {
 build_all_derivation(){
     check_derivations_json || exit 1
 
-    for drv in $(nix run -f ${ASTRO_NIX_SRC_DIR} jq -- -r ".default[]" ${SCRIPT_DIR}/astro-derivations.json); do
+    for drv in $(run_jq -r ".default[]" "${SCRIPT_DIR}/astro-derivations.json"); do
         build_derivation "$drv"
         if [ $? -ne 0 ]; then
             echo "Fail to build $drv"
