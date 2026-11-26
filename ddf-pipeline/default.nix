@@ -33,7 +33,7 @@
   emcee,
   packaging,
   six,
-  mpi4py
+  mpi4py,
 }:
 
 buildPythonPackage rec {

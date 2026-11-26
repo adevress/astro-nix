@@ -23,5 +23,11 @@ let
         inherit system;
         config = builtins.removeAttrs astroConfig [ "cudaArch" ];
       };
-  pkgSet = pkgs // (import ./all_packages.nix { lib = pkgs.lib; inherit pkgs; });
-in pkgSet
+  pkgSet =
+    pkgs
+    // (import ./all_packages.nix {
+      lib = pkgs.lib;
+      inherit pkgs;
+    });
+in
+pkgSet
