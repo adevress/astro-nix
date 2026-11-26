@@ -1,39 +1,95 @@
-# CyberEther 1.15.0 — GPU-accelerated signal processing framework.
+# CyberEther 2.0.0 — GPU-accelerated signal processing framework.
 #
 # Features enabled: Vulkan GUI, Superluminal Python bindings (-Dpython=true),
-# the native SDR stack (RTLSDR/Airspy/AirspyHF/HackRF/LimeSDR/bladeRF/PlutoSDR),
-# SoapySDR (loaded at runtime via dlopen), examples and tests.
-# `remote` (static GStreamer) and `inference` (ONNX Runtime) are disabled:
-# they are heavy upstream subprojects, same scope as the project's own
-# native (non-Docker) build notes.
+# the native SDR stack (BirriaSDR/RTLSDR/Airspy/AirspyHF/HackRF/LimeSDR-NG/
+# bladeRF/PlutoSDR), examples and tests.
 #
-# Meson subprojects are resolved fully offline: every source/patch the wrap
-# files pin is provided as a Nix derivation (flat namespace siblings of this
-# package: glfw glm rapidyaml cpp-httplib nlohmann_json nanobench nanobind
-# robin-map libmodes stb) or bundled inline (catch2, the tree-sitter grammar
-# sources, velopack [optional, disabled via -Dvelopack=disabled]). The
-# following are exceptions and come from Nixpkgs instead:
-#   * zlib, openssl, libqrencode, fmt and toml++ are reached through pkg-config
-#     by the patched loaders;
-#   * the SDR vendors (librtlsdr, libairspy, libairspyhf, libhackrf, LimeSuite,
-#     libbladeRF, libad9361 and libiio) are reached through pkg-config by the
-#     patched SDR loader (009-use-system-sdr.patch);
-#   * SoapySDR (with its driver plugins) is taken from Nixpkgs and loaded at
-#     runtime with `dlopen` by the `soapy` module; it only needs to be on the
-#     library search path.
-# All remaining sources are merged into MESON_PACKAGE_CACHE_DIR before
-# `meson setup --wrap-mode=nodownload`.
+# Optional heavy subprojects are disabled explicitly:
+#   * `remote`   (bundled static GStreamer: glib/libffi/pcre2/libnice/vpx/...)
+#   * `inference` (ONNX Runtime)
+#   * `terminal`  (libghostty-vt, which requires a Zig compiler)
+#   * `velopack`  (prebuilt auto-updater blob; see
+#     patches/003-disable-velopack.patch)
+#
+# Meson subprojects are resolved fully offline. Every source/patch the wrap
+# files pin is provided by `mesonSubprojectCache` below (flat namespace in
+# MESON_PACKAGE_CACHE_DIR) or bundled inline (the nanobind source directory is
+# shipped pre-extracted so its `#!/usr/bin/env python3` version script works in
+# the sandbox). The following subprojects are deliberately not bundled and are
+# instead taken from Nixpkgs through the patched loaders:
+#   * zlib        (002-use-system-zlib.patch, pkg-config)
+#   * openssl     (004-use-system-openssl.patch, pkg-config)
+#   * qrencode    (005-use-system-qrencode.patch, pkg-config)
+#   * toml++      (007-use-system-tomlplusplus.patch, pkg-config)
+#   * fmt         (006-use-system-fmt.patch, pkg-config)
+#   * glfw        (008-use-system-glfw.patch, pkg-config)
+#   * glm         (011-use-system-glm.patch, pkg-config)
+#   * rapidyaml   (012-use-system-rapidyaml.patch, CMake package config)
+#   * nlohmann_json (013-use-system-nlohmann-json.patch, pkg-config)
+#   * libzmq      (014-use-system-libzmq.patch, pkg-config)
+#   * cpp-httplib (015-use-system-httplib.patch, pkg-config)
+#   * nanobench   (016-use-system-nanobench.patch, CMake package config)
+#   * stb         (017-use-system-stb.patch, pkg-config)
+#   * miniz       (018-use-system-miniz.patch, pkg-config)
+#   * miniaudio   (019-use-system-miniaudio.patch, pkg-config)
+#   * tree-sitter and its grammars (020-use-system-tree-sitter.patch,
+#                  pkg-config + prebuilt grammar shared objects)
+#   * Catch2      (021-use-system-catch2.patch, pkg-config)
+#   * RTLSDR/Airspy/AirspyHF/HackRF/bladeRF/PlutoSDR
+#                 (022-use-system-sdr.patch, pkg-config)
+#   * libusb      (023-use-system-libusb.patch, for the two embedded SDR
+#                  vendors; pkg-config)
+#   * robin-map   (024-use-system-robin-map.patch, CMake package config for
+#                  the embedded nanobind subproject)
+#   * pocketfft   (025-use-system-pocketfft.patch, astro-nix package)
+#   * LimeSuiteNG (022-use-system-sdr.patch, astro-nix package)
+#
+# Only the dependencies that are not packaged in Nixpkgs remain embedded:
+# nanobind, libmodes and BirriaSDR.
 {
   lib,
   stdenv,
   fetchgit,
   fetchurl,
   runCommand,
+  git,
+  cmake,
   meson,
   ninja,
   pkg-config,
   python3,
   glslang,
+  fmt,
+  glfw,
+  glm,
+  rapidyaml,
+  nlohmann_json,
+  zeromq,
+  httplib,
+  nanobench,
+  robin-map,
+  stb,
+  miniz,
+  miniaudio,
+  alsa-lib,
+  libpulseaudio,
+  libjack2,
+  sndio,
+  libvorbis,
+  opusfile,
+  tree-sitter,
+  tree-sitter-grammars,
+  catch2_3,
+  rtlsdr,
+  airspy,
+  airspyhf,
+  hackrf,
+  libbladeRF,
+  libad9361,
+  libiio,
+  libusb1,
+  pocketfft,
+  limesuiteng,
   vulkan-headers,
   vulkan-loader,
   mesa,
@@ -44,225 +100,103 @@
   libglvnd,
   libdrm,
   xorg,
-  # System fmt (libfmt), discovered by the patched fmt loader via pkg-config.
-  fmt,
-  glfw,
-  glm,
-  rapidyaml,
-  cpp-httplib,
-  nlohmann_json,
-  nanobench,
-  nanobind,
-  robin-map,
-  libmodes,
-  stb,
-  # System zlib (discovered via pkg-config by the patched loader); no bundle.
+  # System libraries reached through the patched pkg-config loaders.
   zlib,
-  # System OpenSSL (discovered via pkg-config by the patched loader); no bundle.
   openssl,
-  # System libqrencode (4.1.1, discovered via pkg-config by the patched
-  # loader); no bundle.
   qrencode,
-  # System toml++ (3.4.0, discovered by the patched loader via pkg-config);
-  # no bundle (wrapdb no longer serves the patch that turns the upstream
-  # tarball into a meson subproject).
   tomlplusplus,
-  # Nixpkgs' SoapySDR, joined with the SDR driver plugins (airspy, bladeRF,
-  # HackRF, Lime, rtlsdr) through `soapysdr.override { extraPackages = ...; }`.
-  # The `soapy` module dlopen()s libSoapySDR at runtime, so this is only needed
-  # on the library search path (the RUNPATH produced by meson).
-  soapysdr,
-  # System SDR vendor libraries, discovered by the patched SDR loader through
-  # pkg-config (009-use-system-sdr.patch). PlutoSDR additionally needs libiio.
-  rtlsdr,
-  airspy,
-  airspyhf,
-  hackrf,
-  limesuite,
-  libbladeRF,
-  libad9361,
-  libiio,
-  # libusb is referenced by the vendor .pc files (Airspy/AirspyHF/HackRF).
-  libusb1,
+  # Offline geodata bundle (resources/geodata/fetch.py cache entry).
   geodata,
 }:
 
 let
-  #
-  # Inline subproject bundles (kept out of the flat namespace: catch2 = tests
-  # only, tree-sitter-* = release tarballs, velopack = optional, disabled via
-  # -Dvelopack=disabled). The SDR stack comes from Nixpkgs (see the `sdr`
-  # loader patch), so no vendor sources are bundled.
-  #
-  catch2 = fetchurl {
-    name = "Catch2-3.4.0.tar.gz";
-    url = "https://github.com/catchorg/Catch2/archive/v3.4.0.tar.gz";
-    sha256 = "122928b814b75717316c71af69bd2b43387643ba076a6ec16e7882bfb2dfacbb";
-  };
-  tree-sitter = fetchurl {
-    name = "tree-sitter-0.26.3.tar.gz";
-    url = "https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v0.26.3.tar.gz";
-    sha256 = "7f4a7cf0a2cd217444063fe2a4d800bc9d21ed609badc2ac20c0841d67166550";
-  };
-  tree-sitter-patch = fetchurl {
-    name = "tree-sitter_0.26.3-1_patch.zip";
-    url = "https://wrapdb.mesonbuild.com/v2/tree-sitter_0.26.3-1/get_patch";
-    sha256 = "268ff355375227f95b816426c8e05f162b7fb8334f9eaa23ce3dcf121e0c9f0a";
-  };
-  tree-sitter-python = fetchurl {
-    name = "tree-sitter-python-0.25.0.tar.gz";
-    url = "https://github.com/tree-sitter/tree-sitter-python/releases/download/v0.25.0/tree-sitter-python.tar.gz";
-    sha256 = "7bce887eb2f33e94bf74a69645cf5138d4096720e54fd3269a6124c06b93c584";
-  };
-  tree-sitter-markdown = fetchurl {
-    name = "tree-sitter-markdown-0.5.3.tar.gz";
-    url = "https://github.com/tree-sitter-grammars/tree-sitter-markdown/releases/download/v0.5.3/tree-sitter-markdown.tar.gz";
-    sha256 = "22e40c51810e64c6bf073f0147f3abc167473206789e6dcbed4ba198ff3ca119";
-  };
-  tree-sitter-yaml = fetchurl {
-    name = "tree-sitter-yaml-0.7.2.tar.gz";
-    url = "https://github.com/tree-sitter-grammars/tree-sitter-yaml/releases/download/v0.7.2/tree-sitter-yaml.tar.gz";
-    sha256 = "2707d9ff0556ee6c36a77299b4c08e5b2dcbd0d35f0b9688bb2ac8e276025f72";
-  };
-  tree-sitter-bash = fetchurl {
-    name = "tree-sitter-bash-0.25.1.tar.gz";
-    url = "https://github.com/tree-sitter/tree-sitter-bash/releases/download/v0.25.1/tree-sitter-bash.tar.gz";
-    sha256 = "bd0d72814c6512de190439ce6562635c69ce27fa8bc59eaf381d44263579df36";
-  };
-  tree-sitter-cpp = fetchurl {
-    name = "tree-sitter-cpp-0.23.4.tar.gz";
-    url = "https://github.com/tree-sitter/tree-sitter-cpp/archive/refs/tags/v0.23.4.tar.gz";
-    sha256 = "7a2c55afe3028f4105f25762ea58cc16537d1f5a1dcd9cca90410b3cd5d46051";
-  };
-  tree-sitter-json = fetchurl {
-    name = "tree-sitter-json-0.24.8.tar.xz";
-    url = "https://github.com/tree-sitter/tree-sitter-json/releases/download/v0.24.8/tree-sitter-json.tar.xz";
-    sha256 = "3f53c9d908328ac6004dd51b1e1b617315886e1bd7e772430c5090252ec72fab";
-  };
-  mkBundle =
-    { name, files }:
-    runCommand name { } ''
-      mkdir -p $out
-      ${lib.concatStringsSep "\n" (map (f: "ln -s ${f.src} $out/${f.cacheName}") files)}
-    '';
+  # fetch.py looks the archive up as `<manifest sha256>.bin` in its cache dir.
+  geodataCacheName = "d4b613a015c961580dd4a030f7f5dec31330820334656010d767eaef6c049412.bin";
 
-  inlineBundles = [
-    (mkBundle {
-      name = "catch2-subproject-bundle";
-      files = [
-        {
-          src = catch2;
-          cacheName = "Catch2-3.4.0.tar.gz";
-        }
-      ];
-    })
-    (mkBundle {
-      name = "tree-sitter-subproject-bundle";
-      files = [
-        {
-          src = tree-sitter;
-          cacheName = "tree-sitter-0.26.3.tar.gz";
-        }
-        {
-          src = tree-sitter-patch;
-          cacheName = "tree-sitter_0.26.3-1_patch.zip";
-        }
-      ];
-    })
-    (mkBundle {
-      name = "tree-sitter-python-subproject-bundle";
-      files = [
-        {
-          src = tree-sitter-python;
-          cacheName = "tree-sitter-python-0.25.0.tar.gz";
-        }
-      ];
-    })
-    (mkBundle {
-      name = "tree-sitter-markdown-subproject-bundle";
-      files = [
-        {
-          src = tree-sitter-markdown;
-          cacheName = "tree-sitter-markdown-0.5.3.tar.gz";
-        }
-      ];
-    })
-    (mkBundle {
-      name = "tree-sitter-yaml-subproject-bundle";
-      files = [
-        {
-          src = tree-sitter-yaml;
-          cacheName = "tree-sitter-yaml-0.7.2.tar.gz";
-        }
-      ];
-    })
-    (mkBundle {
-      name = "tree-sitter-bash-subproject-bundle";
-      files = [
-        {
-          src = tree-sitter-bash;
-          cacheName = "tree-sitter-bash-0.25.1.tar.gz";
-        }
-      ];
-    })
-    (mkBundle {
-      name = "tree-sitter-cpp-subproject-bundle";
-      files = [
-        {
-          src = tree-sitter-cpp;
-          cacheName = "tree-sitter-cpp-0.23.4.tar.gz";
-        }
-      ];
-    })
-    (mkBundle {
-      name = "tree-sitter-json-subproject-bundle";
-      files = [
-        {
-          src = tree-sitter-json;
-          cacheName = "tree-sitter-json-0.24.8.tar.xz";
-        }
-      ];
-    })
+  # Sources and wrapdb patch archives pinned by upstream's subprojects/*.wrap.
+  # Keeping the upstream filename is required: meson looks the exact
+  # `source_filename` / `patch_filename` up in MESON_PACKAGE_CACHE_DIR.
+  subprojectSources = [
+    {
+      file = "nanobind-2.12.0.tar.gz";
+      url = "https://github.com/wjakob/nanobind/archive/refs/tags/v2.12.0.tar.gz";
+      hash = "01f1f0cd0398743c18f33d07ae36ad410bd7f4a1e90683b508504de897d6e629";
+    }
+    {
+      file = "nanobind_2.12.0-1_patch.zip";
+      url = "https://wrapdb.mesonbuild.com/v2/nanobind_2.12.0-1/get_patch";
+      hash = "4b8158bdb359218bcfb7a5b4459fbfa5919171d9ea2400de3a84cf9ab7c7308b";
+    }
+    # Not packaged in Nixpkgs: keep the pinned BirriaSDR subproject.
+    {
+      file = "BirriaSDR-8ddab14ccc4dde0787bc0db84647dfbb6dca6585.tar.gz";
+      url = "https://github.com/luigifcruz/BirriaSDR/archive/8ddab14ccc4dde0787bc0db84647dfbb6dca6585.tar.gz";
+      hash = "4746b1372326b233f5cb29808c7ede895630c817d3fc17530a07b628875b938e";
+    }
   ];
 
-  # All bundles merged into the meson wrap cache (files and extracted dirs).
-  allBundles = [
-    glfw
-    glm
-    rapidyaml
-    cpp-httplib
-    nlohmann_json
-    nanobench
-    nanobind
-    robin-map
-    libmodes
-    stb
-  ]
-  ++ inlineBundles;
+  # wrap-git subprojects: meson expects an already-extracted directory whose
+  # name matches the `directory` entry of the wrap file.
+  libmodesSrc = fetchgit {
+    url = "https://github.com/watson/libmodes.git";
+    rev = "e82c6faedd21ced7fd1c2808c0d9e9ffbb8c0ed6";
+    sha256 = "sha256-brU6IYHcCJbArYf4DMyj3DfKp2unsjZq+IaM5M1pK1I=";
+  };
+  nanobindSrc = fetchurl {
+    name = "nanobind-2.12.0.tar.gz";
+    url = "https://github.com/wjakob/nanobind/archive/refs/tags/v2.12.0.tar.gz";
+    sha256 = "01f1f0cd0398743c18f33d07ae36ad410bd7f4a1e90683b508504de897d6e629";
+  };
+
+  mesonSubprojectCache =
+    runCommand "cyberether-meson-subproject-cache"
+      {
+        nativeBuildInputs = [ python3 ];
+      }
+      ''
+        mkdir -p $out
+        ${lib.concatMapStringsSep "\n" (
+          source:
+          "ln -s ${
+            fetchurl {
+              name = source.file;
+              url = source.url;
+              sha256 = source.hash;
+            }
+          } $out/${source.file}"
+        ) subprojectSources}
+
+        # wrap-git sources: provide the extracted checkout directly.
+        mkdir -p $out/libmodes
+        cp -rL ${libmodesSrc}/. $out/libmodes/
+
+        # nanobind runs src/version.py through its `/usr/bin/env python3`
+        # shebang during configure; /usr/bin/env does not exist in the sandbox.
+        # (The archive itself is symlinked above via subprojectSources.)
+        mkdir work
+        tar xzf ${nanobindSrc} -C work
+        sed -i "1s|.*|#!${python3}/bin/python3|" work/nanobind-2.12.0/src/version.py
+        chmod +x work/nanobind-2.12.0/src/version.py
+        cp -r work/nanobind-2.12.0 $out/
+      '';
 
 in
 stdenv.mkDerivation {
   pname = "cyberether";
-  version = "1.15.0";
+  version = "2.0.0";
 
   src = fetchgit {
     url = "https://github.com/luigifcruz/cyberether.git";
-    rev = "f79fc17fa0ee8fd838cb456b3fb67c7a98be4ccc"; # v1.15.0
-    sha256 = "sha256-vEdQTJdO0a4YYRcA9QLTydGGFGvnvJLAjHp7N1T8+Yg=";
+    rev = "db99f6144c4a065a0b7280a721f0c409fff653d0"; # v2.0.0
+    sha256 = "sha256-3RxY3AnY4vSkSMOrdbhShClYwava2tre3tz27ooSZvs=";
   };
 
-  # Upstream compiles cpp-httplib as an LTO static archive, which cannot be
-  # resolved when the consumer links without the GCC LTO plugin (Nix binutils
-  # does not auto-load it). Also: `find_installation()` with no argument binds
-  # meson's own runtime python, which lacks numpy/mapbox_earcut; look up
-  # `python3` on PATH so the env python (with those modules) is used. The
-  # remaining patches route zlib, openssl, qrencode, fmt, toml++ and the SDR
-  # vendor libraries through the system (pkg-config) copies; velopack is made
-  # opt-out. The soapy module (the only user of a non-lock-free 32-byte
-  # atomic) is built as its own static library so libatomic is attached to it
-  # rather than to the whole jetstream target.
+  # 001: make the build-time Python installation explicit (avoids picking up
+  #      meson's own interpreter instead of the injected python3).
+  # 002/004/005/007: use the Nixpkgs zlib/openssl/qrencode/toml++ through
+  #      pkg-config instead of building the pinned static subprojects.
+  # 003: make the prebuilt Velopack updater opt-out; the Nix build disables it.
   patches = [
-    ./patches/000-cpp-httplib-no-lto.patch
     ./patches/001-find-python3.patch
     ./patches/002-use-system-zlib.patch
     ./patches/003-disable-velopack.patch
@@ -270,18 +204,34 @@ stdenv.mkDerivation {
     ./patches/005-use-system-qrencode.patch
     ./patches/006-use-system-fmt.patch
     ./patches/007-use-system-tomlplusplus.patch
-    ./patches/009-use-system-sdr.patch
-    ./patches/010-soapy-libatomic.patch
+    ./patches/008-use-system-glfw.patch
+    ./patches/011-use-system-glm.patch
+    ./patches/012-use-system-rapidyaml.patch
+    ./patches/013-use-system-nlohmann-json.patch
+    ./patches/014-use-system-libzmq.patch
+    ./patches/015-use-system-httplib.patch
+    ./patches/016-use-system-nanobench.patch
+    ./patches/017-use-system-stb.patch
+    ./patches/018-use-system-miniz.patch
+    ./patches/019-use-system-miniaudio.patch
+    ./patches/020-use-system-tree-sitter.patch
+    ./patches/021-use-system-catch2.patch
+    ./patches/022-use-system-sdr.patch
+    ./patches/023-use-system-libusb.patch
+    ./patches/024-use-system-robin-map.patch
+    ./patches/025-use-system-pocketfft.patch
   ];
 
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
+    cmake
     python3
     glslang
     wayland-scanner
     wayland-protocols
+    git
   ];
 
   buildInputs = [
@@ -301,44 +251,59 @@ stdenv.mkDerivation {
     xorg.libxcb
     xorg.xorgproto
     mesa
-    # System zlib for the patched zlib loader (pkg-config).
     zlib
-    # System OpenSSL for the patched openssl/cpp-httplib loaders (pkg-config).
     openssl
-    # System libqrencode for the patched qrencode loader (pkg-config).
     qrencode
-    # System fmt (libfmt) for the patched fmt loader (pkg-config).
-    fmt
-    # System toml++ for the patched tomlplusplus loader (pkg-config).
     tomlplusplus
-    # System SDR vendor libraries for the patched SDR loader (pkg-config).
+    fmt
+    glfw
+    glm
+    rapidyaml
+    nlohmann_json
+    zeromq
+    httplib
+    nanobench
+    robin-map
+    stb
+    miniz
+    # miniaudio ships its header/pkg-config in the `dev` output and the shared
+    # library in `out`.
+    (lib.getDev miniaudio)
+    (lib.getLib miniaudio)
+    alsa-lib
+    libpulseaudio
+    libjack2
+    sndio
+    libvorbis
+    opusfile
+    tree-sitter
+    catch2_3
     rtlsdr
     airspy
     airspyhf
     hackrf
-    limesuite
     libbladeRF
     libad9361
-    libusb1
     # libiio ships its headers/.pc in the `dev` output and the shared library
     # in the `lib` output.
     (lib.getDev libiio)
     (lib.getLib libiio)
-    # SoapySDR + driver plugins: dlopen()ed at runtime by the `soapy` module.
-    soapysdr
+    libusb1
+    pocketfft
+    limesuiteng
   ];
 
-  enableParallelBuilding = true;
-
-  # Meson now keeps every /nix/store entry the linker (ld-wrapper) put in
+  # Meson keeps every /nix/store entry the linker (ld-wrapper) put in
   # DT_RPATH/DT_RUNPATH, including entries it classifies as build-only
   # (see meson/008-keep-nix-store-rpath.patch). Nixpkgs' fixupPhase would
   # otherwise run `patchelf --shrink-rpath` and drop the store directories
   # that are not direct DT_NEEDED dependencies (GLFW dlopen()s X11/Wayland
-  # and the Vulkan loader, and the `soapy` module dlopen()s libSoapySDR, so
-  # those libraries are intentionally absent from DT_NEEDED). Opt out of that
-  # stripping so the RUNPATH produced by meson survives into the final output.
+  # and the Vulkan loader), so opt out of that stripping.
   dontPatchELF = true;
+
+  # Produce the `debug` output with the DWARF info of libjetstream and the
+  # `cyberether` executable.
+  separateDebugInfo = true;
 
   # The meson buildInput ships a setup-hook that would install its own
   # mesonConfigurePhase and run `meson setup` with nixpkgs defaults (without
@@ -346,52 +311,57 @@ stdenv.mkDerivation {
   # is the single meson driver.
   configurePhase = "true";
 
+  # BirriaSDR is memory-hungry when compiled in parallel; keep the default
+  # job count but leave this note for CI tweaks.
+  enableParallelBuilding = true;
+
   buildPhase = ''
     runHook preBuild
 
     # --- offline geodata ---------------------------------------------------
-    # Natural Earth GeoJSON is not tracked by CyberEther (downloaded from
-    # cdn.cyberether.org at build time); provide the pinned bundle.
-    cp -rL ${geodata}/resources/. resources/
+    # resources/geodata/fetch.py downloads a precompiled map bundle from
+    # cdn.cyberether.org at build time. Seed its cache with the pinned file so
+    # the checksum matches and no network access is attempted.
+    mkdir -p .cache/geodata
+    ln -s ${geodata} ".cache/geodata/${geodataCacheName}"
 
     # --- offline meson wrap cache -----------------------------------------
-    # The zlib, openssl, qrencode, fmt and tomlplusplus subproject wraps are
-    # dropped: their loaders use the system libraries via pkg-config (see
-    # patches 002-use-system-zlib.patch, 004-use-system-openssl.patch,
-    # 005-use-system-qrencode.patch, 006-use-system-fmt.patch and
-    # 007-use-system-tomlplusplus.patch).
+    # Every dependency that is available in Nixpkgs is provided through the
+    # patches above; drop the corresponding wraps so `--wrap-mode=nodownload`
+    # never considers them. Only the embedded subprojects keep their wraps.
     rm -f subprojects/zlib.wrap subprojects/openssl.wrap \
-      subprojects/qrencode.wrap subprojects/fmt.wrap \
-      subprojects/tomlplusplus.wrap
-
-    # --- system SDR vendors ------------------------------------------------
-    # The patched SDR loader uses the system vendor libraries via pkg-config
-    # (patch 009-use-system-sdr.patch); the bundled vendor subprojects are
-    # gone. Their wraps are inert but harmless; drop them so
-    # `--wrap-mode=nodownload` never has to consider them.
-    rm -f subprojects/librtlsdr.wrap subprojects/libairspy.wrap \
+      subprojects/qrencode.wrap subprojects/tomlplusplus.wrap \
+      subprojects/fmt.wrap subprojects/glfw.wrap subprojects/glm.wrap \
+      subprojects/rapidyaml.wrap subprojects/nlohmann_json.wrap \
+      subprojects/libzmq.wrap subprojects/catch2.wrap \
+      subprojects/cpp-httplib.wrap subprojects/nanobench.wrap \
+      subprojects/robin-map.wrap subprojects/stb.wrap subprojects/miniz.wrap \
+      subprojects/miniaudio.wrap subprojects/tree-sitter.wrap \
+      subprojects/tree-sitter-python.wrap subprojects/tree-sitter-markdown.wrap \
+      subprojects/tree-sitter-yaml.wrap subprojects/tree-sitter-bash.wrap \
+      subprojects/tree-sitter-cpp.wrap subprojects/tree-sitter-json.wrap \
+      subprojects/librtlsdr.wrap subprojects/libairspy.wrap \
       subprojects/libairspyhf.wrap subprojects/libhackrf.wrap \
-      subprojects/limesuite.wrap subprojects/libbladerf.wrap \
-      subprojects/libad9361.wrap subprojects/libiio.wrap \
-      subprojects/libxml2.wrap subprojects/libusb.wrap \
-      subprojects/libusb-browser.wrap subprojects/bladerf-no-os.wrap
+      subprojects/libbladerf.wrap subprojects/libad9361.wrap \
+      subprojects/libiio.wrap subprojects/libxml2.wrap subprojects/libusb.wrap \
+      subprojects/libusb-browser.wrap subprojects/bladerf-no-os.wrap \
+      subprojects/pocketfft.wrap subprojects/limesuiteng.wrap \
+      subprojects/velopack.wrap
 
     export MESON_PACKAGE_CACHE_DIR="$(pwd)/meson-cache"
     mkdir -p "$MESON_PACKAGE_CACHE_DIR"
-
-    for b in ${toString allBundles}; do
-      for f in "$b"/*; do
-        ln -sfn "$f" "$MESON_PACKAGE_CACHE_DIR/$(basename "$f")"
-      done
-    done
+    cp -a ${mesonSubprojectCache}/. "$MESON_PACKAGE_CACHE_DIR/"
 
     meson setup build \
       --prefix="$out" \
       --wrap-mode=nodownload \
       --default-library=shared \
+      -Dbuildtype=release \
+      -Dtree-sitter-grammars=${tree-sitter-grammars} \
       -Dpython=true \
       -Dremote=disabled \
       -Dinference=disabled \
+      -Dterminal=disabled \
       -Dvelopack=disabled \
       -Dtests=true \
       -Dexamples=true
@@ -404,7 +374,7 @@ stdenv.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    meson install -C build --no-rebuild
+    meson install -C build --no-rebuild --skip-subprojects
 
     # --- examples ----------------------------------------------------------
     # Upstream declares them install:false; bundle them for the CLI/run path.
@@ -418,14 +388,14 @@ stdenv.mkDerivation {
   doCheck = true;
 
   # The full test suite needs a Vulkan device (headless builders have none), so
-  # run the GPU-independent slice: the Python parser tests plus the core suites
-  # that only touch memory/tools/serialization/settings/platform. The platform
-  # `[process]` cases shell out to `/bin/echo` and `/bin/sh`, which do not exist
+  # run the GPU-independent slice: the shader parser plus the core suites that
+  # only touch memory/tools/serialization/settings/platform. The platform
+  # `[process]` cases shell out to `/bin/sh` and `/bin/cat`, which do not exist
   # in the build sandbox, so they are excluded.
   checkPhase = ''
     runHook preCheck
 
-    meson test -C build --print-errorlogs shader-parser geodata-parser
+    meson test -C build --print-errorlogs shader-parser
 
     meson test -C build --print-errorlogs --test-args "~[process]" \
       core-memory core-tools core-serialization core-settings core-platform

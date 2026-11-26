@@ -14,13 +14,62 @@ lib.makeScope pkgs.newScope (
     # Meson >= 1.11 override (upstream nixpkgs recipe, version bumped; CyberEther needs it)
     meson = callPackage ./meson/default.nix { };
 
-    # CyberEther meson subproject bundles (flat namespace; sources pinned to
-    # the exact revisions CyberEther's .wrap files commit). fmt is not bundled
-    # here: CyberEther's fmt loader is patched to use the system libfmt via
-    # pkg-config (see cyberether/patches/006-use-system-fmt.patch).
+    # Legacy CyberEther 1.x meson subproject bundles (flat namespace; sources
+    # pinned to the exact revisions the 1.x .wrap files commit). CyberEther 2.0
+    # uses its own pinned MESON_PACKAGE_CACHE_DIR in cyberether/default.nix and
+    # takes fmt/glfw/glm/rapidyaml/nlohmann_json/libzmq/httplib/nanobench/
+    # robin-map/stb/miniz/miniaudio/tree-sitter/Catch2 and most SDR vendors from
+    # Nixpkgs, and pocketfft/LimeSuiteNG from this repo, so these attrs are no
+    # longer referenced by the cyberether recipe.
     glfw = callPackage ./glfw/default.nix { };
     glm = callPackage ./glm/default.nix { };
-    rapidyaml = callPackage ./rapidyaml/default.nix { };
+    # Nixpkgs 25.11 ships rapidyaml 0.10.0, whose error-callback API predates
+    # the 0.11 API used by CyberEther 2.0. Keep the Nixpkgs recipe and bump
+    # only the source. PIC is required because CyberEther links the static
+    # rapidyaml/c4core archives into libjetstream.so.
+    rapidyaml = pkgs.rapidyaml.overrideAttrs (
+      finalAttrs: prev: {
+        version = "0.11.1";
+        src = pkgs.fetchFromGitHub {
+          owner = "biojppm";
+          repo = "rapidyaml";
+          fetchSubmodules = true;
+          tag = "v${finalAttrs.version}";
+          hash = "sha256-NjpEpjBFB2Ydfo81VzOYoMPqMdJbIYcQWBRcxCbJlY4=";
+        };
+        cmakeFlags = (prev.cmakeFlags or [ ]) ++ [ "-DCMAKE_POSITION_INDEPENDENT_CODE=ON" ];
+      }
+    );
+    # Nixpkgs 25.11 ships httplib 0.19.0, which predates the `httplib::ws`
+    # WebSocket API used by CyberEther 2.0. Keep the Nixpkgs recipe and bump
+    # only the source version.
+    httplibSystem = pkgs.httplib.overrideAttrs (
+      finalAttrs: prev: {
+        version = "0.63.0";
+        src = pkgs.fetchFromGitHub {
+          owner = "yhirose";
+          repo = "cpp-httplib";
+          rev = "v${finalAttrs.version}";
+          hash = "sha256-w+KNRi+m4Bktq7xFYob/kb0AS84xiGl32cGspYwNkx8=";
+        };
+      }
+    );
+    # Nixpkgs 25.11 ships hackrf 2024.02.1, which predates the BOARD_ID_PRALINE
+    # definition used by CyberEther 2.0. Keep the Nixpkgs recipe and bump only
+    # the source version (the old CMake <3.5 compatibility patch is obsolete).
+    hackrfSystem = pkgs.hackrf.overrideAttrs (
+      finalAttrs: prev: {
+        version = "2026.01.3";
+        src = pkgs.fetchFromGitHub {
+          owner = "greatscottgadgets";
+          repo = "hackrf";
+          rev = "v${finalAttrs.version}";
+          hash = "sha256-/RSZ+jkh4wmb0n8Kiee9Nr5D6LPYdmZVigpsBagAaLg=";
+        };
+        patches = [ ];
+        postPatch = "";
+      }
+    );
     cpp-httplib = callPackage ./cpp-httplib/default.nix { };
     nlohmann_json = callPackage ./nlohmann_json/default.nix { };
     nanobench = callPackage ./nanobench/default.nix { };
@@ -28,6 +77,13 @@ lib.makeScope pkgs.newScope (
     robin-map = callPackage ./robin-map/default.nix { };
     libmodes = callPackage ./libmodes/default.nix { };
     stb = callPackage ./stb/default.nix { };
+
+    # Header-only FFT used by CyberEther's CPU FFT blocks.
+    pocketfft = callPackage ./pocketfft/default.nix { };
+
+    # LimeSuiteNG 25.1.0: the `limesuiteng` API required by CyberEther 2.x
+    # (Nixpkgs only has the legacy `limesuite` release).
+    limesuiteng = callPackage ./limesuiteng/default.nix { };
 
     # Generic C++ libraries (header only, no astronomy dependency)
     alea = callPackage ./alea/default.nix {
@@ -104,19 +160,6 @@ lib.makeScope pkgs.newScope (
     };
     ds9 = callPackage ./ds9/default.nix { };
 
-    # SoapySDR with the SDR driver plugins CyberEther supports, joined into the
-    # SoapySDR output with Nixpkgs' own `extraPackages` mechanism so that
-    # SoapySDR discovers them at runtime (`SoapySDR::listModules()`).
-    soapysdrWithPlugins = pkgs.soapysdr.override {
-      extraPackages = [
-        pkgs.soapyairspy
-        pkgs.soapybladerf
-        pkgs.soapyhackrf
-        pkgs.soapyrtlsdr
-        pkgs.limesuite
-      ];
-    };
-
     # Host GPU driver wrapper (nixGL-like) with CUDA support.
     # `nix run -f ./ nixgpu -- <program>` runs <program> with the host drivers.
     nixgpu = callPackage ./nixgpu/default.nix {
@@ -130,39 +173,56 @@ lib.makeScope pkgs.newScope (
       inherit (astroConfig) cudaArch;
     };
 
-    # CyberEther's geodata step (resources/geodata) requires a python with
-    # numpy + mapbox_earcut; give the build the full interpreted env.
+    # CyberEther's build-time Python (geodata, shader/docs parsers and the
+    # nanobind bindings) only needs the standard library; numpy is kept for the
+    # Superluminal runtime API.
     cyberetherPython = python3Packages.python.withPackages (ps: [
       python3Packages.numpy
-      python3Packages.mapbox-earcut
     ]);
 
     cyberether = callPackage ./cyberether/default.nix {
       inherit
         meson
-        glfw
-        glm
         rapidyaml
-        cpp-httplib
-        nlohmann_json
-        nanobench
-        nanobind
-        robin-map
-        libmodes
-        stb
+        pocketfft
+        limesuiteng
         ;
       qrencode = pkgs.qrencode;
-      fmt = pkgs.fmt;
       tomlplusplus = pkgs.tomlplusplus;
-      soapysdr = soapysdrWithPlugins;
-      # Nixpkgs renamed librtlsdr to rtl-sdr; the recipe uses `rtlsdr` as a
-      # valid Nix identifier.
+      # The local glfw/glm/nlohmann_json attrs are meson wrap bundles for the
+      # 1.x recipe; force the real Nixpkgs libraries for CyberEther 2.0.
+      glfw = pkgs.glfw;
+      glm = pkgs.glm;
+      fmt = pkgs.fmt;
+      nlohmann_json = pkgs.nlohmann_json;
+      zeromq = pkgs.zeromq;
+      httplib = httplibSystem;
+      nanobench = pkgs.nanobench;
+      robin-map = pkgs.robin-map;
+      stb = pkgs.stb;
+      miniz = pkgs.miniz;
+      miniaudio = pkgs.miniaudio;
+      tree-sitter = pkgs.tree-sitter;
+      tree-sitter-grammars = pkgs.tree-sitter.withPlugins (p: [
+        p.tree-sitter-python
+        p.tree-sitter-markdown
+        p.tree-sitter-yaml
+        p.tree-sitter-bash
+        p.tree-sitter-cpp
+        p.tree-sitter-json
+      ]);
+      catch2_3 = pkgs.catch2_3;
       rtlsdr = pkgs.rtl-sdr;
+      airspy = pkgs.airspy;
+      airspyhf = pkgs.airspyhf;
+      hackrf = hackrfSystem;
+      libbladeRF = pkgs.libbladeRF;
+      libad9361 = pkgs.libad9361;
+      libiio = pkgs.libiio;
+      libusb1 = pkgs.libusb1;
       geodata = callPackage ./cyberether/geodata/default.nix { };
-      # Fixed CyberEther (see below); BLADE links against its jetstream library.
       python3 = cyberetherPython;
     };
-    blade = callPackage ./blade/default.nix { };
 
     # py_astro_pkgs
     python3Packages = pkgs.python3Packages.overrideScope (

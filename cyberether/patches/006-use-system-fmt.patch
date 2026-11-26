@@ -36,3 +36,16 @@
  ]
  
  all_deps_found = true
+diff --git a/src/domains/io/file_writer/formats/sigmf.cc b/src/domains/io/file_writer/formats/sigmf.cc
+index 95a36c79..8f7be29c 100644
+--- a/src/domains/io/file_writer/formats/sigmf.cc
++++ b/src/domains/io/file_writer/formats/sigmf.cc
+@@ -6,7 +6,7 @@
+ 
+ #include <nlohmann/json.hpp>
+ 
+-#include "jetstream/fmt/chrono.h"
++#include <fmt/chrono.h>
+ #include "jetstream/logger.hh"
+ #include "jetstream/memory/attributes.hh"
+ #include "jetstream/platform.hh"

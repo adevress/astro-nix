@@ -1,0 +1,13 @@
+diff --git a/meson/loaders/json/meson.build b/meson/loaders/json/meson.build
+index 0faaa528..0b64e353 100644
+--- a/meson/loaders/json/meson.build
++++ b/meson/loaders/json/meson.build
+@@ -1,5 +1,7 @@
+ deps = [
+-    subproject('nlohmann_json', required: true).get_variable('nlohmann_json_dep'),
++    # Use the Nixpkgs header-only nlohmann_json instead of the bundled
++    # meson subproject.
++    dependency('nlohmann_json', required: true),
+ ]
+ 
+ all_deps_found = true

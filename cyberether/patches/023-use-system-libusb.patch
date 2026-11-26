@@ -1,0 +1,22 @@
+diff --git a/subprojects/packagefiles/birriasdr/meson.build b/subprojects/packagefiles/birriasdr/meson.build
+index 37bf7791..d0044f9c 100644
+--- a/subprojects/packagefiles/birriasdr/meson.build
++++ b/subprojects/packagefiles/birriasdr/meson.build
+@@ -6,15 +6,8 @@ if host_machine.system() == 'darwin'
+ endif
+ 
+ dep_lst = [
+-  subproject(
+-    'libusb',
+-    required: true,
+-    default_options: [
+-      'default_library=static',
+-      'examples=false',
+-      'tests=false',
+-    ],
+-  ).get_variable('libusb_dep'),
++  # Use the system libusb instead of the bundled meson subproject.
++  dependency('libusb-1.0', required: true),
+   dependency('threads'),
+ ]
+ 

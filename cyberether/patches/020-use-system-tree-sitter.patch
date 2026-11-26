@@ -1,0 +1,41 @@
+diff --git a/meson/loaders/tree_sitter/meson.build b/meson/loaders/tree_sitter/meson.build
+index 42679497..8dcba60e 100644
+--- a/meson/loaders/tree_sitter/meson.build
++++ b/meson/loaders/tree_sitter/meson.build
+@@ -1,13 +1,18 @@
+ deps = [
+-    subproject('tree-sitter', required: true, default_options: [
+-        'default_library=static',
+-    ]).get_variable('tree_sitter_dep'),
+-    subproject('tree-sitter-python', required: true).get_variable('tree_sitter_python_dep'),
+-    subproject('tree-sitter-markdown', required: true).get_variable('tree_sitter_markdown_dep'),
+-    subproject('tree-sitter-yaml', required: true).get_variable('tree_sitter_yaml_dep'),
+-    subproject('tree-sitter-bash', required: true).get_variable('tree_sitter_bash_dep'),
+-    subproject('tree-sitter-cpp', required: true).get_variable('tree_sitter_cpp_dep'),
+-    subproject('tree-sitter-json', required: true).get_variable('tree_sitter_json_dep'),
++    # Use the Nixpkgs tree-sitter core and its prebuilt grammar shared
++    # objects instead of the bundled meson subprojects.
++    dependency('tree-sitter', required: true),
++    declare_dependency(
++        link_args: [
++            '-Wl,-rpath,' + get_option('tree-sitter-grammars'),
++            join_paths(get_option('tree-sitter-grammars'), 'python.so'),
++            join_paths(get_option('tree-sitter-grammars'), 'markdown.so'),
++            join_paths(get_option('tree-sitter-grammars'), 'yaml.so'),
++            join_paths(get_option('tree-sitter-grammars'), 'bash.so'),
++            join_paths(get_option('tree-sitter-grammars'), 'cpp.so'),
++            join_paths(get_option('tree-sitter-grammars'), 'json.so'),
++        ],
++    ),
+ ]
+ 
+ all_deps_found = true
+diff --git a/meson_options.txt b/meson_options.txt
+index 134cbf9a..b41b0562 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -6,3 +6,4 @@ option('examples', type : 'boolean', value : true, description: 'Enable examples
+ option('remote', type : 'feature', value : 'auto', description: 'Enable remote streaming with bundled static GStreamer.')
+ option('inference', type : 'feature', value : 'auto', description: 'Enable ONNX Runtime inference (Infer block in the ML domain).')
+ option('terminal', type : 'feature', value : 'auto', description: 'Enable the integrated terminal backed by libghostty-vt.')
++option('tree-sitter-grammars', type : 'string', value : '', description: 'Directory containing prebuilt tree-sitter grammar shared objects.')

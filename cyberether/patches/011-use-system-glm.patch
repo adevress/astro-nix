@@ -1,0 +1,13 @@
+diff --git a/meson/loaders/glm/meson.build b/meson/loaders/glm/meson.build
+index ca24f3e0..b16e1163 100644
+--- a/meson/loaders/glm/meson.build
++++ b/meson/loaders/glm/meson.build
+@@ -1,5 +1,7 @@
+ deps = [
+-    subproject('glm', required: true).get_variable('glm_dep'),
++    # Use the Nixpkgs header-only glm package instead of the bundled
++    # meson subproject.
++    dependency('glm', required: true),
+ ]
+ 
+ all_deps_found = true

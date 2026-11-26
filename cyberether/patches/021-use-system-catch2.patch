@@ -1,0 +1,21 @@
+diff --git a/meson/tools/catch2/meson.build b/meson/tools/catch2/meson.build
+index 20ca0d0a..1758e466 100644
+--- a/meson/tools/catch2/meson.build
++++ b/meson/tools/catch2/meson.build
+@@ -1,14 +1,7 @@
+ if get_option('tests') and \
+    not jst_is_ios and \
+     not jst_is_android
+-    catch2_dep = subproject(
+-        'catch2',
+-        required: true,
+-        default_options: [
+-            'default_library=static',
+-            'tests=false',
+-            'cpp_std=c++20',
+-        ]
+-    ).get_variable('catch2_dep')
++    # Use the Nixpkgs Catch2 (v3) instead of the bundled meson subproject.
++    catch2_dep = dependency('catch2', required: true)
+     tools_lst += {'Catch2': catch2_dep.found()}
+ endif
