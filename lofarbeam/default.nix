@@ -24,7 +24,12 @@ buildPythonPackage rec {
     sha256 = "sha256-rz696nl8iAI/AWNnfjV0nPym0YnHNNT8WblYrUs5PGU=";
   };
 
-  nativeBuildInputs = [ cmake ninja pkg-config python ];
+  nativeBuildInputs = [
+    cmake
+    ninja
+    pkg-config
+    python
+  ];
   # 0001: casacore >= 3.8.2 no longer leaks `using std::string` globally.
   # 0002/0003: casacore headers need C++17+; install the python package into
   # site-packages with an absolute RPATH instead of `$out/lofar`.
@@ -51,8 +56,15 @@ buildPythonPackage rec {
     EOF
     echo "cmake" > $distinfo/INSTALLER
   '';
-  buildInputs = [ casacore boost openblas ];
-  dependencies = [ numpy python-casacore ];
+  buildInputs = [
+    casacore
+    boost
+    openblas
+  ];
+  dependencies = [
+    numpy
+    python-casacore
+  ];
 
   pythonImportsCheck = [ "lofar.stationresponse" ];
 
