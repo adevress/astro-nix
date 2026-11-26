@@ -1,0 +1,40 @@
+diff --git a/meson/loaders/cpphttplib/meson.build b/meson/loaders/cpphttplib/meson.build
+index 25f87ef9..bfa27bbd 100644
+--- a/meson/loaders/cpphttplib/meson.build
++++ b/meson/loaders/cpphttplib/meson.build
+@@ -2,20 +2,21 @@ deps = []
+ all_deps_found = not jst_is_browser and cfg_lst.get('JETSTREAM_LOADER_OPENSSL_AVAILABLE', false)
+ 
+ if all_deps_found
+-    deps += [
+-        subproject(
+-            'cpp-httplib',
+-            required: true,
+-            default_options: [
+-                'tls=enabled',
+-                'tls_backend=openssl',
+-                'brotli=disabled',
+-                'compile=true',
+-                'default_library=static',
+-                'zstd=disabled',
+-            ]
+-        ).get_variable('cpp_httplib_dep')
+-    ]
++    # Use the Nixpkgs header-only cpp-httplib package, with the TLS and zlib
++    # support the bundled subproject used to enable. The Nixpkgs pkg-config
++    # file only carries the include path, so the feature macros and the
++    # transitive OpenSSL/zlib dependencies are attached here.
++    deps += declare_dependency(
++        dependencies: [
++            dependency('httplib', required: true),
++            dependency('openssl', required: true),
++            dependency('zlib', required: true),
++        ],
++        compile_args: [
++            '-DCPPHTTPLIB_OPENSSL_SUPPORT',
++            '-DCPPHTTPLIB_ZLIB_SUPPORT',
++        ],
++    )
+ 
+     foreach x_dep : deps
+         all_deps_found = all_deps_found and x_dep.found()

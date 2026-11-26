@@ -1,0 +1,13 @@
+diff --git a/meson/loaders/pocketfft/meson.build b/meson/loaders/pocketfft/meson.build
+index 8b09d427..c1e697f0 100644
+--- a/meson/loaders/pocketfft/meson.build
++++ b/meson/loaders/pocketfft/meson.build
+@@ -1,5 +1,6 @@
+-pocketfft_subproject = subproject('pocketfft', required: true)
+-pocketfft_dep = pocketfft_subproject.get_variable('pocketfft_dep')
++# Use the astro-nix pocketfft package instead of the bundled header-only
++# meson subproject.
++pocketfft_dep = dependency('pocketfft', required: true)
+ 
+ dep_lst += [pocketfft_dep]
+ cfg_lst.set('JETSTREAM_LOADER_POCKETFFT_AVAILABLE', true)

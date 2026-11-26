@@ -25,6 +25,8 @@ All packages below are attributes of the merged set returned by the repo root `d
 | `aleaWithCuda` | `alea` + the GPU tests (nvcc, kernels checked against the host) | pass `cudaPackages = null` for the host-only build; needs `sandbox = false` in nix.conf and `NIXPKGS_ALLOW_UNFREE=1`, and is not pushed to the shared cache |
 | `openblasSingleThreaded` | openblas with `singleThreaded = true` | used by casacore/aocommon |
 | `hello` | trivial test package | smoke-test the setup |
+| `pocketfft` | Header-only FFT library | installs `pocketfft_hdronly.h` and a `pocketfft` pkg-config file; used by CyberEther |
+| `limesuiteng` | LimeSuiteNG 25.1.0 driver/C++ API for LimeSDR | next-generation API required by CyberEther 2.x (Nixpkgs only has legacy `limesuite`) |
 | `mpi-hello-cpp` | minimal Open MPI hello world (C++) | `srun --mpi=pmix_v5 nix run -f ./ mpi-hello-cpp` on Slurm |
 | `mpi-hello-python` | alias for `python3Packages.mpi-hello` | Python / mpi4py hello world |
 

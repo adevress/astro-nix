@@ -1,0 +1,32 @@
+diff --git a/subprojects/nanobind.wrap b/subprojects/nanobind.wrap
+index 8fa8a7a0..89cc988f 100644
+--- a/subprojects/nanobind.wrap
++++ b/subprojects/nanobind.wrap
+@@ -8,6 +8,7 @@ patch_filename = nanobind_2.12.0-1_patch.zip
+ patch_url = https://wrapdb.mesonbuild.com/v2/nanobind_2.12.0-1/get_patch
+ patch_fallback_url = https://github.com/mesonbuild/wrapdb/releases/download/nanobind_2.12.0-1/nanobind_2.12.0-1_patch.zip
+ patch_hash = 4b8158bdb359218bcfb7a5b4459fbfa5919171d9ea2400de3a84cf9ab7c7308b
++diff_files = nanobind/system-robin-map.diff
+ wrapdb_version = 2.12.0-1
+ 
+ [provide]
+diff --git a/subprojects/packagefiles/nanobind/system-robin-map.diff b/subprojects/packagefiles/nanobind/system-robin-map.diff
+new file mode 100644
+index 00000000..91102dff
+--- /dev/null
++++ b/subprojects/packagefiles/nanobind/system-robin-map.diff
+@@ -0,0 +1,14 @@
++diff --git a/meson.build b/meson.build
++--- a/meson.build
+++++ b/meson.build
++@@ -17,7 +17,9 @@ py_dep = py.dependency()
++ 
++ robin_map_dep = dependency(
++-  'robin-map',
+++  'tsl-robin-map',
++   version: '>=1.4.0',
+++  method: 'cmake',
+++  modules: ['tsl::robin_map'],
++ )
++ 
++ incdir = include_directories('include')

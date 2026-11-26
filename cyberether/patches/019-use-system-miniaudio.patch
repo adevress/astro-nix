@@ -1,0 +1,31 @@
+diff --git a/meson/loaders/miniaudio/meson.build b/meson/loaders/miniaudio/meson.build
+index 348398fd..a4327d57 100644
+--- a/meson/loaders/miniaudio/meson.build
++++ b/meson/loaders/miniaudio/meson.build
+@@ -2,8 +2,24 @@ all_deps_found = not (jst_is_ios or jst_is_macos) or \
+                  cfg_lst.get('JETSTREAM_LOADER_AUDIOTOOLBOX_AVAILABLE', false)
+ 
+ if all_deps_found
+-    miniaudio_subproject = subproject('miniaudio', required: true)
+-    dep_lst += [miniaudio_subproject.get_variable('miniaudio_dep')]
++    # Use the Nixpkgs miniaudio instead of the bundled header-only meson
++    # subproject. Nixpkgs installs the header under include/miniaudio while
++    # its pkg-config file only advertises include/, so add that directory.
++    # The backend libraries are in `Requires.private`, which pkg-config does
++    # not propagate into a shared-library link, so list them explicitly.
++    miniaudio_dep = dependency('miniaudio', required: true)
++    dep_lst += declare_dependency(
++        dependencies: [
++            miniaudio_dep,
++            dependency('libpulse', required: true),
++            dependency('alsa', required: true),
++            dependency('jack', required: true),
++            dependency('sndio', required: true),
++        ],
++        compile_args: [
++            '-I' + miniaudio_dep.get_variable(pkgconfig: 'includedir') + '/miniaudio',
++        ],
++    )
+     cfg_lst.set('JETSTREAM_LOADER_MINIAUDIO_AVAILABLE', true)
+ endif
+ 

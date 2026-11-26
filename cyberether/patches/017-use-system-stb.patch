@@ -1,0 +1,13 @@
+diff --git a/meson/loaders/stb/meson.build b/meson/loaders/stb/meson.build
+index d687c572..bfc28e77 100644
+--- a/meson/loaders/stb/meson.build
++++ b/meson/loaders/stb/meson.build
+@@ -1,5 +1,7 @@
+ deps = [
+-    subproject('stb', required: true).get_variable('stb_dep')
++    # Use the Nixpkgs stb package instead of the bundled header-only meson
++    # subproject.
++    dependency('stb', required: true),
+ ]
+ 
+ all_deps_found = true

@@ -1,0 +1,19 @@
+diff --git a/meson/loaders/miniz/meson.build b/meson/loaders/miniz/meson.build
+index 7dbc884b..a01be508 100644
+--- a/meson/loaders/miniz/meson.build
++++ b/meson/loaders/miniz/meson.build
+@@ -1,12 +1,7 @@
+ miniz_dep = declare_dependency(
+     compile_args: ['-DMINIZ_NO_ZLIB_COMPATIBLE_NAMES'],
+-    dependencies: subproject(
+-        'miniz',
+-        required: true,
+-        default_options: [
+-            'default_library=static',
+-        ]
+-    ).get_variable('miniz_dep'),
++    # Use the Nixpkgs miniz instead of the bundled meson subproject.
++    dependencies: dependency('miniz', required: true),
+ )
+ 
+ dep_lst += [miniz_dep]

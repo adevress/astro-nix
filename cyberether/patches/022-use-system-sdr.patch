@@ -1,0 +1,73 @@
+diff --git a/meson/loaders/sdr/meson.build b/meson/loaders/sdr/meson.build
+index 7acbb781..189d97c6 100644
+--- a/meson/loaders/sdr/meson.build
++++ b/meson/loaders/sdr/meson.build
+@@ -2,22 +2,44 @@ sdr_static_options = ['default_library=static']
+ sdr_found = false
+ 
+ if jst_is_macos or jst_is_linux or jst_is_windows or jst_is_browser
+-    sdr_families = {
+-        'RTLSDR': ['librtlsdr', 'librtlsdr_dep'],
+-        'AIRSPY': ['libairspy', 'libairspy_dep'],
+-        'AIRSPYHF': ['libairspyhf', 'libairspyhf_dep'],
+-        'HACKRF': ['libhackrf', 'libhackrf_dep'],
+-        'LIMESUITE': ['limesuiteng', 'limesuiteng_dep'],
+-        'BLADERF': ['libbladerf', 'libbladerf_dep'],
++    # Most SDR vendor libraries are available in Nixpkgs (and LimeSuiteNG is
++    # provided by astro-nix). Only BirriaSDR is not packaged, so it keeps
++    # using its pinned meson subproject.
++    sdr_system_families = {
++        'RTLSDR': ['librtlsdr'],
++        'AIRSPY': ['libairspy'],
++        'AIRSPYHF': ['libairspyhf'],
++        'HACKRF': ['libhackrf'],
++        'LIMESUITE': ['limesuiteng'],
++        'BLADERF': ['libbladeRF'],
+     }
+     if not jst_is_browser
+-        sdr_families += {'PLUTOSDR': ['libad9361', 'libad9361_dep']}
++        sdr_system_families += {'PLUTOSDR': ['libad9361', 'libiio']}
+     endif
++
++    sdr_subproject_families = {}
+     if jst_is_macos or jst_is_linux
+-        sdr_families += {'BIRRIASDR': ['birriasdr', 'birriasdr_dep']}
++        sdr_subproject_families += {'BIRRIASDR': ['birriasdr', 'birriasdr_dep']}
+     endif
+ 
+-    foreach family, source : sdr_families
++    foreach family, source_deps : sdr_system_families
++        family_deps = []
++        family_found = true
++        foreach source_dep : source_deps
++            family_dep = dependency(source_dep, required: true)
++            family_deps += family_dep
++            family_found = family_found and family_dep.found()
++        endforeach
++
++        if family_found
++            cfg_lst.set('JETSTREAM_LOADER_' + family + '_AVAILABLE', true)
++            dep_lst += family_deps
++            sdr_found = true
++        endif
++        ldr_lst += {family: family_found}
++    endforeach
++
++    foreach family, source : sdr_subproject_families
+         family_dep = subproject(
+             source[0],
+             required: true,
+@@ -33,10 +55,10 @@ if jst_is_macos or jst_is_linux or jst_is_windows or jst_is_browser
+     endforeach
+ 
+     if jst_is_linux and not jst_is_static
++        # The external vendors are shared libraries; only the embedded
++        # BirriaSDR still contributes a static archive to libjetstream.
+         lib_link_args += [
+-            '-Wl,--exclude-libs,liblibrtlsdr.a:liblibairspy.a:liblibairspyhf.a:libhackrf.a:' +
+-            'liblimesuiteng.a:liblimesuiteng_embedded.a:' +
+-            'libbladeRF.a:libiio.a:libad9361.a:libxml2.a:libbirriasdr.a:libusb-1.0.a',
++            '-Wl,--exclude-libs,libbirriasdr.a',
+         ]
+     endif
+ 

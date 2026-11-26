@@ -1,0 +1,13 @@
+diff --git a/meson/loaders/nanobench/meson.build b/meson/loaders/nanobench/meson.build
+index ff47b2d8..ba5bd91f 100644
+--- a/meson/loaders/nanobench/meson.build
++++ b/meson/loaders/nanobench/meson.build
+@@ -1,5 +1,7 @@
+ deps = [
+-    subproject('nanobench', required: true).get_variable('nanobench_dep'),
++    # Use the Nixpkgs nanobench package (CMake package config) instead of the
++    # bundled header-only meson subproject.
++    dependency('nanobench', required: true, method: 'cmake'),
+ ]
+ 
+ all_deps_found = true

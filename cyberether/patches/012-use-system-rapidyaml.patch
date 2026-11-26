@@ -1,0 +1,13 @@
+diff --git a/meson/loaders/rapidyaml/meson.build b/meson/loaders/rapidyaml/meson.build
+index 03a228c8..950ee95d 100644
+--- a/meson/loaders/rapidyaml/meson.build
++++ b/meson/loaders/rapidyaml/meson.build
+@@ -1,5 +1,7 @@
+ deps = [
+-    subproject('rapidyaml', required: true).get_variable('ryml_dep'),
++    # Use the Nixpkgs rapidyaml instead of the bundled meson subproject.
++    # Nixpkgs does not ship a pkg-config file, only a CMake package config.
++    dependency('ryml', required: true, method: 'cmake'),
+ ]
+ 
+ all_deps_found = true

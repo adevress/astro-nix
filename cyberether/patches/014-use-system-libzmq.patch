@@ -1,0 +1,20 @@
+diff --git a/meson/loaders/zeromq/meson.build b/meson/loaders/zeromq/meson.build
+index 0a19e055..0d3f123f 100644
+--- a/meson/loaders/zeromq/meson.build
++++ b/meson/loaders/zeromq/meson.build
+@@ -2,13 +2,8 @@ deps = []
+ all_deps_found = not jst_is_browser
+ 
+ if all_deps_found
+-    deps += [
+-        subproject(
+-            'libzmq',
+-            required: true,
+-            default_options: ['default_library=static'],
+-        ).get_variable('libzmq_dep')
+-    ]
++    # Use the Nixpkgs libzmq (zeromq) instead of the bundled meson subproject.
++    deps += dependency('libzmq', required: true)
+ 
+     foreach x_dep : deps
+         all_deps_found = all_deps_found and x_dep.found()
