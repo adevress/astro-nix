@@ -1,5 +1,5 @@
 { lib, pkgs }:
-lib.makeScope pkgs.newScope (self: with self; {
+lib.makeScope pkgs.newScope (self: with self;  {
   # astro_pkgs
   hello = callPackage ./hello/default.nix { };
 
