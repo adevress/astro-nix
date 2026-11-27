@@ -305,19 +305,32 @@ stdenv.mkDerivation {
   # `cyberether` executable.
   separateDebugInfo = true;
 
-  # The meson buildInput ships a setup-hook that would install its own
-  # mesonConfigurePhase and run `meson setup` with nixpkgs defaults (without
-  # our MESON_PACKAGE_CACHE_DIR). Own the configure step so buildPhase below
-  # is the single meson driver.
-  configurePhase = "true";
+  # BirriaSDR is memory-hungry when compiled; serialise the build so smaller
+  # builders are not OOM-killed (the Nixpkgs ninja hook then runs `ninja -j1`).
+  enableParallelBuilding = false;
 
-  # BirriaSDR is memory-hungry when compiled in parallel; keep the default
-  # job count but leave this note for CI tweaks.
-  enableParallelBuilding = true;
+  # Release build; the Nixpkgs meson hook defaults to `--buildtype=plain`. The
+  # hook also passes `-Dwrap_mode=nodownload`, so only the cached subprojects
+  # below can be resolved.
+  mesonBuildType = "debugoptimized";
 
-  buildPhase = ''
-    runHook preBuild
+  mesonFlags = [
+    "--default-library=shared"
+    "-Dtree-sitter-grammars=${tree-sitter-grammars}"
+    "-Dpython=true"
+    "-Dremote=disabled"
+    "-Dinference=disabled"
+    "-Dterminal=disabled"
+    "-Dvelopack=disabled"
+    "-Dtests=true"
+    "-Dexamples=true"
+  ];
 
+  # `meson setup` (run by the Nixpkgs meson hook) resolves the wrap files and
+  # reads MESON_PACKAGE_CACHE_DIR, so the offline caches and the wrapper edits
+  # must happen before the configure phase. This cannot live in `preBuild`:
+  # that hook runs after `meson setup`, when the wraps have already been read.
+  preConfigure = ''
     # --- offline geodata ---------------------------------------------------
     # resources/geodata/fetch.py downloads a precompiled map bundle from
     # cdn.cyberether.org at build time. Seed its cache with the pinned file so
@@ -351,38 +364,19 @@ stdenv.mkDerivation {
     export MESON_PACKAGE_CACHE_DIR="$(pwd)/meson-cache"
     mkdir -p "$MESON_PACKAGE_CACHE_DIR"
     cp -a ${mesonSubprojectCache}/. "$MESON_PACKAGE_CACHE_DIR/"
-
-    meson setup build \
-      --prefix="$out" \
-      --wrap-mode=nodownload \
-      --default-library=shared \
-      -Dbuildtype=release \
-      -Dtree-sitter-grammars=${tree-sitter-grammars} \
-      -Dpython=true \
-      -Dremote=disabled \
-      -Dinference=disabled \
-      -Dterminal=disabled \
-      -Dvelopack=disabled \
-      -Dtests=true \
-      -Dexamples=true
-
-    meson compile -C build
-
-    runHook postBuild
   '';
 
-  installPhase = ''
-    runHook preInstall
+  # The Nixpkgs meson hook drives `meson install`; subproject artefacts are
+  # linked against the system libraries and must not be installed alongside.
+  mesonInstallFlags = [ "--skip-subprojects" ];
 
-    meson install -C build --no-rebuild --skip-subprojects
-
+  # The meson hook leaves us in the build directory, hence `../examples`.
+  postInstall = ''
     # --- examples ----------------------------------------------------------
     # Upstream declares them install:false; bundle them for the CLI/run path.
     mkdir -p "$out/share/cyberether"
-    cp -r examples "$out/share/cyberether/examples"
+    cp -r ../examples "$out/share/cyberether/examples"
     chmod -R u+w "$out/share/cyberether/examples"
-
-    runHook postInstall
   '';
 
   doCheck = true;
@@ -395,9 +389,10 @@ stdenv.mkDerivation {
   checkPhase = ''
     runHook preCheck
 
-    meson test -C build --print-errorlogs shader-parser
+    # The meson hook leaves us in the build directory.
+    meson test --print-errorlogs shader-parser
 
-    meson test -C build --print-errorlogs --test-args "~[process]" \
+    meson test --print-errorlogs --test-args "~[process]" \
       core-memory core-tools core-serialization core-settings core-platform
 
     runHook postCheck
